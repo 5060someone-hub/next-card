@@ -1,0 +1,155 @@
+.sidebar {
+  width: 280px;
+  background-color: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logo {
+  margin-bottom: 3.5rem;
+  padding: 0 0.5rem;
+}
+
+.sidebar-logo .logo-text {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-left: 0.5rem;
+}
+
+.sidebar-nav {
+  flex: 1;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.sidebar-link:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.sidebar-link.active {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: var(--accent-primary);
+}
+
+.sidebar-icon {
+  font-size: 1.25rem;
+}
+
+.sidebar-footer {
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn-logout {
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-logout:hover {
+  color: #ef4444;
+}
+
+.btn-logout::before {
+  content: '🚪';
+}
+
+/* Responsive Sidebar Optimization */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 200px;
+    padding: 1.5rem 1rem;
+  }
+  .sidebar-logo .logo-text {
+    font-size: 1.2rem;
+  }
+  .sidebar-link {
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sidebar-logo {
+    margin-bottom: 0;
+    padding: 0;
+  }
+
+  .sidebar-logo .logo-text {
+    display: none; /* 모바일에서는 공간 절약을 위해 로고 아이콘만 표시 */
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    margin: 0 1rem;
+  }
+
+  .sidebar-nav ul {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sidebar-link {
+    padding: 0.5rem;
+    margin-bottom: 0;
+    border-radius: 8px;
+  }
+
+  .sidebar-link .sidebar-name {
+    display: none; /* 아이콘 기반 하단/상단 탭 형태로 간결화 */
+  }
+
+  .sidebar-footer {
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .btn-logout {
+    padding: 0.5rem;
+    width: auto;
+  }
+  
+  .btn-logout::after {
+    content: '';
+  }
+  
+  .btn-logout text, .btn-logout span {
+    display: none;
+  }
+}
+

@@ -1,0 +1,253 @@
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-secondary);
+}
+
+.dashboard-content {
+  flex: 1;
+  padding: 2.5rem;
+  overflow-y: auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.dashboard-header p {
+  color: var(--text-secondary);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar {
+  width: 45px;
+  height: 45px;
+  background-color: var(--accent-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background-color: var(--bg-primary);
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  border: 1px solid var(--border-color);
+}
+
+.stat-icon {
+  font-size: 2rem;
+  background-color: var(--bg-secondary);
+  width: 60px;
+  height: 60px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-info h3 {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.stat-value span:first-child {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.stat-change {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.stat-change.positive {
+  color: var(--accent-success);
+}
+
+/* Main Grid */
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+.dashboard-card {
+  background-color: var(--bg-primary);
+  padding: 2rem;
+  border-radius: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.dashboard-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
+
+/* Chart Placeholder */
+.chart-placeholder {
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bar-chart {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 1rem;
+}
+
+.bar {
+  flex: 1;
+  background-color: var(--accent-primary);
+  border-radius: 8px 8px 0 0;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.bar:hover {
+  opacity: 1;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* Mini Card List */
+.mini-card {
+  display: flex;
+  align-items: center;
+  padding: 1.25rem;
+  background-color: var(--bg-secondary);
+  border-radius: 16px;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+}
+
+.mini-card.active {
+  border-color: var(--accent-primary);
+}
+
+.mini-card-preview {
+  width: 50px;
+  height: 30px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 6px;
+}
+
+.mini-card-info {
+  flex: 1;
+}
+
+.mini-card-info h4 {
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.mini-card-info p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-success);
+  background-color: rgba(16, 185, 129, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.btn-add-card {
+  width: 100%;
+  padding: 1rem;
+  border: 2px dashed var(--border-color);
+  border-radius: 16px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-add-card:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background-color: rgba(37, 99, 235, 0.05);
+}
+
+/* Responsive Dashboard Optimization */
+@media (max-width: 1024px) {
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-card {
+    padding: 1.25rem;
+  }
+  .dashboard-content {
+    padding: 1rem;
+  }
+}
+
