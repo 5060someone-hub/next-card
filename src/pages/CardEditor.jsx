@@ -14,7 +14,8 @@ import {
   Download,
   Link as LinkIcon,
   Image as ImageIcon,
-  Building
+  Building,
+  Lock
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { QRCodeSVG } from 'qrcode.react';
@@ -106,6 +107,10 @@ const CardEditor = () => {
   };
 
   const handleImageChange = (e, field) => {
+    if (!canUseFeature(field === 'logoUrl' ? 'allowLogo' : 'allowPaperCard')) {
+      alert('이 기능은 현재 상품에서 지원하지 않습니다. 업그레이드가 필요합니다.');
+      return;
+    }
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -116,6 +121,18 @@ const CardEditor = () => {
     }
   };
 
+  const currentProduct = products.find(p => p.id === formData.productType);
+  const canUseFeature = (featureKey) => {
+    if (!currentProduct || !currentProduct.features) return true; // 기본적으로 허용 (또는 정책에 따라 반대)
+    return currentProduct.features[featureKey];
+  };
+
+  const getSnsCount = () => {
+    return Object.values(formData.sns || {}).filter(val => val && val.trim() !== '').length;
+  };
+
+  const maxSnsCount = currentProduct?.features?.maxSnsCount || 10;
+
   const [lastSaved, setLastSaved] = useState(null);
 
   const handleSaveSettings = async () => {
@@ -123,7 +140,8 @@ const CardEditor = () => {
     console.log('[Editor] Saving card data for user:', targetUserId, formData);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/save-card`, {
+      // MongoDB 이전 후 통합된 /api/card 엔드포인트 사용
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/card`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: targetUserId, cardData: formData }),
@@ -219,10 +237,19 @@ const CardEditor = () => {
             <div className="form-card">
               <h3>이미지 업로드</h3>
               <div className="image-inputs">
-                <div className="image-input-item">
-                  <label><Building size={14} /> 회사 로고</label>
-                  <input id="logo-upload-input" type="file" onChange={(e) => handleImageChange(e, 'logoUrl')} accept="image/*" />
-                  <div style={{ marginTop: '0.5rem' }}>
+                <div className={`image-input-item ${!canUseFeature('allowLogo') ? 'feature-locked' : ''}`}>
+                  <label><Building size={14} /> 회사 로고 {!canUseFeature('allowLogo') && <Lock size={12} />}</label>
+                  <input 
+                    id="logo-upload-input" 
+                    type="file" 
+                    onChange={(e) => handleImageChange(e, 'logoUrl')} 
+                    accept="image/*" 
+                    disabled={!canUseFeature('allowLogo')}
+                  />
+                  {!canUseFeature('allowLogo') && (
+                    <div className="lock-text">프리미엄 전용</div>
+                  )}
+                  <div style={{ marginTop: '0.5rem', opacity: canUseFeature('allowLogo') ? 1 : 0.5 }}>
                     <label style={{ fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
                       로고 크기 조절
                       <span>{formData.logoSize || 40}%</span>
@@ -235,6 +262,7 @@ const CardEditor = () => {
                       value={formData.logoSize || 40} 
                       onChange={handleChange} 
                       style={{ width: '100%', cursor: 'pointer' }}
+                      disabled={!canUseFeature('allowLogo')}
                     />
                   </div>
                 </div>
@@ -314,48 +342,46 @@ const CardEditor = () => {
             </div>
 
             <div className="form-card">
-              <h3 style={{ marginBottom: '1rem' }}>SNS 및 웹사이트</h3>
-
-
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ margin: 0 }}>SNS 및 웹사이트</h3>
+                <span style={{ fontSize: '0.75rem', color: getSnsCount() >= maxSnsCount ? '#ef4444' : '#6b7280', fontWeight: 600 }}>
+                  사용 중: {getSnsCount()} / {maxSnsCount} 개
+                </span>
+              </div>
 
               <div className="sns-input-grid">
-                <div className="input-group">
-                  <label><img src="https://cdn.simpleicons.org/googlechrome/374151" width="16" height="16" alt="web" style={{ verticalAlign: 'middle', marginRight: '6px' }} /> 웹사이트</label>
-                  <input name="website" value={formData.website || ''} onChange={handleChange} placeholder="www.nextcard.kr" />
-                </div>
-                <div className="input-group">
-                  <label><img src="https://cdn.simpleicons.org/kakaotalk/374151" width="16" height="16" alt="kakao" style={{ verticalAlign: 'middle', marginRight: '6px' }} /> 카카오톡 ID/오픈채팅</label>
-                  <input name="sns.kakaotalk" value={formData.sns?.kakaotalk || ''} onChange={handleChange} placeholder="카카오톡 ID 또는 오픈채팅 링크" />
-                </div>
-                <div className="input-group">
-                  <label><img src="https://cdn.simpleicons.org/instagram/374151" width="16" height="16" alt="insta" style={{ verticalAlign: 'middle', marginRight: '6px' }} /> 인스타그램</label>
-                  <input name="sns.instagram" value={formData.sns?.instagram || ''} onChange={handleChange} placeholder="사용자 ID" />
-                </div>
-                <div className="input-group">
-                  <label><img src="https://cdn.simpleicons.org/facebook/374151" width="16" height="16" alt="fb" style={{ verticalAlign: 'middle', marginRight: '6px' }} /> 페이스북</label>
-                  <input name="sns.facebook" value={formData.sns?.facebook || ''} onChange={handleChange} placeholder="사용자 ID 또는 링크" />
-                </div>
-                <div className="input-group">
-                  <label><img src="https://cdn.simpleicons.org/tiktok/374151" width="16" height="16" alt="tiktok" style={{ verticalAlign: 'middle', marginRight: '6px' }} /> 틱톡</label>
-                  <input name="sns.tiktok" value={formData.sns?.tiktok || ''} onChange={handleChange} placeholder="사용자 ID" />
-                </div>
-                <div className="input-group">
-                  <label><img src="https://cdn.simpleicons.org/x/374151" width="16" height="16" alt="x" style={{ verticalAlign: 'middle', marginRight: '6px' }} /> X (트위터)</label>
-                  <input name="sns.x" value={formData.sns?.x || ''} onChange={handleChange} placeholder="사용자 ID" />
-                </div>
-                <div className="input-group">
-                  <label><img src="https://cdn.simpleicons.org/threads/374151" width="16" height="16" alt="threads" style={{ verticalAlign: 'middle', marginRight: '6px' }} /> 쓰레드 (Threads)</label>
-                  <input name="sns.threads" value={formData.sns?.threads || ''} onChange={handleChange} placeholder="사용자 ID" />
-                </div>
-                <div className="input-group">
-                  <label>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#374151" style={{ verticalAlign: 'middle', marginRight: '6px' }}>
-                      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                    </svg>
-                    링크드인
-                  </label>
-                  <input name="sns.linkedin" value={formData.sns?.linkedin || ''} onChange={handleChange} placeholder="사용자 ID" />
-                </div>
+                {[
+                  { id: 'website', label: '웹사이트', icon: 'googlechrome' },
+                  { id: 'sns.kakaotalk', label: '카카오톡 ID/오픈채팅', icon: 'kakaotalk' },
+                  { id: 'sns.instagram', label: '인스타그램', icon: 'instagram' },
+                  { id: 'sns.facebook', label: '페이스북', icon: 'facebook' },
+                  { id: 'sns.tiktok', label: '틱톡', icon: 'tiktok' },
+                  { id: 'sns.x', label: 'X (트위터)', icon: 'x' },
+                  { id: 'sns.threads', label: '쓰레드 (Threads)', icon: 'threads' },
+                  { id: 'sns.linkedin', label: '링크드인', icon: 'linkedin' }
+                ].map((sns) => {
+                  const path = sns.id.includes('.') ? sns.id.split('.') : [sns.id];
+                  const value = path.length === 2 ? formData[path[0]]?.[path[1]] : formData[path[0]];
+                  const isFilled = value && value.trim() !== '';
+                  const isLocked = !isFilled && getSnsCount() >= maxSnsCount;
+
+                  return (
+                    <div key={sns.id} className={`input-group ${isLocked ? 'feature-locked' : ''}`}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <img src={`https://cdn.simpleicons.org/${sns.icon}/374151`} width="16" height="16" alt={sns.label} />
+                        {sns.label}
+                        {isLocked && <Lock size={12} />}
+                      </label>
+                      <input 
+                        name={sns.id} 
+                        value={value || ''} 
+                        onChange={handleChange} 
+                        placeholder={isLocked ? "한도 초과 (상품 업그레이드 필요)" : "입력하세요"}
+                        disabled={isLocked}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -366,12 +392,24 @@ const CardEditor = () => {
               </div>
             </div>
 
-            <div className="form-card">
-              <h3>종이명함</h3>
+            <div className={`form-card ${!canUseFeature('allowPaperCard') ? 'feature-locked' : ''}`}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                종이명함 {!canUseFeature('allowPaperCard') && <Lock size={16} />}
+              </h3>
               <div className="image-input-item">
                 <label><ImageIcon size={14} /> 종이명함 스캔/업로드</label>
-                <input id="paper-card-upload-input" type="file" onChange={(e) => handleImageChange(e, 'paperCardUrl')} accept="image/*" />
-                <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>※ 실물 명함을 촬영하여 업로드해 주세요. (가로형 권장)</p>
+                <input 
+                  id="paper-card-upload-input" 
+                  type="file" 
+                  onChange={(e) => handleImageChange(e, 'paperCardUrl')} 
+                  accept="image/*" 
+                  disabled={!canUseFeature('allowPaperCard')}
+                />
+                {!canUseFeature('allowPaperCard') ? (
+                  <p style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '0.5rem', fontWeight: 600 }}>프리미엄 전용 기능입니다.</p>
+                ) : (
+                  <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>※ 실물 명함을 촬영하여 업로드해 주세요. (가로형 권장)</p>
+                )}
               </div>
             </div>
           </section>

@@ -546,3 +546,40 @@
   height: 100%;
   object-fit: contain;
 }
+
+/* Feature Locking Styles */
+.feature-locked {
+  position: relative;
+  opacity: 0.6;
+  pointer-events: none;
+  filter: grayscale(0.5);
+}
+
+.feature-locked input, 
+.feature-locked textarea, 
+.feature-locked select, 
+.feature-locked button {
+  background-color: #f1f5f9 !important;
+  cursor: not-allowed !important;
+}
+
+.lock-text {
+  position: absolute;
+  top: 0.5rem;
+  right: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #ef4444;
+  background: #fee2e2;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  z-index: 5;
+}
+
+.image-input-item.feature-locked .placeholder-upload {
+  background-color: #f1f5f9;
+  border-color: #e2e8f0;
+}

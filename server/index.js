@@ -52,7 +52,14 @@ const cardSchema = new mongoose.Schema({
 const productSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
-  description: { type: String, default: '' }
+  description: { type: String, default: '' },
+  features: {
+    allowLogo: { type: Boolean, default: false },
+    allowPaperCard: { type: Boolean, default: false },
+    allowCustomUrl: { type: Boolean, default: false },
+    maxSnsCount: { type: Number, default: 1 },
+    themes: { type: [String], default: ['modern'] }
+  }
 });
 
 const User = mongoose.model('User', userSchema);
@@ -80,9 +87,24 @@ async function seedData() {
     const productsCount = await Product.countDocuments();
     if (productsCount === 0) {
       await Product.insertMany([
-        { id: 'general', name: '일반형 (Digital Only)', description: '기본 디지털 명함 기능' },
-        { id: 'premium_nfc', name: '프리미엄 (NFC Card 포함)', description: 'NFC 카드 배송 포함' },
-        { id: 'corporate', name: '기업용 (커스텀 디자인)', description: '기업 맞춤형 대량 도입' }
+        { 
+          id: 'general', 
+          name: '일반형 (Digital Only)', 
+          description: '기본 디지털 명함 기능',
+          features: { allowLogo: false, allowPaperCard: false, allowCustomUrl: false, maxSnsCount: 1, themes: ['modern'] }
+        },
+        { 
+          id: 'premium_nfc', 
+          name: '프리미엄 (NFC Card 포함)', 
+          description: 'NFC 카드 배송 포함',
+          features: { allowLogo: true, allowPaperCard: true, allowCustomUrl: true, maxSnsCount: 10, themes: ['modern', 'classic', 'luxury'] }
+        },
+        { 
+          id: 'corporate', 
+          name: '기업용 (커스텀 디자인)', 
+          description: '기업 맞춤형 대량 도입',
+          features: { allowLogo: true, allowPaperCard: true, allowCustomUrl: true, maxSnsCount: 20, themes: ['modern', 'classic', 'luxury', 'corporate'] }
+        }
       ]);
       console.log('Default products seeded.');
     }
@@ -177,14 +199,24 @@ app.post('/api/card', async (req, res) => {
   }
 });
 
-// 커스텀 URL로 명함 조회 (공개용)
-app.get('/api/card/view/:customUrl', async (req, res) => {
+// 커스텀 URL 또는 사용자 ID로 명함 조회 (공개용)
+app.get('/api/card/view/:identifier', async (req, res) => {
+  const { identifier } = req.params;
   try {
-    const card = await Card.findOne({ "cardData.customCardUrl": req.params.customUrl });
+    let card = null;
+    
+    // 1. 커스텀 URL로 먼저 검색
+    card = await Card.findOne({ "cardData.customCardUrl": identifier });
+    
+    // 2. 검색 결과가 없고 identifier가 유효한 ObjectId 형식이면 ID로 검색 (미리보기용)
+    if (!card && mongoose.Types.ObjectId.isValid(identifier)) {
+      card = await Card.findOne({ userId: new mongoose.Types.ObjectId(identifier) });
+    }
+
     if (card) res.json(card.cardData);
     else res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
   } catch (err) {
-    res.status(500).json({ message: '조회 실패' });
+    res.status(500).json({ message: '조회 실패', error: err.message });
   }
 });
 
@@ -293,14 +325,19 @@ app.get('/api/admin/products', async (req, res) => {
 });
 
 app.post('/api/admin/products', async (req, res) => {
-  const { name, description } = req.body;
-  const product = await Product.create({ id: 'prod_' + Date.now(), name, description });
+  const { name, description, features } = req.body;
+  const product = await Product.create({ 
+    id: 'prod_' + Date.now(), 
+    name, 
+    description,
+    features: features || { allowLogo: false, allowPaperCard: false, allowCustomUrl: false, maxSnsCount: 1 }
+  });
   res.json(product);
 });
 
 app.put('/api/admin/products/:id', async (req, res) => {
-  const { name, description } = req.body;
-  await Product.findOneAndUpdate({ id: req.params.id }, { name, description });
+  const { name, description, features } = req.body;
+  await Product.findOneAndUpdate({ id: req.params.id }, { name, description, features });
   res.json({ message: '수정 완료' });
 });
 

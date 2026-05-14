@@ -10,6 +10,12 @@ export default function AdminProductManagement() {
   const [error, setError] = useState(null);
   const [newProductName, setNewProductName] = useState('');
   const [newProductDesc, setNewProductDesc] = useState('');
+  const [features, setFeatures] = useState({
+    allowLogo: false,
+    allowPaperCard: false,
+    allowCustomUrl: false,
+    maxSnsCount: 1
+  });
   const [editingId, setEditingId] = useState(null); // 수정 중인 상품 ID
   
   const navigate = useNavigate();
@@ -50,11 +56,16 @@ export default function AdminProductManagement() {
       const response = await fetch(url, {
         method: editingId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newProductName, description: newProductDesc })
+        body: JSON.stringify({ 
+          name: newProductName, 
+          description: newProductDesc,
+          features: features 
+        })
       });
       if (response.ok) {
         setNewProductName('');
         setNewProductDesc('');
+        setFeatures({ allowLogo: false, allowPaperCard: false, allowCustomUrl: false, maxSnsCount: 1 });
         setEditingId(null);
         fetchProducts();
       } else {
@@ -70,12 +81,14 @@ export default function AdminProductManagement() {
   const startEdit = (prod) => {
     setNewProductName(prod.name);
     setNewProductDesc(prod.description || '');
+    setFeatures(prod.features || { allowLogo: false, allowPaperCard: false, allowCustomUrl: false, maxSnsCount: 1 });
     setEditingId(prod.id);
   };
 
   const cancelEdit = () => {
     setNewProductName('');
     setNewProductDesc('');
+    setFeatures({ allowLogo: false, allowPaperCard: false, allowCustomUrl: false, maxSnsCount: 1 });
     setEditingId(null);
   };
 
@@ -131,8 +144,53 @@ export default function AdminProductManagement() {
                   value={newProductDesc} 
                   onChange={(e) => setNewProductDesc(e.target.value)} 
                   placeholder="상품에 대한 간단한 설명"
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', minHeight: '100px' }}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', minHeight: '80px' }}
                 />
+              </div>
+
+              <div className="features-section" style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
+                <h4 style={{ fontSize: '0.875rem', fontWeight: 700, marginBottom: '1rem', color: '#1e293b' }}>세부 기능 제한 설정</h4>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={features.allowLogo} 
+                      onChange={(e) => setFeatures({...features, allowLogo: e.target.checked})} 
+                    />
+                    회사 로고 업로드 허용
+                  </label>
+                  
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={features.allowPaperCard} 
+                      onChange={(e) => setFeatures({...features, allowPaperCard: e.target.checked})} 
+                    />
+                    종이명함 스캔본 허용
+                  </label>
+                  
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={features.allowCustomUrl} 
+                      onChange={(e) => setFeatures({...features, allowCustomUrl: e.target.checked})} 
+                    />
+                    커스텀 URL 설정 허용
+                  </label>
+                  
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>최대 SNS 링크 개수</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max="20" 
+                      value={features.maxSnsCount} 
+                      onChange={(e) => setFeatures({...features, maxSnsCount: parseInt(e.target.value) || 0})}
+                      style={{ width: '60px', padding: '0.4rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}
+                    />
+                  </div>
+                </div>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button type="submit" className="btn-primary" style={{ flex: 2 }}>
