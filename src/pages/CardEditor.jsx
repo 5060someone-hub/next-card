@@ -52,6 +52,7 @@ const CardEditor = () => {
     profileSize: 120,
     paperCardUrl: '',
     customCardUrl: '',
+    productType: 'general', // 기본 상품 종류 추가
     theme: 'modern'
   });
 
@@ -265,6 +266,14 @@ const CardEditor = () => {
               <div className="input-group">
                 <label>부서명</label>
                 <input name="department" value={formData.department} onChange={handleChange} />
+              </div>
+              <div className="input-group">
+                <label>상품 종류 (운영진 확인용)</label>
+                <select name="productType" value={formData.productType} onChange={handleChange} className="form-select">
+                  <option value="general">일반형 (Digital Only)</option>
+                  <option value="premium_nfc">프리미엄 (NFC Card 포함)</option>
+                  <option value="corporate">기업용 (커스텀 디자인)</option>
+                </select>
               </div>
             </div>
 

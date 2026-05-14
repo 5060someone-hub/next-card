@@ -221,8 +221,9 @@ export default function AdminDashboard() {
             <thead>
               <tr>
                 <th>수정 일시</th>
-                <th>사용자 (계정)</th>
-                <th>명함 이름</th>
+                <th>사용자 정보</th>
+                <th>연락처 / 이메일</th>
+                <th>상품 종류</th>
                 <th>회사 / 직함</th>
                 <th>상태</th>
                 <th>관리</th>
@@ -246,10 +247,21 @@ export default function AdminDashboard() {
                     <td>
                       <div className="user-info">
                         <span className="user-name">{card.userName}</span>
-                        <span className="user-email">{card.userEmail}</span>
+                        <span className="user-name-sub">{card.cardData?.name || '-'}</span>
                       </div>
                     </td>
-                    <td className="name-cell">{card.cardData?.name || '-'}</td>
+                    <td>
+                      <div className="contact-cell">
+                        <div className="phone-text"><Phone size={12} /> {card.cardData?.phonePersonal || card.cardData?.phoneWork || '없음'}</div>
+                        <div className="email-text"><Mail size={12} /> {card.cardData?.email || card.userEmail}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`product-tag ${card.cardData?.productType || 'general'}`}>
+                        {card.cardData?.productType === 'premium_nfc' ? '프리미엄(NFC)' : 
+                         card.cardData?.productType === 'corporate' ? '기업용' : '일반형'}
+                      </span>
+                    </td>
                     <td>
                       <div className="work-info">
                         <span className="company">{card.cardData?.company || '-'}</span>

@@ -116,7 +116,7 @@ export default function AdminUserManagement() {
             <thead>
               <tr>
                 <th>사용자 정보</th>
-                <th>이메일</th>
+                <th>이메일 / 휴대전화</th>
                 <th>가입일</th>
                 <th>현재 등급</th>
                 <th>관리 액션</th>
@@ -139,6 +139,12 @@ export default function AdminUserManagement() {
                       </div>
                     </td>
                     <td><div className="email-cell"><Mail size={14} /> {user.email}</div></td>
+                    <td>
+                      <div className="contact-cell">
+                        <div className="email-text"><Mail size={12} /> {user.email}</div>
+                        <div className="phone-text"><Phone size={12} /> {user.phone || '번호 없음'}</div>
+                      </div>
+                    </td>
                     <td>
                       <div className="date-cell">
                         {new Date(user.createdAt).toLocaleDateString('ko-KR', {

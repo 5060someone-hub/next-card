@@ -20,8 +20,10 @@ if (!masterExists) {
     id: 1,
     name: '마스터운영자',
     email: masterEmail,
+    phone: '010-0000-0000', // 마스터 계정 기본 번호
     password: '99nice99!!Q', // 초기 임시 비밀번호
-    role: 'admin'
+    role: 'admin',
+    createdAt: new Date().toISOString()
   }).write();
   console.log('Master Admin account seeded successfully.');
 }
@@ -46,7 +48,7 @@ const PORT = process.env.PORT || 5000;
 
 // [Auth] 회원가입
 app.post('/api/signup', (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, phone, password } = req.body;
   const userExists = db.get('users').find({ email }).value();
   
   if (userExists) {
@@ -57,6 +59,7 @@ app.post('/api/signup', (req, res) => {
     id: Date.now(), 
     name, 
     email, 
+    phone, // 휴대전화 추가
     password,
     role: email === 'vikitour.boss@gmail.com' ? 'admin' : 'user', // 마스터 운영자 자동 지정
     createdAt: new Date().toISOString() // 가입 일시 추가
@@ -77,6 +80,7 @@ app.post('/api/login', (req, res) => {
         id: user.id, 
         name: user.name, 
         email: user.email,
+        phone: user.phone || '', // 로그인 시 전화번호 포함
         role: user.role || (user.email === 'vikitour.boss@gmail.com' ? 'admin' : 'user') 
       } 
     });
@@ -219,6 +223,7 @@ app.get('/api/admin/users', (req, res) => {
       id: u.id,
       name: u.name,
       email: u.email,
+      phone: u.phone || '', // 전화번호 포함
       role: u.role || 'user',
       createdAt: u.createdAt || new Date(u.id).toISOString() // 기존 유저는 ID(timestamp) 기반으로 생성
     }));

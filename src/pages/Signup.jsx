@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, ShieldCheck, Phone } from 'lucide-react';
 import './Auth.css';
 
 const Signup = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState(''); // 휴대전화 상태 추가
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const Signup = () => {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, phone, password }),
       });
 
       const data = await response.json();
@@ -67,6 +68,17 @@ const Signup = () => {
               placeholder="example@email.com" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required 
+            />
+          </div>
+          
+          <div className="input-group">
+            <label><Phone size={16} /> 휴대전화 번호</label>
+            <input 
+              type="tel" 
+              placeholder="010-1234-5678" 
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               required 
             />
           </div>
