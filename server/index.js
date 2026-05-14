@@ -150,15 +150,30 @@ app.get('/api/card/:userId', async (req, res) => {
 // 명함 데이터 저장/수정
 app.post('/api/card', async (req, res) => {
   const { userId, cardData } = req.body;
+  const timestamp = new Date().toISOString();
+  
   try {
+    console.log(`[${timestamp}] Card Save Request - UserID: ${userId}`);
+    
+    if (!userId) {
+      return res.status(400).json({ message: '사용자 ID가 없습니다.' });
+    }
+
+    // findOneAndUpdate를 사용하여 기존 명함이 있으면 수정, 없으면 생성(upsert)
     const updatedCard = await Card.findOneAndUpdate(
-      { userId },
-      { cardData, updatedAt: new Date() },
+      { userId: new mongoose.Types.ObjectId(userId) }, // 명시적 ObjectId 변환
+      { 
+        cardData, 
+        updatedAt: new Date() 
+      },
       { upsert: true, new: true }
     );
-    res.json({ message: '저장 완료', cardData: updatedCard.cardData });
+    
+    console.log(`[${timestamp}] Card Save Success - UserID: ${userId}`);
+    res.json({ message: '명함 정보가 안전하게 저장되었습니다.', cardData: updatedCard.cardData });
   } catch (err) {
-    res.status(500).json({ message: '저장 실패' });
+    console.error(`[${timestamp}] Card Save Error:`, err.message);
+    res.status(500).json({ message: '저장 실패', error: err.message });
   }
 });
 
