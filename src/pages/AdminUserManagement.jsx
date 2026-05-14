@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import { Search, Shield, ShieldAlert, User, Mail, RefreshCw, X } from 'lucide-react';
+import { Search, Shield, ShieldAlert, User, Mail, RefreshCw, X, Phone } from 'lucide-react';
 import './AdminDashboard.css'; // 기본 대시보드 스타일 재사용
 
 export default function AdminUserManagement() {
