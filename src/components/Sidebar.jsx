@@ -5,12 +5,20 @@ import './Sidebar.css';
 const Sidebar = () => {
   const location = useLocation();
   
+  const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
+  const isAdmin = auth.role === 'admin';
+
   const menuItems = [
     { name: '대시보드', path: '/dashboard', icon: '📊' },
     { name: '내 명함 관리', path: '/cards', icon: '🪪' },
     { name: '인맥 로그', path: '/logs', icon: '📝' },
     { name: '통계 분석', path: '/analytics', icon: '📈' },
     { name: '설정', path: '/settings', icon: '⚙️' },
+  ];
+
+  const adminItems = [
+    { name: '명함 발행 관리', path: '/admin', icon: '🛡️' },
+    { name: '운영자 관리', path: '/admin/users', icon: '👥' },
   ];
 
   return (
@@ -35,6 +43,23 @@ const Sidebar = () => {
               </Link>
             </li>
           ))}
+
+          {isAdmin && (
+            <>
+              <li className="sidebar-section-title">관리자 전용</li>
+              {adminItems.map((item) => (
+                <li key={item.path}>
+                  <Link 
+                    to={item.path} 
+                    className={`sidebar-link ${location.pathname === item.path ? 'active' : ''}`}
+                  >
+                    <span className="sidebar-icon">{item.icon}</span>
+                    <span className="sidebar-name">{item.name}</span>
+                  </Link>
+                </li>
+              ))}
+            </>
+          )}
         </ul>
       </nav>
 

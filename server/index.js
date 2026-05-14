@@ -193,6 +193,52 @@ app.put('/api/admin/card/:userId/publish', (req, res) => {
   }
 });
 
+// [Admin] 전체 회원 목록 조회
+app.get('/api/admin/users', (req, res) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] Admin User Fetch - Requesting all users`);
+  try {
+    const users = db.get('users').value();
+    // 비밀번호는 제외하고 전송
+    const safeUsers = users.map(u => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: u.role || 'user'
+    }));
+    res.json(safeUsers);
+  } catch (error) {
+    console.error(`[${timestamp}] Admin User Fetch Error:`, error.message);
+    res.status(500).json({ message: '회원 목록을 불러오는 중 오류 발생' });
+  }
+});
+
+// [Admin] 회원 권한(role) 수정
+app.put('/api/admin/user/:userId/role', (req, res) => {
+  const timestamp = new Date().toISOString();
+  const { userId } = req.params;
+  const { role } = req.body;
+  
+  try {
+    const userWrapper = db.get('users').find(u => String(u.id) === String(userId));
+    if (!userWrapper.value()) {
+      return res.status(404).json({ message: '해당 회원을 찾을 수 없습니다.' });
+    }
+    
+    // 마스터 운영자 보호 (선택 사항: boss 계정은 권한 변경 불가하게 할 수 있음)
+    if (userWrapper.value().email === 'vikitour.boss@gmail.com' && role !== 'admin') {
+      return res.status(403).json({ message: '마스터 운영자의 권한은 변경할 수 없습니다.' });
+    }
+
+    userWrapper.assign({ role }).write();
+    console.log(`[${timestamp}] Role Update Success - User: ${userId}, New Role: ${role}`);
+    res.json({ message: '권한이 변경되었습니다.', userId, role });
+  } catch (error) {
+    console.error(`[${timestamp}] Role Update Error:`, error.message);
+    res.status(500).json({ message: '권한 변경 중 오류 발생' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://127.0.0.1:${PORT}`);
 });

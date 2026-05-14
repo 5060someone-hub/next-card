@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminUserManagement from './pages/AdminUserManagement';
 
 const MobileAppWrapper = ({ children }) => (
   <div className="mobile-mockup-wrapper">
@@ -26,6 +27,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/cards" element={<CardEditor />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUserManagement />} />
         
         {/* 모바일 목업 전용 라우트 (최종결과물 및 인증) */}
         <Route path="/login" element={<MobileAppWrapper><Login /></MobileAppWrapper>} />
