@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import { Search, RefreshCw, AlertCircle, CheckCircle2, Clock, X, ExternalLink, User } from 'lucide-react';
+import { Search, RefreshCw, AlertCircle, CheckCircle2, Clock, X, ExternalLink, User, Phone, Mail } from 'lucide-react';
 import './AdminDashboard.css';
 
 export default function AdminDashboard() {
