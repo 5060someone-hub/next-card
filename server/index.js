@@ -1,362 +1,289 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
-const low = require('lowdb');
-const FileSync = require('lowdb/adapters/FileSync');
+const mongoose = require('mongoose');
+const path = require('path');
+require('dotenv').config();
 
 const app = express();
-const adapter = new FileSync('db.json');
-const db = low(adapter);
-
-// 기본 데이터 구조 설정
-db.defaults({ users: [], cards: [], products: [] }).write(); // products 추가
-
-// 상품 기본 데이터 (Seeding)
-const productsCount = db.get('products').size().value();
-if (productsCount === 0) {
-  db.get('products').push(
-    { id: 'general', name: '일반형 (Digital Only)', description: '기본 디지털 명함 기능' },
-    { id: 'premium_nfc', name: '프리미엄 (NFC Card 포함)', description: 'NFC 카드 배송 포함' },
-    { id: 'corporate', name: '기업용 (커스텀 디자인)', description: '기업 맞춤형 대량 도입' }
-  ).write();
-  console.log('Default products seeded.');
-}
-
-// 마스터 운영자 자동 생성 (Seeding)
-const masterEmail = 'vikitour.boss@gmail.com';
-const masterExists = db.get('users').find({ email: masterEmail }).value();
-if (!masterExists) {
-  db.get('users').push({
-    id: 1,
-    name: '마스터운영자',
-    email: masterEmail,
-    phone: '010-0000-0000', // 마스터 계정 기본 번호
-    password: '99nice99!!Q', // 초기 임시 비밀번호
-    role: 'admin',
-    createdAt: new Date().toISOString()
-  }).write();
-  console.log('Master Admin account seeded successfully.');
-}
-
-// CORS 설정 강화
-app.use(cors({
-  origin: '*', // 모든 도메인 허용
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-// 요청 로깅 추가
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
-  next();
-});
-
 const PORT = process.env.PORT || 5000;
 
-// [Auth] 회원가입
-app.post('/api/signup', (req, res) => {
-  const { name, email, phone, password } = req.body;
-  const userExists = db.get('users').find({ email }).value();
-  
-  if (userExists) {
-    return res.status(400).json({ message: '이미 가입된 이메일입니다.' });
-  }
+// 미들웨어 설정
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json());
 
-  const newUser = { 
-    id: Date.now(), 
-    name, 
-    email, 
-    phone, // 휴대전화 추가
-    password,
-    role: email === 'vikitour.boss@gmail.com' ? 'admin' : 'user', // 마스터 운영자 자동 지정
-    createdAt: new Date().toISOString() // 가입 일시 추가
-  };
-  db.get('users').push(newUser).write();
-  res.json({ message: '회원가입 성공', user: { name, email, role: newUser.role, createdAt: newUser.createdAt } });
+// [DB 연결 설정]
+// Render 등 환경 변수에 MONGODB_URI가 없으면 로컬 DB 사용
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/nextcard';
+
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// [스키마 정의]
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  phone: { type: String, default: '' },
+  role: { type: String, default: 'user' },
+  createdAt: { type: Date, default: Date.now }
 });
 
-// [Auth] 로그인
-app.post('/api/login', (req, res) => {
+const cardSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  cardData: { type: Object, default: {} },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const productSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  description: { type: String, default: '' }
+});
+
+const User = mongoose.model('User', userSchema);
+const Card = mongoose.model('Card', cardSchema);
+const Product = mongoose.model('Product', productSchema);
+
+// [초기 데이터 시딩]
+async function seedData() {
+  try {
+    // 마스터 관리자 생성
+    const masterEmail = 'vikitour.boss@gmail.com';
+    const masterExists = await User.findOne({ email: masterEmail });
+    if (!masterExists) {
+      await User.create({
+        name: '마스터운영자',
+        email: masterEmail,
+        password: '99nice99!!Q', // 실제 운영 시 변경 권장
+        role: 'admin',
+        phone: '010-0000-0000'
+      });
+      console.log('Master Admin seeded.');
+    }
+
+    // 기본 상품 생성
+    const productsCount = await Product.countDocuments();
+    if (productsCount === 0) {
+      await Product.insertMany([
+        { id: 'general', name: '일반형 (Digital Only)', description: '기본 디지털 명함 기능' },
+        { id: 'premium_nfc', name: '프리미엄 (NFC Card 포함)', description: 'NFC 카드 배송 포함' },
+        { id: 'corporate', name: '기업용 (커스텀 디자인)', description: '기업 맞춤형 대량 도입' }
+      ]);
+      console.log('Default products seeded.');
+    }
+  } catch (err) {
+    console.error('Seeding error:', err);
+  }
+}
+seedData();
+
+// [API 라우트]
+
+// 회원가입
+app.post('/api/signup', async (req, res) => {
+  const { name, email, password, phone } = req.body;
+  try {
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(400).json({ message: '이미 가입된 이메일입니다.' });
+    
+    const user = await User.create({ name, email, password, phone });
+    res.json({ message: '회원가입 성공', user: { id: user._id, name: user.name, email: user.email } });
+  } catch (err) {
+    res.status(500).json({ message: '회원가입 중 오류 발생' });
+  }
+});
+
+// 로그인
+app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
-  const user = db.get('users').find({ email, password }).value();
-
-  if (user) {
-    res.json({ 
-      message: '로그인 성공', 
-      user: { 
-        id: user.id, 
-        name: user.name, 
-        email: user.email,
-        phone: user.phone || '', // 로그인 시 전화번호 포함
-        role: user.role || (user.email === 'vikitour.boss@gmail.com' ? 'admin' : 'user') 
-      } 
+  try {
+    const user = await User.findOne({ email, password });
+    if (!user) return res.status(401).json({ message: '이메일 또는 비밀번호가 틀렸습니다.' });
+    
+    res.json({
+      message: '로그인 성공',
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
-  } else {
-    res.status(401).json({ message: '이메일 또는 비밀번호가 틀립니다.' });
+  } catch (err) {
+    res.status(500).json({ message: '로그인 중 오류 발생' });
   }
 });
 
-// [Card] 명함 데이터 저장
-app.post('/api/save-card', (req, res) => {
-  const timestamp = new Date().toISOString();
+// 비밀번호 찾기 (임시)
+app.post('/api/forgot-password', async (req, res) => {
+  const { email } = req.body;
   try {
-    const { userId, cardData } = req.body;
-    if (!userId) {
-      console.error(`[${timestamp}] Save Error: Missing userId`);
-      return res.status(400).json({ message: 'userId가 없습니다.' });
-    }
-
-    const targetId = String(userId);
-    console.log(`[${timestamp}] Save Request - User: ${targetId}, Name: ${cardData?.name}`);
-
-    const cardCollection = db.get('cards');
-    const existingCardWrapper = cardCollection.find(c => String(c.userId) === targetId);
-    
-    if (existingCardWrapper.value()) {
-      existingCardWrapper.assign({ cardData, userId: targetId, updatedAt: timestamp }).write();
-      console.log(`[${timestamp}] Update Success - User: ${targetId}`);
-    } else {
-      cardCollection.push({ userId: targetId, cardData, updatedAt: timestamp }).write();
-      console.log(`[${timestamp}] Create Success - User: ${targetId}`);
-    }
-    
-    res.json({ message: '성공적으로 저장되었습니다.', updatedAt: timestamp });
-  } catch (error) {
-    console.error(`[${timestamp}] Save Exception:`, error.message);
-    res.status(500).json({ message: '서버 내부 저장 오류', error: error.message });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: '해당 이메일로 가입된 회원이 없습니다.' });
+    res.json({ message: '비밀번호 찾기 메일이 발송되었습니다. (시뮬레이션)', password: user.password });
+  } catch (err) {
+    res.status(500).json({ message: '오류 발생' });
   }
 });
 
-// [Card] 명함 데이터 불러오기
-app.get('/api/card/:userId', (req, res) => {
-  const timestamp = new Date().toISOString();
-  const { userId } = req.params;
-  const targetId = String(userId).trim();
-  console.log(`[${timestamp}] Lookup Request - ID/Slug: ${targetId}`);
-  
-  const card = db.get('cards').find(c => {
-    if (String(c.userId) === targetId) return true;
-    if (c.cardData && c.cardData.customCardUrl) {
-      const customUrl = String(c.cardData.customCardUrl).trim();
-      if (customUrl === targetId) return true;
-      
-      const parts = customUrl.split('/').filter(Boolean);
-      const slug = parts[parts.length - 1];
-      if (slug === targetId) return true;
-    }
-    return false;
-  }).value();
-  
-  if (card) {
-    console.log(`[${timestamp}] Lookup Success - Found for: ${targetId}`);
-    res.json(card.cardData);
-  } else {
-    console.warn(`[${timestamp}] Lookup Failed - Not found: ${targetId}`);
-    res.status(404).json({ message: '명함 정보가 없습니다.' });
-  }
-});
-
-// [Admin] 전체 명함 데이터 조회
-app.get('/api/admin/cards', (req, res) => {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] Admin Fetch - Requesting all cards`);
+// 명함 데이터 조회
+app.get('/api/card/:userId', async (req, res) => {
   try {
-    const cards = db.get('cards').value();
-    const users = db.get('users').value();
-    
-    console.log(`[${timestamp}] Admin Fetch - Found ${cards.length} cards`);
-    
-    const cardsWithUserInfo = cards.map(card => {
-      const user = users.find(u => String(u.id) === String(card.userId));
-      return {
-        ...card,
-        userName: user ? user.name : (card.cardData?.name || '알수없음'), // 회원 없으면 명함 데이터에서 이름 가져오기
-        userEmail: user ? user.email : (card.cardData?.email || '이메일 정보 없음') // 회원 없으면 명함 데이터에서 이메일 가져오기
-      };
-    });
-    
-    res.json(cardsWithUserInfo);
-  } catch (error) {
-    console.error(`[${timestamp}] Admin Fetch Error:`, error.message);
-    res.status(500).json({ message: '서버 내부 오류', error: error.message });
+    const card = await Card.findOne({ userId: req.params.userId });
+    if (card) res.json(card.cardData);
+    else res.status(404).json({ message: '명함 정보가 없습니다.' });
+  } catch (err) {
+    res.status(500).json({ message: '조회 실패' });
   }
 });
 
-// [Admin] 명함 발행 및 커스텀 URL 할당
-app.put('/api/admin/card/:userId/publish', (req, res) => {
-  const timestamp = new Date().toISOString();
+// 명함 데이터 저장/수정
+app.post('/api/card', async (req, res) => {
+  const { userId, cardData } = req.body;
   try {
-    const { userId } = req.params;
-    const { customCardUrl, status } = req.body;
-    
-    console.log(`[${timestamp}] Publish Request - User: ${userId}, URL: ${customCardUrl}`);
-    
-    const cardWrapper = db.get('cards').find(c => String(c.userId) === String(userId));
-    const card = cardWrapper.value();
-    
-    if (!card) {
-      console.warn(`[${timestamp}] Publish Failed - Card not found for user: ${userId}`);
-      return res.status(404).json({ message: '해당 명함을 찾을 수 없습니다.' });
-    }
-    
-    // cardData 업데이트 및 최상위 updatedAt 갱신
-    const updatedCardData = {
-      ...card.cardData,
-      customCardUrl: customCardUrl,
-      status: status || 'published'
-    };
-    
-    cardWrapper.assign({ 
-      cardData: updatedCardData, 
-      updatedAt: timestamp // 발행 시점 기록
-    }).write();
-    
-    console.log(`[${timestamp}] Publish Success - User: ${userId}`);
-    res.json({ message: '발행 완료', customCardUrl, updatedAt: timestamp });
-  } catch (error) {
-    console.error(`[${timestamp}] Publish Exception:`, error.message);
-    res.status(500).json({ message: '발행 중 오류 발생', error: error.message });
+    const updatedCard = await Card.findOneAndUpdate(
+      { userId },
+      { cardData, updatedAt: new Date() },
+      { upsert: true, new: true }
+    );
+    res.json({ message: '저장 완료', cardData: updatedCard.cardData });
+  } catch (err) {
+    res.status(500).json({ message: '저장 실패' });
   }
 });
 
-// [Admin] 전체 회원 목록 조회
-app.get('/api/admin/users', (req, res) => {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] Admin User Fetch - Requesting all users`);
+// 커스텀 URL로 명함 조회 (공개용)
+app.get('/api/card/view/:customUrl', async (req, res) => {
   try {
-    const users = db.get('users').value();
-    // 비밀번호는 제외하고 전송
-    const safeUsers = users.map(u => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      phone: u.phone || '', // 전화번호 포함
-      role: u.role || 'user',
-      createdAt: u.createdAt || new Date(u.id).toISOString() // 기존 유저는 ID(timestamp) 기반으로 생성
+    const card = await Card.findOne({ "cardData.customCardUrl": req.params.customUrl });
+    if (card) res.json(card.cardData);
+    else res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
+  } catch (err) {
+    res.status(500).json({ message: '조회 실패' });
+  }
+});
+
+// [상품 API]
+app.get('/api/products', async (req, res) => {
+  const products = await Product.find();
+  res.json(products);
+});
+
+// [Admin API]
+
+// 전체 명함 목록 (사용자 정보 포함)
+app.get('/api/admin/cards', async (req, res) => {
+  try {
+    const cards = await Card.find().populate('userId', 'name email');
+    const result = cards.map(c => ({
+      _id: c._id,
+      userId: c.userId?._id,
+      userName: c.userId?.name || (c.cardData?.name || '알수없음'),
+      userEmail: c.userId?.email || (c.cardData?.email || '이메일 없음'),
+      cardData: c.cardData,
+      updatedAt: c.updatedAt
     }));
-    // 최신 가입일 순으로 정렬
-    safeUsers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    res.json(safeUsers);
-  } catch (error) {
-    console.error(`[${timestamp}] Admin User Fetch Error:`, error.message);
-    res.status(500).json({ message: '회원 목록을 불러오는 중 오류 발생' });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: '조회 실패' });
   }
 });
 
-// [Admin] 회원 권한(role) 수정
-app.put('/api/admin/user/:userId/role', (req, res) => {
-  const timestamp = new Date().toISOString();
-  const { userId } = req.params;
+// 명함 발행 (URL 할당)
+app.put('/api/admin/card/:userId/publish', async (req, res) => {
+  const { customCardUrl, status } = req.body;
+  try {
+    const card = await Card.findOne({ userId: req.params.userId });
+    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
+    
+    card.cardData.customCardUrl = customCardUrl;
+    card.cardData.status = status || 'published';
+    card.updatedAt = new Date();
+    await card.save();
+    
+    res.json({ message: '발행 완료', customCardUrl });
+  } catch (err) {
+    res.status(500).json({ message: '발행 실패' });
+  }
+});
+
+// 전체 회원 목록
+app.get('/api/admin/users', async (req, res) => {
+  const users = await User.find().sort({ createdAt: -1 });
+  const safeUsers = users.map(u => ({
+    id: u._id,
+    name: u.name,
+    email: u.email,
+    phone: u.phone,
+    role: u.role,
+    createdAt: u.createdAt
+  }));
+  res.json(safeUsers);
+});
+
+// 회원 권한 수정
+app.put('/api/admin/user/:userId/role', async (req, res) => {
   const { role } = req.body;
-  
   try {
-    const userWrapper = db.get('users').find(u => String(u.id) === String(userId));
-    if (!userWrapper.value()) {
-      return res.status(404).json({ message: '해당 회원을 찾을 수 없습니다.' });
-    }
+    const user = await User.findById(req.params.userId);
+    if (user.email === 'vikitour.boss@gmail.com') return res.status(403).json({ message: '마스터 계정 수정 불가' });
     
-    // 마스터 운영자 보호 (선택 사항: boss 계정은 권한 변경 불가하게 할 수 있음)
-    if (userWrapper.value().email === 'vikitour.boss@gmail.com' && role !== 'admin') {
-      return res.status(403).json({ message: '마스터 운영자의 권한은 변경할 수 없습니다.' });
-    }
-
-    userWrapper.assign({ role }).write();
-    console.log(`[${timestamp}] Role Update Success - User: ${userId}, New Role: ${role}`);
-    res.json({ message: '권한이 변경되었습니다.', userId, role });
-  } catch (error) {
-    console.error(`[${timestamp}] Role Update Error:`, error.message);
-    res.status(500).json({ message: '권한 변경 중 오류 발생' });
+    user.role = role;
+    await user.save();
+    res.json({ message: '권한 수정 완료', role });
+  } catch (err) {
+    res.status(500).json({ message: '수정 실패' });
   }
 });
 
-// [Admin] 회원 정보 전체 수정 (이름, 이메일, 전화번호 등)
-app.put('/api/admin/user/:userId', (req, res) => {
-  const { userId } = req.params;
+// 회원 정보 수정
+app.put('/api/admin/user/:userId', async (req, res) => {
   const { name, email, phone } = req.body;
-  const timestamp = new Date().toISOString();
-  
   try {
-    console.log(`[${timestamp}] User Update Request - ID: ${userId}, Data:`, { name, email, phone });
-    
-    // 로우디비(lowdb)에서 해당 ID를 가진 사용자 찾기 (문자열 변환 비교)
-    const userWrapper = db.get('users').find(u => String(u.id) === String(userId));
-    
-    if (!userWrapper.value()) {
-      console.warn(`[${timestamp}] User Update Failed - User not found: ${userId}`);
-      return res.status(404).json({ message: '해당 회원을 찾을 수 없습니다.' });
-    }
-    
-    // 정보 업데이트
-    userWrapper.assign({ 
-      name: name || userWrapper.value().name, 
-      email: email || userWrapper.value().email, 
-      phone: phone || userWrapper.value().phone 
-    }).write();
-    
-    console.log(`[${timestamp}] User Update Success - ID: ${userId}`);
-    res.json({ message: '회원 정보가 성공적으로 수정되었습니다.' });
-  } catch (error) {
-    console.error(`[${timestamp}] User Update Exception:`, error.message);
-    res.status(500).json({ message: '서버 내부 오류로 수정에 실패했습니다.', error: error.message });
+    await User.findByIdAndUpdate(req.params.userId, { name, email, phone });
+    res.json({ message: '수정 완료' });
+  } catch (err) {
+    res.status(500).json({ message: '수정 실패' });
   }
 });
 
-// [Products] 상품 목록 조회 (공개)
-app.get('/api/products', (req, res) => {
-  res.json(db.get('products').value());
+// 회원 삭제
+app.delete('/api/admin/user/:userId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (user.email === 'vikitour.boss@gmail.com') return res.status(403).json({ message: '마스터 삭제 불가' });
+    
+    await User.findByIdAndDelete(req.params.userId);
+    await Card.findOneAndDelete({ userId: req.params.userId });
+    res.json({ message: '삭제 완료' });
+  } catch (err) {
+    res.status(500).json({ message: '삭제 실패' });
+  }
 });
 
-// [Admin] 상품 관리 API
-app.get('/api/admin/products', (req, res) => {
-  res.json(db.get('products').value());
+// 상품 관리
+app.get('/api/admin/products', async (req, res) => {
+  const products = await Product.find();
+  res.json(products);
 });
 
-app.post('/api/admin/products', (req, res) => {
+app.post('/api/admin/products', async (req, res) => {
   const { name, description } = req.body;
-  const newProduct = {
-    id: 'prod_' + Date.now(),
-    name,
-    description
-  };
-  db.get('products').push(newProduct).write();
-  res.json(newProduct);
+  const product = await Product.create({ id: 'prod_' + Date.now(), name, description });
+  res.json(product);
 });
 
-app.put('/api/admin/products/:id', (req, res) => {
-  const { id } = req.params;
+app.put('/api/admin/products/:id', async (req, res) => {
   const { name, description } = req.body;
-  db.get('products').find({ id }).assign({ name, description }).write();
-  res.json({ message: '상품 수정 완료' });
+  await Product.findOneAndUpdate({ id: req.params.id }, { name, description });
+  res.json({ message: '수정 완료' });
 });
 
-app.delete('/api/admin/products/:id', (req, res) => {
-  const { id } = req.params;
-  db.get('products').remove({ id }).write();
-  res.json({ message: '상품 삭제 완료' });
+app.delete('/api/admin/products/:id', async (req, res) => {
+  await Product.findOneAndDelete({ id: req.params.id });
+  res.json({ message: '삭제 완료' });
 });
 
 app.listen(PORT, () => {
   console.log(`Server running on http://127.0.0.1:${PORT}`);
-});
-
-// [Admin] 회원 삭제
-app.delete('/api/admin/user/:userId', (req, res) => {
-  const { userId } = req.params;
-  const timestamp = new Date().toISOString();
-  try {
-    const user = db.get('users').find(u => String(u.id) === String(userId)).value();
-    if (user && user.email === 'vikitour.boss@gmail.com') {
-      return res.status(403).json({ message: '마스터 계정은 삭제할 수 없습니다.' });
-    }
-    
-    db.get('users').remove(u => String(u.id) === String(userId)).write();
-    console.log(`[${timestamp}] User Deleted - ID: ${userId}`);
-    res.json({ message: '삭제 완료' });
-  } catch (error) {
-    res.status(500).json({ message: '삭제 실패' });
-  }
 });
