@@ -26,8 +26,8 @@ export default function AdminDashboard() {
       return;
     }
     
-    // 운영자 권한 체크
-    if (auth.role !== 'admin') {
+    // 운영자 권한 체크 (마스터 계정 예외 처리 포함)
+    if (auth.role !== 'admin' && auth.email !== 'vikitour.boss@gmail.com') {
       alert('관리자 권한이 없습니다.');
       navigate('/dashboard');
       return;
