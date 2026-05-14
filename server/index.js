@@ -16,12 +16,22 @@ app.use(cors({
 app.use(express.json());
 
 // [DB 연결 설정]
-// Render 등 환경 변수에 MONGODB_URI가 없으면 로컬 DB 사용
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/nextcard';
+const MONGODB_URI = process.env.MONGODB_URI;
 
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+if (!MONGODB_URI) {
+  console.warn('⚠️ WARNING: MONGODB_URI is not set. Using temporary local database.');
+}
+
+const connectionUri = MONGODB_URI || 'mongodb://127.0.0.1:27017/nextcard';
+
+mongoose.connect(connectionUri)
+  .then(() => {
+    const isCloud = connectionUri.includes('mongodb+srv');
+    console.log(`✅ MongoDB Connected: ${isCloud ? 'Cloud Atlas' : 'Local Host'}`);
+  })
+  .catch(err => {
+    console.error('❌ MongoDB Connection Error:', err.message);
+  });
 
 // [스키마 정의]
 const userSchema = new mongoose.Schema({

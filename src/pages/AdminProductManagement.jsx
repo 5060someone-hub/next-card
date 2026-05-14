@@ -57,9 +57,13 @@ export default function AdminProductManagement() {
         setNewProductDesc('');
         setEditingId(null);
         fetchProducts();
+      } else {
+        const data = await response.json();
+        alert(`실패: ${data.message || '데이터베이스 저장 오류'}`);
       }
     } catch (err) {
-      alert(editingId ? '상품 수정 실패' : '상품 추가 실패');
+      console.error('Product save error:', err);
+      alert('서버와 통신할 수 없습니다. DB 설정을 확인해주세요.');
     }
   };
 
