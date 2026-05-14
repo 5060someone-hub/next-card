@@ -10,6 +10,7 @@ export default function AdminProductManagement() {
   const [error, setError] = useState(null);
   const [newProductName, setNewProductName] = useState('');
   const [newProductDesc, setNewProductDesc] = useState('');
+  const [editingId, setEditingId] = useState(null); // 수정 중인 상품 ID
   
   const navigate = useNavigate();
   const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
@@ -42,19 +43,36 @@ export default function AdminProductManagement() {
     if (!newProductName.trim()) return;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/products`, {
-        method: 'POST',
+      const url = editingId 
+        ? `${import.meta.env.VITE_API_URL}/api/admin/products/${editingId}`
+        : `${import.meta.env.VITE_API_URL}/api/admin/products`;
+      
+      const response = await fetch(url, {
+        method: editingId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newProductName, description: newProductDesc })
       });
       if (response.ok) {
         setNewProductName('');
         setNewProductDesc('');
+        setEditingId(null);
         fetchProducts();
       }
     } catch (err) {
-      alert('상품 추가 실패');
+      alert(editingId ? '상품 수정 실패' : '상품 추가 실패');
     }
+  };
+
+  const startEdit = (prod) => {
+    setNewProductName(prod.name);
+    setNewProductDesc(prod.description || '');
+    setEditingId(prod.id);
+  };
+
+  const cancelEdit = () => {
+    setNewProductName('');
+    setNewProductDesc('');
+    setEditingId(null);
   };
 
   const handleDeleteProduct = async (id) => {
@@ -89,7 +107,7 @@ export default function AdminProductManagement() {
           {/* Add Form */}
           <section className="form-card" style={{ background: 'white', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', height: 'fit-content' }}>
             <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Plus size={20} color="#2563eb" /> 새 상품 추가
+              <Plus size={20} color="#2563eb" /> {editingId ? '상품 정보 수정' : '새 상품 추가'}
             </h3>
             <form onSubmit={handleAddProduct}>
               <div className="input-group" style={{ marginBottom: '1rem' }}>
@@ -112,9 +130,16 @@ export default function AdminProductManagement() {
                   style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', minHeight: '100px' }}
                 />
               </div>
-              <button type="submit" className="btn-primary" style={{ width: '100%' }}>
-                상품 등록하기
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button type="submit" className="btn-primary" style={{ flex: 2 }}>
+                  {editingId ? '수정 완료' : '상품 등록하기'}
+                </button>
+                {editingId && (
+                  <button type="button" onClick={cancelEdit} className="btn-secondary" style={{ flex: 1 }}>
+                    취소
+                  </button>
+                )}
+              </div>
             </form>
           </section>
 
@@ -146,13 +171,22 @@ export default function AdminProductManagement() {
                       </td>
                       <td style={{ color: '#64748b', fontSize: '0.875rem' }}>{prod.description || '-'}</td>
                       <td>
-                        <button 
-                          className="btn-table-danger" 
-                          onClick={() => handleDeleteProduct(prod.id)}
-                          style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button 
+                            className="btn-table-info" 
+                            onClick={() => startEdit(prod)}
+                            style={{ padding: '0.4rem', background: '#f1f5f9', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                          >
+                            수정
+                          </button>
+                          <button 
+                            className="btn-table-danger" 
+                            onClick={() => handleDeleteProduct(prod.id)}
+                            style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

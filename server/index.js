@@ -273,6 +273,21 @@ app.put('/api/admin/user/:userId/role', (req, res) => {
   }
 });
 
+// [Admin] 회원 정보 전체 수정 (이름, 이메일, 전화번호 등)
+app.put('/api/admin/user/:userId', (req, res) => {
+  const { userId } = req.params;
+  const { name, email, phone } = req.body;
+  try {
+    const userWrapper = db.get('users').find(u => String(u.id) === String(userId));
+    if (!userWrapper.value()) return res.status(404).json({ message: '회원을 찾을 수 없습니다.' });
+    
+    userWrapper.assign({ name, email, phone }).write();
+    res.json({ message: '회원 정보 수정 완료' });
+  } catch (error) {
+    res.status(500).json({ message: '수정 실패' });
+  }
+});
+
 // [Products] 상품 목록 조회 (공개)
 app.get('/api/products', (req, res) => {
   res.json(db.get('products').value());
@@ -292,6 +307,13 @@ app.post('/api/admin/products', (req, res) => {
   };
   db.get('products').push(newProduct).write();
   res.json(newProduct);
+});
+
+app.put('/api/admin/products/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, description } = req.body;
+  db.get('products').find({ id }).assign({ name, description }).write();
+  res.json({ message: '상품 수정 완료' });
 });
 
 app.delete('/api/admin/products/:id', (req, res) => {

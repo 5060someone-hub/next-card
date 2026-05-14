@@ -9,6 +9,8 @@ export default function AdminUserManagement() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [lastSync, setLastSync] = useState(null);
+  const [editingUser, setEditingUser] = useState(null); // 수정 중인 사용자
+  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '' });
   
   const navigate = useNavigate();
   const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
@@ -70,6 +72,30 @@ export default function AdminUserManagement() {
     } catch (error) {
       console.error('Toggle role error:', error);
       alert('서버 통신 오류가 발생했습니다.');
+    }
+  };
+
+  const handleEditUser = (user) => {
+    setEditingUser(user);
+    setEditForm({ name: user.name, email: user.email, phone: user.phone });
+  };
+
+  const saveUserEdit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/user/${editingUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm)
+      });
+      if (response.ok) {
+        setEditingUser(null);
+        fetchUsers();
+      } else {
+        alert('회원 정보 수정 중 오류가 발생했습니다.');
+      }
+    } catch (err) {
+      alert('회원 정보 수정 실패');
     }
   };
 
@@ -140,7 +166,6 @@ export default function AdminUserManagement() {
                         <span className="user-name-text">{user.name}</span>
                       </div>
                     </td>
-                    <td><div className="email-cell"><Mail size={14} /> {user.email}</div></td>
                     <td>
                       <div className="contact-cell">
                         <div className="email-text"><Mail size={12} /> {user.email}</div>
@@ -164,12 +189,15 @@ export default function AdminUserManagement() {
                       </span>
                     </td>
                     <td>
-                      <button 
-                        className={`btn-role-toggle ${user.role}`}
-                        onClick={() => toggleRole(user.id, user.role)}
-                      >
-                        {user.role === 'admin' ? '권한 회수' : '운영자 임명'}
-                      </button>
+                      <div className="action-btns">
+                        <button className="btn-table-info" onClick={() => handleEditUser(user)}>정보 수정</button>
+                        <button 
+                          className={`btn-role-toggle ${user.role}`}
+                          onClick={() => toggleRole(user.id, user.role)}
+                        >
+                          {user.role === 'admin' ? '일반전환' : '운영자지정'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -177,6 +205,50 @@ export default function AdminUserManagement() {
             </tbody>
           </table>
         </div>
+
+        {/* 회원 정보 수정 모달 */}
+        {editingUser && (
+          <div className="modal-overlay" onClick={() => setEditingUser(null)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>회원 정보 수정</h2>
+                <button className="btn-close" onClick={() => setEditingUser(null)}><X size={20} /></button>
+              </div>
+              <form onSubmit={saveUserEdit}>
+                <div className="input-group" style={{ marginBottom: '1rem' }}>
+                  <label>이름</label>
+                  <input 
+                    type="text" 
+                    value={editForm.name} 
+                    onChange={e => setEditForm({...editForm, name: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="input-group" style={{ marginBottom: '1rem' }}>
+                  <label>이메일</label>
+                  <input 
+                    type="email" 
+                    value={editForm.email} 
+                    onChange={e => setEditForm({...editForm, email: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="input-group" style={{ marginBottom: '1.5rem' }}>
+                  <label>휴대전화</label>
+                  <input 
+                    type="tel" 
+                    value={editForm.phone} 
+                    onChange={e => setEditForm({...editForm, phone: e.target.value})}
+                  />
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn-secondary" onClick={() => setEditingUser(null)}>취소</button>
+                  <button type="submit" className="btn-primary">수정 완료</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
