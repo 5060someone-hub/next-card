@@ -277,14 +277,31 @@ app.put('/api/admin/user/:userId/role', (req, res) => {
 app.put('/api/admin/user/:userId', (req, res) => {
   const { userId } = req.params;
   const { name, email, phone } = req.body;
+  const timestamp = new Date().toISOString();
+  
   try {
-    const userWrapper = db.get('users').find(u => String(u.id) === String(userId));
-    if (!userWrapper.value()) return res.status(404).json({ message: '회원을 찾을 수 없습니다.' });
+    console.log(`[${timestamp}] User Update Request - ID: ${userId}, Data:`, { name, email, phone });
     
-    userWrapper.assign({ name, email, phone }).write();
-    res.json({ message: '회원 정보 수정 완료' });
+    // 로우디비(lowdb)에서 해당 ID를 가진 사용자 찾기 (문자열 변환 비교)
+    const userWrapper = db.get('users').find(u => String(u.id) === String(userId));
+    
+    if (!userWrapper.value()) {
+      console.warn(`[${timestamp}] User Update Failed - User not found: ${userId}`);
+      return res.status(404).json({ message: '해당 회원을 찾을 수 없습니다.' });
+    }
+    
+    // 정보 업데이트
+    userWrapper.assign({ 
+      name: name || userWrapper.value().name, 
+      email: email || userWrapper.value().email, 
+      phone: phone || userWrapper.value().phone 
+    }).write();
+    
+    console.log(`[${timestamp}] User Update Success - ID: ${userId}`);
+    res.json({ message: '회원 정보가 성공적으로 수정되었습니다.' });
   } catch (error) {
-    res.status(500).json({ message: '수정 실패' });
+    console.error(`[${timestamp}] User Update Exception:`, error.message);
+    res.status(500).json({ message: '서버 내부 오류로 수정에 실패했습니다.', error: error.message });
   }
 });
 

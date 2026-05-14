@@ -89,13 +89,16 @@ export default function AdminUserManagement() {
         body: JSON.stringify(editForm)
       });
       if (response.ok) {
+        alert('회원 정보가 수정되었습니다.');
         setEditingUser(null);
         fetchUsers();
       } else {
-        alert('회원 정보 수정 중 오류가 발생했습니다.');
+        const data = await response.json();
+        alert(data.message || '회원 정보 수정 중 오류가 발생했습니다.');
       }
     } catch (err) {
-      alert('회원 정보 수정 실패');
+      console.error('Save user edit error:', err);
+      alert('서버와 통신할 수 없습니다.');
     }
   };
 
