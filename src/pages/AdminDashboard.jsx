@@ -24,6 +24,14 @@ export default function AdminDashboard() {
       navigate('/login');
       return;
     }
+    
+    // 운영자 권한 체크
+    if (auth.role !== 'admin') {
+      alert('관리자 권한이 없습니다.');
+      navigate('/dashboard');
+      return;
+    }
+    
     fetchCards();
   }, []);
 

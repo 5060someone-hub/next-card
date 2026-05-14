@@ -26,10 +26,17 @@ const Login = () => {
           id: data.user.id,
           name: data.user.name,
           email: data.user.email, 
+          role: data.user.role,
           isLoggedIn: true 
         }));
-        alert(`반갑습니다, ${data.user.name}님! 관리자 페이지로 이동합니다.`);
-        navigate('/admin');
+        
+        if (data.user.role === 'admin') {
+          alert(`반갑습니다, 운영자 ${data.user.name}님!`);
+          navigate('/admin');
+        } else {
+          alert(`반갑습니다, ${data.user.name}님!`);
+          navigate('/dashboard');
+        }
       } else {
         alert(data.message || '이메일 또는 비밀번호가 일치하지 않습니다.');
       }

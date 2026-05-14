@@ -39,9 +39,15 @@ app.post('/api/signup', (req, res) => {
     return res.status(400).json({ message: '이미 가입된 이메일입니다.' });
   }
 
-  const newUser = { id: Date.now(), name, email, password };
+  const newUser = { 
+    id: Date.now(), 
+    name, 
+    email, 
+    password,
+    role: email === 'vikitour.boss@gmail.com' ? 'admin' : 'user' // 마스터 운영자 자동 지정
+  };
   db.get('users').push(newUser).write();
-  res.json({ message: '회원가입 성공', user: { name, email } });
+  res.json({ message: '회원가입 성공', user: { name, email, role: newUser.role } });
 });
 
 // [Auth] 로그인
@@ -50,7 +56,15 @@ app.post('/api/login', (req, res) => {
   const user = db.get('users').find({ email, password }).value();
 
   if (user) {
-    res.json({ message: '로그인 성공', user: { id: user.id, name: user.name, email: user.email } });
+    res.json({ 
+      message: '로그인 성공', 
+      user: { 
+        id: user.id, 
+        name: user.name, 
+        email: user.email,
+        role: user.role || (user.email === 'vikitour.boss@gmail.com' ? 'admin' : 'user') 
+      } 
+    });
   } else {
     res.status(401).json({ message: '이메일 또는 비밀번호가 틀립니다.' });
   }
