@@ -7,7 +7,7 @@ const Sidebar = () => {
   const location = useLocation();
   
   const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
-  const isAdmin = auth.role === 'admin';
+  const isAdmin = auth.role === 'admin' || auth.email === 'vikitour.boss@gmail.com';
 
   const menuItems = [
     { name: '대시보드', path: '/dashboard', icon: '📊' },

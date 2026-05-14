@@ -15,7 +15,8 @@ import {
   Link as LinkIcon,
   Image as ImageIcon,
   Building,
-  Lock
+  Lock,
+  ShoppingBag
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { QRCodeSVG } from 'qrcode.react';
@@ -243,6 +244,27 @@ const CardEditor = () => {
         <div className="editor-grid">
           {/* Left Form */}
           <section className="form-section">
+            <div className="form-card" style={{ border: '2px solid #db2777', background: '#fff1f2' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#be185d' }}>
+                <ShoppingBag size={20} /> 상품 종류 선택
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '1rem' }}>등급에 따라 사용할 수 있는 기능이 달라집니다.</p>
+              <div className="input-group">
+                <select 
+                  name="productType" 
+                  value={formData.productType} 
+                  onChange={handleChange} 
+                  className="form-select"
+                  style={{ width: '100%', padding: '0.8rem', borderRadius: '10px', border: '2px solid #fda4af', fontWeight: 700, color: '#be185d' }}
+                >
+                  <option value="">상품을 선택하세요</option>
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <div className="form-card">
               <h3>이미지 업로드</h3>
               <div className="image-inputs">
@@ -328,15 +350,6 @@ const CardEditor = () => {
               <div className="input-group">
                 <label>부서명</label>
                 <input name="department" value={formData.department} onChange={handleChange} />
-              </div>
-              <div className="input-group">
-                <label>상품 종류 (운영진 확인용)</label>
-                <select name="productType" value={formData.productType} onChange={handleChange} className="form-select">
-                  <option value="">상품 선택</option>
-                  {products.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
               </div>
             </div>
 
