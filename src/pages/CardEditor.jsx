@@ -107,7 +107,11 @@ const CardEditor = () => {
   };
 
   const handleImageChange = (e, field) => {
-    if (!canUseFeature(field === 'logoUrl' ? 'allowLogo' : 'allowPaperCard')) {
+    let featureKey = 'allowLogo';
+    if (field === 'profileUrl') featureKey = 'allowProfile';
+    if (field === 'paperCardUrl') featureKey = 'allowPaperCard';
+
+    if (!canUseFeature(featureKey)) {
       alert('이 기능은 현재 상품에서 지원하지 않습니다. 업그레이드가 필요합니다.');
       return;
     }
@@ -123,8 +127,13 @@ const CardEditor = () => {
 
   const currentProduct = products.find(p => p.id === formData.productType);
   const canUseFeature = (featureKey) => {
-    if (!currentProduct || !currentProduct.features) return true; // 기본적으로 허용 (또는 정책에 따라 반대)
+    if (!currentProduct || !currentProduct.features) return true;
     return currentProduct.features[featureKey];
+  };
+
+  const isThemeAllowed = (themeId) => {
+    if (!currentProduct || !currentProduct.features || !currentProduct.features.allowedThemes) return true;
+    return currentProduct.features.allowedThemes.includes(themeId);
   };
 
   const getSnsCount = () => {
@@ -266,10 +275,19 @@ const CardEditor = () => {
                     />
                   </div>
                 </div>
-                <div className="image-input-item">
-                  <label><UserCircle size={14} /> 프로필 사진</label>
-                  <input id="profile-upload-input" type="file" onChange={(e) => handleImageChange(e, 'profileUrl')} accept="image/*" />
-                  <div style={{ marginTop: '0.5rem' }}>
+                <div className={`image-input-item ${!canUseFeature('allowProfile') ? 'feature-locked' : ''}`}>
+                  <label><UserCircle size={14} /> 프로필 사진 {!canUseFeature('allowProfile') && <Lock size={12} />}</label>
+                  <input 
+                    id="profile-upload-input" 
+                    type="file" 
+                    onChange={(e) => handleImageChange(e, 'profileUrl')} 
+                    accept="image/*" 
+                    disabled={!canUseFeature('allowProfile')}
+                  />
+                  {!canUseFeature('allowProfile') && (
+                    <div className="lock-text">프리미엄 전용</div>
+                  )}
+                  <div style={{ marginTop: '0.5rem', opacity: canUseFeature('allowProfile') ? 1 : 0.5 }}>
                     <label style={{ fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
                       사진 크기 조절
                       <span>{formData.profileSize || 120}px</span>
@@ -282,6 +300,7 @@ const CardEditor = () => {
                       value={formData.profileSize || 120} 
                       onChange={handleChange} 
                       style={{ width: '100%', cursor: 'pointer' }}
+                      disabled={!canUseFeature('allowProfile')}
                     />
                   </div>
                 </div>
@@ -392,6 +411,34 @@ const CardEditor = () => {
               </div>
             </div>
 
+            <div className="form-card">
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>디자인 테마 선택</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                {['modern', 'classic', 'luxury', 'corporate'].map(t => {
+                  const allowed = isThemeAllowed(t);
+                  return (
+                    <div 
+                      key={t} 
+                      onClick={() => allowed && setFormData({...formData, theme: t})}
+                      className={`theme-option ${formData.theme === t ? 'active' : ''} ${!allowed ? 'feature-locked' : ''}`}
+                      style={{ 
+                        padding: '1rem', 
+                        borderRadius: '12px', 
+                        border: `2px solid ${formData.theme === t ? '#db2777' : '#e2e8f0'}`,
+                        cursor: allowed ? 'pointer' : 'not-allowed',
+                        textAlign: 'center',
+                        position: 'relative',
+                        background: formData.theme === t ? '#fff1f2' : '#fff'
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, textTransform: 'capitalize' }}>{t}</div>
+                      {!allowed && <Lock size={14} style={{ position: 'absolute', top: '8px', right: '8px', color: '#ef4444' }} />}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className={`form-card ${!canUseFeature('allowPaperCard') ? 'feature-locked' : ''}`}>
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 종이명함 {!canUseFeature('allowPaperCard') && <Lock size={16} />}
@@ -410,6 +457,26 @@ const CardEditor = () => {
                 ) : (
                   <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>※ 실물 명함을 촬영하여 업로드해 주세요. (가로형 권장)</p>
                 )}
+              </div>
+            </div>
+
+            <div className={`form-card ${!canUseFeature('allowSinglePage') ? 'feature-locked' : ''}`}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                고급 기능 {!canUseFeature('allowSinglePage') && <Lock size={16} />}
+              </h3>
+              <div className="input-group">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={formData.isSpaMode} 
+                    onChange={(e) => setFormData({...formData, isSpaMode: e.target.checked})} 
+                    disabled={!canUseFeature('allowSinglePage')}
+                  />
+                  SPA(싱글페이지) 모드 활성화
+                </label>
+                <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                  ※ 스크롤 없이 한 화면에서 모든 정보를 보여주는 모드입니다.
+                </p>
               </div>
             </div>
           </section>

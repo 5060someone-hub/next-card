@@ -55,10 +55,12 @@ const productSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   features: {
     allowLogo: { type: Boolean, default: false },
+    allowProfile: { type: Boolean, default: true },
     allowPaperCard: { type: Boolean, default: false },
     allowCustomUrl: { type: Boolean, default: false },
+    allowSinglePage: { type: Boolean, default: false },
     maxSnsCount: { type: Number, default: 1 },
-    themes: { type: [String], default: ['modern'] }
+    allowedThemes: { type: [String], default: ['modern'] }
   }
 });
 
@@ -91,19 +93,43 @@ async function seedData() {
           id: 'general', 
           name: '일반형 (Digital Only)', 
           description: '기본 디지털 명함 기능',
-          features: { allowLogo: false, allowPaperCard: false, allowCustomUrl: false, maxSnsCount: 1, themes: ['modern'] }
+          features: { 
+            allowLogo: false, 
+            allowProfile: true,
+            allowPaperCard: false, 
+            allowCustomUrl: false, 
+            allowSinglePage: false,
+            maxSnsCount: 1, 
+            allowedThemes: ['modern'] 
+          }
         },
         { 
           id: 'premium_nfc', 
           name: '프리미엄 (NFC Card 포함)', 
           description: 'NFC 카드 배송 포함',
-          features: { allowLogo: true, allowPaperCard: true, allowCustomUrl: true, maxSnsCount: 10, themes: ['modern', 'classic', 'luxury'] }
+          features: { 
+            allowLogo: true, 
+            allowProfile: true,
+            allowPaperCard: true, 
+            allowCustomUrl: true, 
+            allowSinglePage: true,
+            maxSnsCount: 10, 
+            allowedThemes: ['modern', 'classic', 'luxury'] 
+          }
         },
         { 
           id: 'corporate', 
           name: '기업용 (커스텀 디자인)', 
           description: '기업 맞춤형 대량 도입',
-          features: { allowLogo: true, allowPaperCard: true, allowCustomUrl: true, maxSnsCount: 20, themes: ['modern', 'classic', 'luxury', 'corporate'] }
+          features: { 
+            allowLogo: true, 
+            allowProfile: true,
+            allowPaperCard: true, 
+            allowCustomUrl: true, 
+            allowSinglePage: true,
+            maxSnsCount: 20, 
+            allowedThemes: ['modern', 'classic', 'luxury', 'corporate'] 
+          }
         }
       ]);
       console.log('Default products seeded.');
@@ -330,7 +356,15 @@ app.post('/api/admin/products', async (req, res) => {
     id: 'prod_' + Date.now(), 
     name, 
     description,
-    features: features || { allowLogo: false, allowPaperCard: false, allowCustomUrl: false, maxSnsCount: 1 }
+    features: features || { 
+      allowLogo: false, 
+      allowProfile: true,
+      allowPaperCard: false, 
+      allowCustomUrl: false, 
+      allowSinglePage: false,
+      maxSnsCount: 1,
+      allowedThemes: ['modern']
+    }
   });
   res.json(product);
 });

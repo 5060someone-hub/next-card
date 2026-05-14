@@ -12,9 +12,12 @@ export default function AdminProductManagement() {
   const [newProductDesc, setNewProductDesc] = useState('');
   const [features, setFeatures] = useState({
     allowLogo: false,
+    allowProfile: true,
     allowPaperCard: false,
     allowCustomUrl: false,
-    maxSnsCount: 1
+    allowSinglePage: false,
+    maxSnsCount: 1,
+    allowedThemes: ['modern']
   });
   const [editingId, setEditingId] = useState(null); // 수정 중인 상품 ID
   
@@ -65,7 +68,15 @@ export default function AdminProductManagement() {
       if (response.ok) {
         setNewProductName('');
         setNewProductDesc('');
-        setFeatures({ allowLogo: false, allowPaperCard: false, allowCustomUrl: false, maxSnsCount: 1 });
+        setFeatures({ 
+          allowLogo: false, 
+          allowProfile: true,
+          allowPaperCard: false, 
+          allowCustomUrl: false, 
+          allowSinglePage: false,
+          maxSnsCount: 1,
+          allowedThemes: ['modern']
+        });
         setEditingId(null);
         fetchProducts();
       } else {
@@ -81,14 +92,30 @@ export default function AdminProductManagement() {
   const startEdit = (prod) => {
     setNewProductName(prod.name);
     setNewProductDesc(prod.description || '');
-    setFeatures(prod.features || { allowLogo: false, allowPaperCard: false, allowCustomUrl: false, maxSnsCount: 1 });
+    setFeatures(prod.features || { 
+      allowLogo: false, 
+      allowProfile: true,
+      allowPaperCard: false, 
+      allowCustomUrl: false, 
+      allowSinglePage: false,
+      maxSnsCount: 1,
+      allowedThemes: ['modern']
+    });
     setEditingId(prod.id);
   };
 
   const cancelEdit = () => {
     setNewProductName('');
     setNewProductDesc('');
-    setFeatures({ allowLogo: false, allowPaperCard: false, allowCustomUrl: false, maxSnsCount: 1 });
+    setFeatures({ 
+      allowLogo: false, 
+      allowProfile: true,
+      allowPaperCard: false, 
+      allowCustomUrl: false, 
+      allowSinglePage: false,
+      maxSnsCount: 1,
+      allowedThemes: ['modern']
+    });
     setEditingId(null);
   };
 
@@ -160,6 +187,15 @@ export default function AdminProductManagement() {
                     />
                     회사 로고 업로드 허용
                   </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={features.allowProfile} 
+                      onChange={(e) => setFeatures({...features, allowProfile: e.target.checked})} 
+                    />
+                    프로필 사진 업로드 허용
+                  </label>
                   
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
                     <input 
@@ -178,6 +214,15 @@ export default function AdminProductManagement() {
                     />
                     커스텀 URL 설정 허용
                   </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={features.allowSinglePage} 
+                      onChange={(e) => setFeatures({...features, allowSinglePage: e.target.checked})} 
+                    />
+                    SPA(싱글페이지) 기능 허용
+                  </label>
                   
                   <div style={{ marginTop: '0.5rem' }}>
                     <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>최대 SNS 링크 개수</label>
@@ -189,6 +234,27 @@ export default function AdminProductManagement() {
                       onChange={(e) => setFeatures({...features, maxSnsCount: parseInt(e.target.value) || 0})}
                       style={{ width: '60px', padding: '0.4rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}
                     />
+                  </div>
+
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.5rem' }}>허용 디자인 테마</label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      {['modern', 'classic', 'luxury', 'corporate'].map(t => (
+                        <label key={t} style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', background: '#fff', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={features.allowedThemes?.includes(t)} 
+                            onChange={(e) => {
+                              const newThemes = e.target.checked 
+                                ? [...(features.allowedThemes || []), t]
+                                : (features.allowedThemes || []).filter(item => item !== t);
+                              setFeatures({...features, allowedThemes: newThemes});
+                            }}
+                          />
+                          {t}
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
