@@ -10,7 +10,18 @@ const adapter = new FileSync('db.json');
 const db = low(adapter);
 
 // 기본 데이터 구조 설정
-db.defaults({ users: [], cards: [] }).write();
+db.defaults({ users: [], cards: [], products: [] }).write(); // products 추가
+
+// 상품 기본 데이터 (Seeding)
+const productsCount = db.get('products').size().value();
+if (productsCount === 0) {
+  db.get('products').push(
+    { id: 'general', name: '일반형 (Digital Only)', description: '기본 디지털 명함 기능' },
+    { id: 'premium_nfc', name: '프리미엄 (NFC Card 포함)', description: 'NFC 카드 배송 포함' },
+    { id: 'corporate', name: '기업용 (커스텀 디자인)', description: '기업 맞춤형 대량 도입' }
+  ).write();
+  console.log('Default products seeded.');
+}
 
 // 마스터 운영자 자동 생성 (Seeding)
 const masterEmail = 'vikitour.boss@gmail.com';
@@ -163,8 +174,8 @@ app.get('/api/admin/cards', (req, res) => {
       const user = users.find(u => String(u.id) === String(card.userId));
       return {
         ...card,
-        userName: user ? user.name : '알수없음',
-        userEmail: user ? user.email : '알수없음'
+        userName: user ? user.name : (card.cardData?.name || '알수없음'), // 회원 없으면 명함 데이터에서 이름 가져오기
+        userEmail: user ? user.email : (card.cardData?.email || '이메일 정보 없음') // 회원 없으면 명함 데이터에서 이메일 가져오기
       };
     });
     
@@ -260,6 +271,33 @@ app.put('/api/admin/user/:userId/role', (req, res) => {
     console.error(`[${timestamp}] Role Update Error:`, error.message);
     res.status(500).json({ message: '권한 변경 중 오류 발생' });
   }
+});
+
+// [Products] 상품 목록 조회 (공개)
+app.get('/api/products', (req, res) => {
+  res.json(db.get('products').value());
+});
+
+// [Admin] 상품 관리 API
+app.get('/api/admin/products', (req, res) => {
+  res.json(db.get('products').value());
+});
+
+app.post('/api/admin/products', (req, res) => {
+  const { name, description } = req.body;
+  const newProduct = {
+    id: 'prod_' + Date.now(),
+    name,
+    description
+  };
+  db.get('products').push(newProduct).write();
+  res.json(newProduct);
+});
+
+app.delete('/api/admin/products/:id', (req, res) => {
+  const { id } = req.params;
+  db.get('products').remove({ id }).write();
+  res.json({ message: '상품 삭제 완료' });
 });
 
 app.listen(PORT, () => {

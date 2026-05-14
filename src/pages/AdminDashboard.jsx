@@ -7,6 +7,7 @@ import './AdminDashboard.css';
 export default function AdminDashboard() {
   const [cards, setCards] = useState([]);
   const [users, setUsers] = useState([]); // 회원 목록 상태 추가
+  const [products, setProducts] = useState([]); // 상품 목록 상태 추가
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,12 +45,16 @@ export default function AdminDashboard() {
       const cardRes = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/cards`);
       // 회원 목록 가져오기
       const userRes = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`);
+      // 상품 목록 가져오기
+      const productRes = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/products`);
       
-      if (cardRes.ok && userRes.ok) {
+      if (cardRes.ok && userRes.ok && productRes.ok) {
         const cardData = await cardRes.json();
         const userData = await userRes.json();
+        const productData = await productRes.json();
         setCards(cardData);
         setUsers(userData);
+        setProducts(productData);
         setLastSync(new Date());
       } else {
         setError('데이터를 불러오는 중 오류가 발생했습니다.');
@@ -258,8 +263,7 @@ export default function AdminDashboard() {
                     </td>
                     <td>
                       <span className={`product-tag ${card.cardData?.productType || 'general'}`}>
-                        {card.cardData?.productType === 'premium_nfc' ? '프리미엄(NFC)' : 
-                         card.cardData?.productType === 'corporate' ? '기업용' : '일반형'}
+                        {products.find(p => p.id === card.cardData?.productType)?.name || (card.cardData?.productType === 'premium_nfc' ? '프리미엄(NFC)' : '일반형')}
                       </span>
                     </td>
                     <td>

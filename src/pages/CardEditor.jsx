@@ -23,6 +23,7 @@ import './CardEditor.css';
 const CardEditor = () => {
   const cardRef = useRef(null);
   const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
+  const [products, setProducts] = useState([]); // 상품 목록 상태
   
   const [formData, setFormData] = useState({
     name: '홍길동',
@@ -74,7 +75,21 @@ const CardEditor = () => {
         console.error('명함 데이터 불러오기 오류:', err);
       }
     };
+
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
+        if (response.ok) {
+          const data = await response.json();
+          setProducts(data);
+        }
+      } catch (err) {
+        console.error('상품 목록 불러오기 오류:', err);
+      }
+    };
+
     fetchCardData();
+    fetchProducts();
   }, [auth.id]);
 
   const handleChange = (e) => {
@@ -270,9 +285,10 @@ const CardEditor = () => {
               <div className="input-group">
                 <label>상품 종류 (운영진 확인용)</label>
                 <select name="productType" value={formData.productType} onChange={handleChange} className="form-select">
-                  <option value="general">일반형 (Digital Only)</option>
-                  <option value="premium_nfc">프리미엄 (NFC Card 포함)</option>
-                  <option value="corporate">기업용 (커스텀 디자인)</option>
+                  <option value="">상품 선택</option>
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
                 </select>
               </div>
             </div>
