@@ -12,9 +12,21 @@ const db = low(adapter);
 // 기본 데이터 구조 설정
 db.defaults({ users: [], cards: [] }).write();
 
-app.use(cors());
+// CORS 설정 강화
+app.use(cors({
+  origin: '*', // 모든 도메인 허용
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// 요청 로깅 추가
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+  next();
+});
 
 const PORT = process.env.PORT || 5000;
 
