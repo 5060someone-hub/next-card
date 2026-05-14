@@ -144,28 +144,37 @@ app.get('/api/admin/cards', (req, res) => {
 
 // [Admin] 명함 발행 및 커스텀 URL 할당
 app.put('/api/admin/card/:userId/publish', (req, res) => {
+  const timestamp = new Date().toISOString();
   try {
     const { userId } = req.params;
     const { customCardUrl, status } = req.body;
+    
+    console.log(`[${timestamp}] Publish Request - User: ${userId}, URL: ${customCardUrl}`);
     
     const cardWrapper = db.get('cards').find(c => String(c.userId) === String(userId));
     const card = cardWrapper.value();
     
     if (!card) {
+      console.warn(`[${timestamp}] Publish Failed - Card not found for user: ${userId}`);
       return res.status(404).json({ message: '해당 명함을 찾을 수 없습니다.' });
     }
     
-    // cardData 업데이트
+    // cardData 업데이트 및 최상위 updatedAt 갱신
     const updatedCardData = {
       ...card.cardData,
       customCardUrl: customCardUrl,
       status: status || 'published'
     };
     
-    cardWrapper.assign({ cardData: updatedCardData }).write();
+    cardWrapper.assign({ 
+      cardData: updatedCardData, 
+      updatedAt: timestamp // 발행 시점 기록
+    }).write();
     
-    res.json({ message: '발행 완료', customCardUrl });
+    console.log(`[${timestamp}] Publish Success - User: ${userId}`);
+    res.json({ message: '발행 완료', customCardUrl, updatedAt: timestamp });
   } catch (error) {
+    console.error(`[${timestamp}] Publish Exception:`, error.message);
     res.status(500).json({ message: '발행 중 오류 발생', error: error.message });
   }
 });

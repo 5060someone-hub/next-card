@@ -308,6 +308,23 @@
 
 .btn-table-secondary:hover { background: #f1f5f9; }
 
+.btn-table-info {
+  padding: 0.5rem 0.875rem;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.813rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-table-info:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
 .empty-row {
   text-align: center;
   padding: 4rem !important;
@@ -454,4 +471,86 @@
   border-radius: 12px;
   color: #be123c;
   margin-bottom: 1.5rem;
+}
+
+/* Preview Modal Specifics */
+.preview-modal {
+  max-width: 650px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.modal-header h2 {
+  margin: 0;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-close:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.preview-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.preview-section h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.data-item {
+  font-size: 0.938rem;
+  color: #64748b;
+}
+
+.data-item strong {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.data-item.full {
+  grid-column: span 2;
+}
+
+.card-data-preview {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
 }

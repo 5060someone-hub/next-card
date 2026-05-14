@@ -13,6 +13,7 @@ export default function AdminDashboard() {
   const [selectedCard, setSelectedCard] = useState(null);
   const [customUrl, setCustomUrl] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false); // 미리보기 모달 추가
   const [lastSync, setLastSync] = useState(null);
   
   const navigate = useNavigate();
@@ -50,8 +51,19 @@ export default function AdminDashboard() {
 
   const openPublishModal = (card) => {
     setSelectedCard(card);
-    setCustomUrl(card.cardData?.customCardUrl || '');
+    // 이미 발행된 경우 기존 URL 사용, 아니면 추천 슬러그 생성(이름 기반)
+    if (card.cardData?.customCardUrl) {
+      setCustomUrl(card.cardData.customCardUrl);
+    } else {
+      const suggestedSlug = card.cardData?.name?.toLowerCase().replace(/\s+/g, '-') || '';
+      setCustomUrl(suggestedSlug);
+    }
     setIsModalOpen(true);
+  };
+
+  const openPreviewModal = (card) => {
+    setSelectedCard(card);
+    setIsPreviewOpen(true);
   };
 
   const handlePublish = async () => {
@@ -232,11 +244,11 @@ export default function AdminDashboard() {
                     </td>
                     <td>
                       <div className="action-btns">
-                        <button className="btn-table-primary" onClick={() => openPublishModal(card)}>
-                          발행/관리
+                        <button className="btn-table-info" onClick={() => openPreviewModal(card)}>
+                          상세보기
                         </button>
-                        <button className="btn-table-secondary" onClick={() => navigate(`/v/${card.cardData?.customCardUrl || card.userId}`)}>
-                          <ExternalLink size={14} /> 보기
+                        <button className="btn-table-primary" onClick={() => openPublishModal(card)}>
+                          QR/발행
                         </button>
                       </div>
                     </td>
@@ -246,6 +258,47 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
+
+        {/* 미리보기 모달 추가 */}
+        {isPreviewOpen && selectedCard && (
+          <div className="modal-overlay" onClick={() => setIsPreviewOpen(false)}>
+            <div className="modal-content preview-modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>명함 상세 정보</h2>
+                <button className="btn-close" onClick={() => setIsPreviewOpen(false)}><X size={20} /></button>
+              </div>
+              <div className="preview-body">
+                <div className="preview-section">
+                  <h3>사용자 계정 정보</h3>
+                  <p><strong>이름:</strong> {selectedCard.userName}</p>
+                  <p><strong>이메일:</strong> {selectedCard.userEmail}</p>
+                  <p><strong>신청일시:</strong> {formatDate(selectedCard.updatedAt)}</p>
+                </div>
+                <div className="preview-section card-data-preview">
+                  <h3>입력된 명함 내용</h3>
+                  <div className="data-grid">
+                    <div className="data-item"><strong>이름:</strong> {selectedCard.cardData?.name}</div>
+                    <div className="data-item"><strong>회사:</strong> {selectedCard.cardData?.company}</div>
+                    <div className="data-item"><strong>직함:</strong> {selectedCard.cardData?.jobTitle}</div>
+                    <div className="data-item"><strong>전화:</strong> {selectedCard.cardData?.phone}</div>
+                    <div className="data-item"><strong>이메일:</strong> {selectedCard.cardData?.email}</div>
+                    <div className="data-item"><strong>웹사이트:</strong> {selectedCard.cardData?.website}</div>
+                    <div className="data-item"><strong>주소:</strong> {selectedCard.cardData?.address}</div>
+                  </div>
+                  {selectedCard.cardData?.memo && (
+                    <div className="data-item full"><strong>소개/메모:</strong> <p>{selectedCard.cardData.memo}</p></div>
+                  )}
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="btn-primary" onClick={() => { setIsPreviewOpen(false); openPublishModal(selectedCard); }}>
+                  이 내용으로 발행하기
+                </button>
+                <button className="btn-secondary" onClick={() => setIsPreviewOpen(false)}>닫기</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {isModalOpen && selectedCard && (
           <div className="modal-overlay">
