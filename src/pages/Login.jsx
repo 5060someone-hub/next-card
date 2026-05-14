@@ -28,8 +28,8 @@ const Login = () => {
           email: data.user.email, 
           isLoggedIn: true 
         }));
-        alert(`반갑습니다, ${data.user.name}님! 대시보드로 이동합니다.`);
-        navigate('/dashboard');
+        alert(`반갑습니다, ${data.user.name}님! 관리자 페이지로 이동합니다.`);
+        navigate('/admin');
       } else {
         alert(data.message || '이메일 또는 비밀번호가 일치하지 않습니다.');
       }
