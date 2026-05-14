@@ -18,53 +18,63 @@ import './PublicCard.css';
 const PublicCard = () => {
   const { id } = useParams();
   const [cardData, setCardData] = useState(null);
+  const [adConfig, setAdConfig] = useState(null);
+  const [productFeatures, setProductFeatures] = useState(null);
   const [error, setError] = useState(false);
   const [showPaperCard, setShowPaperCard] = useState(false);
 
   useEffect(() => {
-    const fetchCardData = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/card/${id}`);
-        if (response.ok) {
-          const data = await response.json();
+        // 1. 명함 데이터
+        const cardRes = await fetch(`${import.meta.env.VITE_API_URL}/api/card/${id}`);
+        if (cardRes.ok) {
+          const data = await cardRes.json();
           setCardData(data);
-        } else {
-          // 샘플 데이터 fallback
-          if (id === 'sample') {
-            setCardData({
-              name: '홍길동',
-              nameEng: 'Gildong Hong',
-              jobTitle: '대표이사 / CEO',
-              company: 'NextCard.kr 주식회사',
-              department: '경영전략팀',
-              address: '서울특별시 강남구 테헤란로43길 14 청수빌딩 13층',
-              bio: '디지털 명함의 새로운 기준, NextCard.kr\n모바일과 웹을 아우르는 최상의 하이브리드 네트워킹 경험을 선사합니다.',
-              phoneWork: '02-123-4567',
-              phonePersonal: '010-1234-5678',
-              email: 'gildong@nextcard.kr',
-              website: 'https://www.nextcard.kr',
-              logoUrl: '/logo.png',
-              profileUrl: '/profile.jpg',
-              sns: { 
-                kakaotalk: 'nextcard',
-                instagram: 'nextcard',
-                facebook: 'nextcard',
-                tiktok: 'nextcard',
-                x: 'nextcard',
-                threads: 'nextcard',
-                linkedin: 'nextcard'
-              }
-            });
-          } else {
-            setError(true);
+          
+          // 2. 상품 데이터 (광고 표시 여부 확인용)
+          const prodRes = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
+          if (prodRes.ok) {
+            const products = await prodRes.json();
+            const myProduct = products.find(p => p.id === data.productType);
+            setProductFeatures(myProduct ? myProduct.features : null);
           }
+        } else if (id === 'sample') {
+          // 샘플 데이터 fallback
+          setCardData({
+            name: '홍길동',
+            nameEng: 'Gildong Hong',
+            jobTitle: '대표이사 / CEO',
+            company: 'NextCard.kr 주식회사',
+            department: '경영전략팀',
+            address: '서울특별시 강남구 테헤란로43길 14 청수빌딩 13층',
+            bio: '디지털 명함의 새로운 기준, NextCard.kr\n모바일과 웹을 아우르는 최상의 하이브리드 네트워킹 경험을 선사합니다.',
+            phoneWork: '02-123-4567',
+            phonePersonal: '010-1234-5678',
+            email: 'gildong@nextcard.kr',
+            website: 'https://www.nextcard.kr',
+            logoUrl: '/logo.png',
+            profileUrl: '/profile.jpg',
+            productType: 'general',
+            sns: { kakaotalk: 'nextcard', instagram: 'nextcard' }
+          });
+          setProductFeatures({ showAds: true });
+        } else {
+          setError(true);
+        }
+
+        // 3. 글로벌 광고 설정
+        const adRes = await fetch(`${import.meta.env.VITE_API_URL}/api/settings/ad`);
+        if (adRes.ok) {
+          const adData = await adRes.json();
+          setAdConfig(adData);
         }
       } catch (err) {
         console.error('데이터 로드 실패:', err);
         setError(true);
       }
     };
-    fetchCardData();
+    fetchInitialData();
   }, [id]);
 
   if (error) return <div className="error-view">명함을 찾을 수 없습니다.</div>;
@@ -238,6 +248,33 @@ const PublicCard = () => {
         <footer className="card-footer-action">
           <button className="btn-footer" onClick={() => setShowPaperCard(true)}>종이명함</button>
         </footer>
+
+        {/* Dynamic Ad Section */}
+        {productFeatures?.showAds && adConfig && (
+          <div className="site-ad-banner" style={{ marginTop: '2rem', padding: '0 1rem 1rem' }}>
+            <a 
+              href={adConfig.link} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '0.875rem',
+                borderRadius: '12px',
+                backgroundColor: adConfig.bgColor,
+                color: adConfig.textColor,
+                textAlign: 'center',
+                textDecoration: 'none',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                border: '1px solid rgba(0,0,0,0.05)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+              }}
+            >
+              {adConfig.text}
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

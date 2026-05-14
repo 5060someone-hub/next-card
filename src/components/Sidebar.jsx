@@ -20,6 +20,7 @@ const Sidebar = () => {
     { name: '명함 발행 관리', path: '/admin', icon: '🛡️' },
     { name: '상품 관리', path: '/admin/products', icon: '🛍️' },
     { name: '운영자 관리', path: '/admin/users', icon: '👥' },
+    { name: '사이트 광고 관리', path: '/admin/ads', icon: '📢' },
   ];
 
   return (

@@ -10,6 +10,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminProductManagement from './pages/AdminProductManagement';
+import AdminAdManagement from './pages/AdminAdManagement';
 
 const MobileAppWrapper = ({ children }) => (
   <div className="mobile-mockup-wrapper">
@@ -30,6 +31,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUserManagement />} />
         <Route path="/admin/products" element={<AdminProductManagement />} />
+        <Route path="/admin/ads" element={<AdminAdManagement />} />
         
         {/* 모바일 목업 전용 라우트 (최종결과물 및 인증) */}
         <Route path="/login" element={<MobileAppWrapper><Login /></MobileAppWrapper>} />

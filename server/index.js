@@ -59,14 +59,21 @@ const productSchema = new mongoose.Schema({
     allowPaperCard: { type: Boolean, default: false },
     allowCustomUrl: { type: Boolean, default: false },
     allowSinglePage: { type: Boolean, default: false },
+    showAds: { type: Boolean, default: true },
     maxSnsCount: { type: Number, default: 1 },
     allowedThemes: { type: [String], default: ['modern'] }
   }
 });
 
+const settingSchema = new mongoose.Schema({
+  key: { type: String, required: true, unique: true },
+  value: { type: mongoose.Schema.Types.Mixed, required: true }
+});
+
 const User = mongoose.model('User', userSchema);
 const Card = mongoose.model('Card', cardSchema);
 const Product = mongoose.model('Product', productSchema);
+const Setting = mongoose.model('Setting', settingSchema);
 
 // [초기 데이터 시딩]
 async function seedData() {
@@ -99,6 +106,7 @@ async function seedData() {
             allowPaperCard: false, 
             allowCustomUrl: false, 
             allowSinglePage: false,
+            showAds: true,
             maxSnsCount: 1, 
             allowedThemes: ['modern'] 
           }
@@ -113,6 +121,7 @@ async function seedData() {
             allowPaperCard: true, 
             allowCustomUrl: true, 
             allowSinglePage: true,
+            showAds: false,
             maxSnsCount: 10, 
             allowedThemes: ['modern', 'classic', 'luxury'] 
           }
@@ -127,12 +136,28 @@ async function seedData() {
             allowPaperCard: true, 
             allowCustomUrl: true, 
             allowSinglePage: true,
+            showAds: false,
             maxSnsCount: 20, 
             allowedThemes: ['modern', 'classic', 'luxury', 'corporate'] 
           }
         }
       ]);
       console.log('Default products seeded.');
+    }
+
+    // 기본 설정 시딩
+    const adSetting = await Setting.findOne({ key: 'global_ad' });
+    if (!adSetting) {
+      await Setting.create({
+        key: 'global_ad',
+        value: {
+          text: '디지털 명함의 새로운 기준, NextCard.kr에서 무료로 시작하세요!',
+          link: 'https://nextcard.kr',
+          bgColor: '#eff6ff',
+          textColor: '#2563eb'
+        }
+      });
+      console.log('Default ad settings seeded.');
     }
   } catch (err) {
     console.error('Seeding error:', err);
@@ -378,6 +403,22 @@ app.put('/api/admin/products/:id', async (req, res) => {
 app.delete('/api/admin/products/:id', async (req, res) => {
   await Product.findOneAndDelete({ id: req.params.id });
   res.json({ message: '삭제 완료' });
+});
+
+// [설정 API]
+app.get('/api/settings/ad', async (req, res) => {
+  const setting = await Setting.findOne({ key: 'global_ad' });
+  res.json(setting ? setting.value : {});
+});
+
+app.put('/api/admin/settings/ad', async (req, res) => {
+  const { text, link, bgColor, textColor } = req.body;
+  await Setting.findOneAndUpdate(
+    { key: 'global_ad' },
+    { value: { text, link, bgColor, textColor } },
+    { upsert: true }
+  );
+  res.json({ message: '광고 설정 저장 완료' });
 });
 
 app.listen(PORT, () => {

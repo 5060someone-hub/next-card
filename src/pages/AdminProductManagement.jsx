@@ -16,6 +16,7 @@ export default function AdminProductManagement() {
     allowPaperCard: false,
     allowCustomUrl: false,
     allowSinglePage: false,
+    showAds: true,
     maxSnsCount: 1,
     allowedThemes: ['modern']
   });
@@ -74,6 +75,7 @@ export default function AdminProductManagement() {
           allowPaperCard: false, 
           allowCustomUrl: false, 
           allowSinglePage: false,
+          showAds: true,
           maxSnsCount: 1,
           allowedThemes: ['modern']
         });
@@ -98,6 +100,7 @@ export default function AdminProductManagement() {
       allowPaperCard: false, 
       allowCustomUrl: false, 
       allowSinglePage: false,
+      showAds: true,
       maxSnsCount: 1,
       allowedThemes: ['modern']
     });
@@ -113,6 +116,7 @@ export default function AdminProductManagement() {
       allowPaperCard: false, 
       allowCustomUrl: false, 
       allowSinglePage: false,
+      showAds: true,
       maxSnsCount: 1,
       allowedThemes: ['modern']
     });
@@ -213,6 +217,15 @@ export default function AdminProductManagement() {
                       onChange={(e) => setFeatures({...features, allowCustomUrl: e.target.checked})} 
                     />
                     커스텀 URL 설정 허용
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={features.showAds} 
+                      onChange={(e) => setFeatures({...features, showAds: e.target.checked})} 
+                    />
+                    하단 사이트 광고 표시
                   </label>
 
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
