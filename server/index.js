@@ -58,10 +58,11 @@ app.post('/api/signup', (req, res) => {
     name, 
     email, 
     password,
-    role: email === 'vikitour.boss@gmail.com' ? 'admin' : 'user' // 마스터 운영자 자동 지정
+    role: email === 'vikitour.boss@gmail.com' ? 'admin' : 'user', // 마스터 운영자 자동 지정
+    createdAt: new Date().toISOString() // 가입 일시 추가
   };
   db.get('users').push(newUser).write();
-  res.json({ message: '회원가입 성공', user: { name, email, role: newUser.role } });
+  res.json({ message: '회원가입 성공', user: { name, email, role: newUser.role, createdAt: newUser.createdAt } });
 });
 
 // [Auth] 로그인
@@ -218,8 +219,11 @@ app.get('/api/admin/users', (req, res) => {
       id: u.id,
       name: u.name,
       email: u.email,
-      role: u.role || 'user'
+      role: u.role || 'user',
+      createdAt: u.createdAt || new Date(u.id).toISOString() // 기존 유저는 ID(timestamp) 기반으로 생성
     }));
+    // 최신 가입일 순으로 정렬
+    safeUsers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json(safeUsers);
   } catch (error) {
     console.error(`[${timestamp}] Admin User Fetch Error:`, error.message);

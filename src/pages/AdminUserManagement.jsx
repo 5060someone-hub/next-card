@@ -117,15 +117,16 @@ export default function AdminUserManagement() {
               <tr>
                 <th>사용자 정보</th>
                 <th>이메일</th>
+                <th>가입일</th>
                 <th>현재 등급</th>
                 <th>관리 액션</th>
               </tr>
             </thead>
             <tbody>
               {loading && users.length === 0 ? (
-                <tr><td colSpan="4" className="empty-row">회원 정보를 불러오는 중...</td></tr>
+                <tr><td colSpan="5" className="empty-row">회원 정보를 불러오는 중...</td></tr>
               ) : filteredUsers.length === 0 ? (
-                <tr><td colSpan="4" className="empty-row">검색 결과가 없습니다.</td></tr>
+                <tr><td colSpan="5" className="empty-row">검색 결과가 없습니다.</td></tr>
               ) : (
                 filteredUsers.map((user) => (
                   <tr key={user.id}>
@@ -138,6 +139,17 @@ export default function AdminUserManagement() {
                       </div>
                     </td>
                     <td><div className="email-cell"><Mail size={14} /> {user.email}</div></td>
+                    <td>
+                      <div className="date-cell">
+                        {new Date(user.createdAt).toLocaleDateString('ko-KR', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    </td>
                     <td>
                       <span className={`role-badge ${user.role}`}>
                         {user.role === 'admin' ? '운영자' : '일반 회원'}

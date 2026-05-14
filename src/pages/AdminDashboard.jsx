@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import { Search, RefreshCw, AlertCircle, CheckCircle2, Clock, X, ExternalLink } from 'lucide-react';
+import { Search, RefreshCw, AlertCircle, CheckCircle2, Clock, X, ExternalLink, User } from 'lucide-react';
 import './AdminDashboard.css';
 
 export default function AdminDashboard() {
   const [cards, setCards] = useState([]);
+  const [users, setUsers] = useState([]); // 회원 목록 상태 추가
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,18 +40,22 @@ export default function AdminDashboard() {
     setLoading(true);
     setError(null);
     try {
-      // 127.0.0.1 대신 localhost를 사용해볼 수도 있으나, 현재 백엔드 설정에 맞춰 유지
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/cards`);
-      if (response.ok) {
-        const data = await response.json();
-        console.log('[Admin] Fetched cards:', data);
-        setCards(data);
+      // 명함 목록 가져오기
+      const cardRes = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/cards`);
+      // 회원 목록 가져오기
+      const userRes = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`);
+      
+      if (cardRes.ok && userRes.ok) {
+        const cardData = await cardRes.json();
+        const userData = await userRes.json();
+        setCards(cardData);
+        setUsers(userData);
         setLastSync(new Date());
       } else {
         setError('데이터를 불러오는 중 오류가 발생했습니다.');
       }
     } catch (error) {
-      console.error('Failed to fetch cards:', error);
+      console.error('Failed to fetch data:', error);
       setError('서버에 연결할 수 없습니다. 백엔드 서버 상태를 확인해주세요.');
     } finally {
       setLoading(false);
@@ -119,6 +124,7 @@ export default function AdminDashboard() {
   // 통계 계산
   const counts = {
     all: cards.length,
+    users: users.length, // 전체 회원 수
     pending: cards.filter(c => (c.cardData?.status || 'pending') === 'pending').length,
     published: cards.filter(c => c.cardData?.status === 'published').length
   };
@@ -171,7 +177,12 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <section className="stats-grid">
+        <section className="stats-grid stats-grid-4">
+          <div className="stat-card" onClick={() => navigate('/admin/users')}>
+            <span className="stat-label">전체 회원</span>
+            <span className="stat-value">{counts.users}</span>
+            <User size={16} className="stat-icon-blue" />
+          </div>
           <div className={`stat-card ${filterStatus === 'all' ? 'active' : ''}`} onClick={() => setFilterStatus('all')}>
             <span className="stat-label">전체 명함</span>
             <span className="stat-value">{counts.all}</span>
