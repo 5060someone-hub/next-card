@@ -64,7 +64,12 @@ const Sidebar = () => {
       </nav>
 
       <div className="sidebar-footer">
-        <button className="btn-logout">로그아웃</button>
+        <button className="btn-logout" onClick={() => {
+          localStorage.removeItem('nextcard_auth');
+          window.location.href = '/login';
+        }}>
+          로그아웃
+        </button>
       </div>
     </aside>
   );

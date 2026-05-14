@@ -19,7 +19,9 @@ export default function AdminUserManagement() {
       return;
     }
     
-    if (auth.role !== 'admin') {
+    // 마스터 계정은 역할이 없어도 통과 가능하게 보완
+    if (auth.role !== 'admin' && auth.email !== 'vikitour.boss@gmail.com') {
+      alert('관리자 권한이 없습니다.');
       navigate('/dashboard');
       return;
     }
