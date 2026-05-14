@@ -12,6 +12,20 @@ const db = low(adapter);
 // 기본 데이터 구조 설정
 db.defaults({ users: [], cards: [] }).write();
 
+// 마스터 운영자 자동 생성 (Seeding)
+const masterEmail = 'vikitour.boss@gmail.com';
+const masterExists = db.get('users').find({ email: masterEmail }).value();
+if (!masterExists) {
+  db.get('users').push({
+    id: 1,
+    name: '마스터운영자',
+    email: masterEmail,
+    password: '99nice99!!Q', // 초기 임시 비밀번호
+    role: 'admin'
+  }).write();
+  console.log('Master Admin account seeded successfully.');
+}
+
 // CORS 설정 강화
 app.use(cors({
   origin: '*', // 모든 도메인 허용
