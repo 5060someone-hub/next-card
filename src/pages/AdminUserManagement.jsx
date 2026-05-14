@@ -102,6 +102,25 @@ export default function AdminUserManagement() {
     }
   };
 
+  const deleteUser = async (userId, userName) => {
+    if (userName === '마스터운영자') return alert('마스터 계정은 삭제할 수 없습니다.');
+    if (!window.confirm(`[${userName}] 회원을 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/user/${userId}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        alert('회원이 삭제되었습니다.');
+        fetchUsers();
+      } else {
+        alert('삭제 실패');
+      }
+    } catch (err) {
+      alert('서버 오류');
+    }
+  };
+
   const filteredUsers = users.filter(user => {
     if (!searchTerm.trim()) return true;
     const term = searchTerm.toLowerCase();
@@ -200,6 +219,7 @@ export default function AdminUserManagement() {
                         >
                           {user.role === 'admin' ? '일반전환' : '운영자지정'}
                         </button>
+                        <button className="btn-table-danger" onClick={() => deleteUser(user.id, user.name)}>삭제</button>
                       </div>
                     </td>
                   </tr>

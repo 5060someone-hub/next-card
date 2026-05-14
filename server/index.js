@@ -342,3 +342,21 @@ app.delete('/api/admin/products/:id', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://127.0.0.1:${PORT}`);
 });
+
+// [Admin] 회원 삭제
+app.delete('/api/admin/user/:userId', (req, res) => {
+  const { userId } = req.params;
+  const timestamp = new Date().toISOString();
+  try {
+    const user = db.get('users').find(u => String(u.id) === String(userId)).value();
+    if (user && user.email === 'vikitour.boss@gmail.com') {
+      return res.status(403).json({ message: '마스터 계정은 삭제할 수 없습니다.' });
+    }
+    
+    db.get('users').remove(u => String(u.id) === String(userId)).write();
+    console.log(`[${timestamp}] User Deleted - ID: ${userId}`);
+    res.json({ message: '삭제 완료' });
+  } catch (error) {
+    res.status(500).json({ message: '삭제 실패' });
+  }
+});
