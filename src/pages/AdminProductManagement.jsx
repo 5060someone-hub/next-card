@@ -6,6 +6,7 @@ import './AdminDashboard.css';
 
 export default function AdminProductManagement() {
   const [products, setProducts] = useState([]);
+  const [bankInfo, setBankInfo] = useState({ description: '', accounts: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newProductName, setNewProductName] = useState('');
@@ -44,16 +45,51 @@ export default function AdminProductManagement() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/products`);
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data);
-      }
+      const [prodRes, bankRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/api/admin/products`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/settings/bank-info`)
+      ]);
+      if (prodRes.ok) setProducts(await prodRes.json());
+      if (bankRes.ok) setBankInfo(await bankRes.json());
     } catch (err) {
-      setError('상품 목록을 불러오는 중 오류가 발생했습니다.');
+      setError('데이터를 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveBankInfo = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/settings/bank-info`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bankInfo)
+      });
+      if (res.ok) alert('무통장 입금 정보가 저장되었습니다.');
+      else alert('저장 실패');
+    } catch (e) {
+      alert('오류 발생');
+    }
+  };
+
+  const handleAddBankAccount = () => {
+    setBankInfo(prev => ({
+      ...prev,
+      accounts: [...prev.accounts, { id: Date.now().toString(), bank: '', account: '', owner: '' }]
+    }));
+  };
+
+  const handleRemoveBankAccount = (index) => {
+    setBankInfo(prev => ({
+      ...prev,
+      accounts: prev.accounts.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleBankAccountChange = (index, field, value) => {
+    const newAccounts = [...bankInfo.accounts];
+    newAccounts[index][field] = value;
+    setBankInfo({ ...bankInfo, accounts: newAccounts });
   };
 
   const handleAddProduct = async (e) => {
@@ -444,6 +480,69 @@ export default function AdminProductManagement() {
               </tbody>
             </table>
           </section>
+
+          {/* 무통장 입금 정보 관리 */}
+          <section className="form-section animate-in" style={{ marginTop: '2rem' }}>
+            <h2 className="section-title">
+              <span className="icon-wrap"><AlertCircle size={20} /></span>
+              무통장 입금 정보 관리
+            </h2>
+            <div className="input-group">
+              <label>안내 문구</label>
+              <textarea 
+                value={bankInfo.description}
+                onChange={e => setBankInfo({...bankInfo, description: e.target.value})}
+                placeholder="입금 시 유의사항 등을 입력하세요"
+                rows={3}
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+              />
+            </div>
+
+            <div style={{ marginTop: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <label style={{ fontWeight: 'bold' }}>등록된 입금 계좌</label>
+                <button type="button" onClick={handleAddBankAccount} className="btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
+                  <Plus size={16} style={{ marginRight: '4px' }} /> 계좌 추가
+                </button>
+              </div>
+              
+              {bankInfo.accounts.map((acc, index) => (
+                <div key={acc.id} style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center', background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                  <input 
+                    type="text" 
+                    placeholder="은행명" 
+                    value={acc.bank} 
+                    onChange={e => handleBankAccountChange(index, 'bank', e.target.value)}
+                    style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="계좌번호" 
+                    value={acc.account} 
+                    onChange={e => handleBankAccountChange(index, 'account', e.target.value)}
+                    style={{ flex: 2, padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="예금주" 
+                    value={acc.owner} 
+                    onChange={e => handleBankAccountChange(index, 'owner', e.target.value)}
+                    style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+                  />
+                  <button type="button" onClick={() => handleRemoveBankAccount(index)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+              <button onClick={handleSaveBankInfo} className="btn-primary" style={{ padding: '0.75rem 1.5rem' }}>
+                <CheckCircle2 size={18} style={{ marginRight: '6px' }} /> 무통장 입금 정보 저장
+              </button>
+            </div>
+          </section>
+
         </div>
       </main>
     </div>

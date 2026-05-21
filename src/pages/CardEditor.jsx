@@ -140,6 +140,13 @@ const CardEditor = () => {
     }
   };
 
+  const handlePlanChange = (e) => {
+    const { value } = e.target;
+    if (window.confirm('요금제를 변경하시겠습니까?\n저장 시 변경 내역이 관리자에게 전송되며, 사이트 전체에 즉시 연동됩니다.')) {
+      setFormData(prev => ({ ...prev, productType: value }));
+    }
+  };
+
   const handleImageChange = (e, field) => {
     let featureKey = 'allowLogo';
     if (field === 'profileUrl') featureKey = 'allowProfile';
@@ -242,7 +249,7 @@ const CardEditor = () => {
               <select 
                 name="productType" 
                 value={formData.productType} 
-                onChange={handleChange}
+                onChange={handlePlanChange}
                 style={{ 
                   background: 'transparent', 
                   border: 'none', 

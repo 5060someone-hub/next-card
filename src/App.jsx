@@ -15,6 +15,7 @@ import AdminCardEditor from './pages/AdminCardEditor';
 import AdminLandingEditor from './pages/AdminLandingEditor';
 import AdminNamecardEditor from './pages/AdminNamecardEditor';
 import AdminInquiryManagement from './pages/AdminInquiryManagement';
+import AdminPlanChanges from './pages/AdminPlanChanges';
 import FaqBoard from './pages/FaqBoard';
 import NetworkLog from './pages/NetworkLog';
 import Analytics from './pages/Analytics';
@@ -50,6 +51,7 @@ function App() {
         <Route path="/admin/landing" element={<AdminLandingEditor />} />
         <Route path="/admin/namecard" element={<AdminNamecardEditor />} />
         <Route path="/admin/inquiries" element={<AdminInquiryManagement />} />
+        <Route path="/admin/plan-changes" element={<AdminPlanChanges />} />
 
         {/* 모바일 목업 전용 라우트 (최종결과물 및 인증) */}
         <Route path="/login" element={<MobileAppWrapper><Login /></MobileAppWrapper>} />

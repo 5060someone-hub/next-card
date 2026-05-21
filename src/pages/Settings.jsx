@@ -70,6 +70,7 @@ const Settings = () => {
   const [subLoading, setSubLoading] = useState(false);
 
   // 무통장 입금 신청용 상태값
+  const [bankInfo, setBankInfo] = useState({ description: '', accounts: [] });
   const [depositorName, setDepositorName] = useState('');
   const [requestedGrade, setRequestedGrade] = useState('premium_nfc');
   const [requestedDuration, setRequestedDuration] = useState(12); // 6 or 12
@@ -121,9 +122,10 @@ const Settings = () => {
   const loadSubscriptionData = async () => {
     setSubLoading(true);
     try {
-      const [cardsRes, productsRes] = await Promise.all([
+      const [cardsRes, productsRes, bankRes] = await Promise.all([
         fetch(`${API_BASE}/api/cards/${auth.id}`),
-        fetch(`${API_BASE}/api/products`)
+        fetch(`${API_BASE}/api/products`),
+        fetch(`${API_BASE}/api/settings/bank-info`)
       ]);
 
       if (cardsRes.ok) {
@@ -138,6 +140,9 @@ const Settings = () => {
       }
       if (productsRes.ok) {
         setProducts(await productsRes.json());
+      }
+      if (bankRes.ok) {
+        setBankInfo(await bankRes.json());
       }
     } catch (err) {
       console.error('구독 관련 로딩 실패:', err);
@@ -570,12 +575,20 @@ const Settings = () => {
                                   <CreditCard size={18} />
                                   <div>
                                     <h4>무통장 입금 구독 신청</h4>
-                                    <p>아래 넥스트카드 공식 계좌로 입금 신청 후 이체해주시면 실시간으로 승인 처리됩니다.</p>
+                                    <p>{bankInfo.description || '아래 공식 계좌로 입금 신청 후 이체해주시면 승인 처리됩니다.'}</p>
                                   </div>
                                 </div>
 
-                                <div className="bank-info-box mini">
-                                  <div><strong>신한은행 110-123-456789</strong> (예금주: 주식회사 넥스트카드)</div>
+                                <div className="bank-info-box mini" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  {bankInfo.accounts && bankInfo.accounts.length > 0 ? (
+                                    bankInfo.accounts.map(acc => (
+                                      <div key={acc.id}>
+                                        <strong>{acc.bank} {acc.account}</strong> (예금주: {acc.owner})
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <div>등록된 계좌 정보가 없습니다.</div>
+                                  )}
                                 </div>
 
                                 <div className="payment-form-grid">

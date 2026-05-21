@@ -5,6 +5,58 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
+// ==========================================
+// 관리자 요금 변경 내역
+// ==========================================
+app.get('/api/admin/plan-changes', async (req, res) => {
+  try {
+    const changes = await PlanChange.find({})
+      .populate('userId', 'name email phone')
+      .populate('cardId', 'cardData')
+      .sort({ changedAt: -1 })
+      .limit(100);
+    res.json(changes);
+  } catch (err) {
+    res.status(500).json({ message: '요금 변경 내역 조회 실패', error: err.message });
+  }
+});
+
+app.put('/api/admin/plan-changes/read', async (req, res) => {
+  try {
+    await PlanChange.updateMany({ isRead: false }, { $set: { isRead: true } });
+    res.json({ message: '모든 알림 읽음 처리 완료' });
+  } catch (err) {
+    res.status(500).json({ message: '알림 상태 업데이트 실패', error: err.message });
+  }
+});
+
+// ==========================================
+// 설정: 무통장 입금 정보 관리
+// ==========================================
+app.get('/api/settings/bank-info', async (req, res) => {
+  try {
+    const info = await Setting.findOne({ key: 'bank_transfer_info' });
+    if (!info) return res.status(404).json({ message: '설정이 없습니다.' });
+    res.json(info.value);
+  } catch (err) {
+    res.status(500).json({ message: '조회 실패', error: err.message });
+  }
+});
+
+app.put('/api/settings/bank-info', async (req, res) => {
+  try {
+    const { description, accounts } = req.body;
+    await Setting.findOneAndUpdate(
+      { key: 'bank_transfer_info' },
+      { value: { description, accounts } },
+      { upsert: true }
+    );
+    res.json({ message: '무통장 입금 정보가 업데이트되었습니다.' });
+  } catch (err) {
+    res.status(500).json({ message: '업데이트 실패', error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 
 // 미들웨어 설정
@@ -118,6 +170,15 @@ const cardAnalyticsSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+const planChangeSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  cardId: { type: mongoose.Schema.Types.ObjectId, ref: 'Card', required: true },
+  prevGrade: { type: String, required: true },
+  newGrade: { type: String, required: true },
+  isRead: { type: Boolean, default: false },
+  changedAt: { type: Date, default: Date.now }
+});
+
 const User = mongoose.model('User', userSchema);
 const Card = mongoose.model('Card', cardSchema);
 const Product = mongoose.model('Product', productSchema);
@@ -125,6 +186,7 @@ const Setting = mongoose.model('Setting', settingSchema);
 const Inquiry = mongoose.model('Inquiry', inquirySchema);
 const NetworkLog = mongoose.model('NetworkLog', networkLogSchema);
 const CardAnalytics = mongoose.model('CardAnalytics', cardAnalyticsSchema);
+const PlanChange = mongoose.model('PlanChange', planChangeSchema);
 
 // [초기 데이터 시딩]
 async function seedData() {
@@ -239,6 +301,21 @@ async function seedData() {
         }
       });
       console.log('Default ad settings seeded.');
+    }
+
+    // 무통장 입금 설정 시딩
+    const existingBankInfo = await Setting.findOne({ key: 'bank_transfer_info' });
+    if (!existingBankInfo) {
+      await Setting.create({
+        key: 'bank_transfer_info',
+        value: {
+          description: '아래 넥스트카드 공식 계좌로 입금 신청 후 이체해주시면 실시간으로 승인 처리됩니다.',
+          accounts: [
+            { id: Date.now().toString(), bank: '신한은행', account: '110-388-757045', owner: '최영열' }
+          ]
+        }
+      });
+      console.log('Default bank transfer info seeded.');
     }
 
     // 랜딩 페이지 기본 콘텐츠 시딩
@@ -774,12 +851,33 @@ app.get('/api/card-detail/:cardId', async (req, res) => {
 app.post('/api/card/save/:cardId', async (req, res) => {
   const { cardData } = req.body;
   try {
+    const existingCard = await Card.findById(req.params.cardId);
+    if (!existingCard) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
+
+    let newGrade = existingCard.grade;
+    let gradeChanged = false;
+    
+    // 즉시 연동: 사용자가 편집기에서 요금제를 바꿨다면 DB grade도 즉시 변경
+    if (cardData && cardData.productType && cardData.productType !== existingCard.grade) {
+      newGrade = cardData.productType;
+      gradeChanged = true;
+    }
+
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
-      { cardData, isEdited: true, updatedAt: new Date() },
+      { cardData, grade: newGrade, isEdited: true, updatedAt: new Date() },
       { new: true }
     );
-    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
+    
+    if (gradeChanged) {
+      await PlanChange.create({
+        userId: existingCard.userId,
+        cardId: existingCard._id,
+        prevGrade: existingCard.grade,
+        newGrade: newGrade
+      });
+    }
+
     res.json({ message: '명함 정보가 안전하게 저장되었습니다.', cardData: card.cardData });
   } catch (err) {
     res.status(500).json({ message: '저장 실패', error: err.message });
@@ -1099,6 +1197,16 @@ app.put('/api/admin/user/:userId', async (req, res) => {
       const activeCard = cards.find(isCardActive) || cards[0];
       if (activeCard) {
         await Card.findByIdAndUpdate(activeCard._id, { $set: cardUpdate });
+        
+        // Admin grade change log
+        if (grade !== undefined && grade !== activeCard.grade) {
+          await PlanChange.create({
+            userId: activeCard.userId,
+            cardId: activeCard._id,
+            prevGrade: activeCard.grade,
+            newGrade: grade
+          });
+        }
       } else {
         await Card.create({
           userId: new mongoose.Types.ObjectId(req.params.userId),
@@ -1163,9 +1271,11 @@ app.get('/api/admin/notifications', async (req, res) => {
   try {
     const pendingCardsCount = await Card.countDocuments({ paymentStatus: 'pending' });
     const newInquiriesCount = await Inquiry.countDocuments({ isRead: false });
+    const newPlanChangesCount = await PlanChange.countDocuments({ isRead: false });
     res.json({
       pendingCards: pendingCardsCount,
-      newInquiries: newInquiriesCount
+      newInquiries: newInquiriesCount,
+      newPlanChanges: newPlanChangesCount
     });
   } catch (err) {
     res.status(500).json({ message: '알림 조회 실패', error: err.message });
