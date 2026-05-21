@@ -112,7 +112,7 @@ const AdminNamecardEditor = () => {
 
   if (loading) {
     return (
-      <div className="admin-layout">
+      <div className="dashboard-layout">
         <Sidebar />
         <div className="admin-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Loader2 className="spinning" size={48} color="#94a3b8" />
@@ -122,7 +122,7 @@ const AdminNamecardEditor = () => {
   }
 
   return (
-    <div className="admin-layout">
+    <div className="dashboard-layout">
       <Sidebar />
       <div className="admin-content landing-editor">
         <div className="editor-header">
