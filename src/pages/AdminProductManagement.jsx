@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import { ShoppingBag, Plus, Trash2, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, Plus, Trash2, RefreshCw, AlertCircle, CheckCircle2, ArrowUp, ArrowDown } from 'lucide-react';
 import './AdminDashboard.css';
 
 export default function AdminProductManagement() {
@@ -146,6 +146,31 @@ export default function AdminProductManagement() {
       alert('상품 삭제 실패');
     }
   };
+
+  const handleReorder = async (index, direction) => {
+    const newProducts = [...products];
+    if (direction === 'up' && index > 0) {
+      [newProducts[index - 1], newProducts[index]] = [newProducts[index], newProducts[index - 1]];
+    } else if (direction === 'down' && index < newProducts.length - 1) {
+      [newProducts[index], newProducts[index + 1]] = [newProducts[index + 1], newProducts[index]];
+    } else {
+      return;
+    }
+    setProducts(newProducts);
+    
+    try {
+      const orderedIds = newProducts.map(p => p.id);
+      await fetch(`${import.meta.env.VITE_API_URL}/api/admin/products/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderedIds })
+      });
+    } catch (err) {
+      console.error('Reorder error', err);
+      alert('순서 변경 중 오류가 발생했습니다.');
+    }
+  };
+
 
   return (
     <div className="dashboard-layout">
@@ -323,7 +348,7 @@ export default function AdminProductManagement() {
                 ) : products.length === 0 ? (
                   <tr><td colSpan="3" className="empty-row">등록된 상품이 없습니다.</td></tr>
                 ) : (
-                  products.map((prod) => (
+                  products.map((prod, index) => (
                     <tr key={prod.id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -339,6 +364,24 @@ export default function AdminProductManagement() {
                       <td style={{ color: '#64748b', fontSize: '0.75rem' }}>{prod.description || '-'}</td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button 
+                            className="btn-table-info" 
+                            onClick={() => handleReorder(index, 'up')}
+                            disabled={index === 0}
+                            title="위로 이동"
+                            style={{ padding: '0.4rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: index === 0 ? 'not-allowed' : 'pointer', color: index === 0 ? '#cbd5e1' : '#475569' }}
+                          >
+                            <ArrowUp size={16} />
+                          </button>
+                          <button 
+                            className="btn-table-info" 
+                            onClick={() => handleReorder(index, 'down')}
+                            disabled={index === products.length - 1}
+                            title="아래로 이동"
+                            style={{ padding: '0.4rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: index === products.length - 1 ? 'not-allowed' : 'pointer', color: index === products.length - 1 ? '#cbd5e1' : '#475569' }}
+                          >
+                            <ArrowDown size={16} />
+                          </button>
                           <button 
                             className="btn-table-info" 
                             onClick={() => startEdit(prod)}

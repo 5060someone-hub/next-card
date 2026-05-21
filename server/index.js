@@ -64,6 +64,7 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, default: '' },
   price: { type: Number, default: 0 },
+  order: { type: Number, default: 0 },
   features: {
     allowLogo: { type: Boolean, default: false },
     allowProfile: { type: Boolean, default: true },
@@ -1185,8 +1186,22 @@ app.delete('/api/admin/user/:userId', async (req, res) => {
 
 // 상품 관리
 app.get('/api/admin/products', async (req, res) => {
-  const products = await Product.find();
+  const products = await Product.find().sort({ order: 1 });
   res.json(products);
+});
+
+// 상품 순서 변경
+app.put('/api/admin/products/reorder', async (req, res) => {
+  const { orderedIds } = req.body;
+  try {
+    const promises = orderedIds.map((id, index) => 
+      Product.findOneAndUpdate({ id }, { order: index })
+    );
+    await Promise.all(promises);
+    res.json({ message: '순서 변경 완료' });
+  } catch (err) {
+    res.status(500).json({ message: '순서 변경 실패' });
+  }
 });
 
 app.post('/api/admin/products', async (req, res) => {
@@ -1196,6 +1211,7 @@ app.post('/api/admin/products', async (req, res) => {
     name, 
     description,
     price: Number(price) || 0,
+    order: await Product.countDocuments(),
     features: features || { 
       allowLogo: false, 
       allowProfile: true,
