@@ -253,39 +253,15 @@ const CardEditor = () => {
                   outline: 'none'
                 }}
               >
-                {[...products].sort((a, b) => {
-                  const getProductKey = (id) => {
-                    if (id === 'prod_1778899977850' || id === 'event') return 'event';
-                    if (id === 'general') return 'general';
-                    if (id === 'prod_1778900193128' || id === 'advanced') return 'advanced';
-                    if (id === 'premium_nfc' || id === 'premium') return 'premium';
-                    if (id === 'corporate') return 'corporate';
-                    return id;
-                  };
-                  const order = ['event', 'general', 'advanced', 'premium', 'corporate'];
-                  const keyA = getProductKey(a.id);
-                  const keyB = getProductKey(b.id);
-                  const idxA = order.indexOf(keyA);
-                  const idxB = order.indexOf(keyB);
-                  const sortA = idxA === -1 ? 999 : idxA;
-                  const sortB = idxB === -1 ? 999 : idxB;
-                  return sortA - sortB;
-                }).map(p => {
-                  const getProductKey = (id) => {
-                    if (id === 'prod_1778899977850' || id === 'event') return 'event';
-                    if (id === 'general') return 'general';
-                    if (id === 'prod_1778900193128' || id === 'advanced') return 'advanced';
-                    if (id === 'premium_nfc' || id === 'premium') return 'premium';
-                    if (id === 'corporate') return 'corporate';
-                    return id;
-                  };
-                  const key = getProductKey(p.id);
+                {[...products].sort((a, b) => (a.order || 0) - (b.order || 0)).map(p => {
                   let displayName = p.name;
-                  if (key === 'event') displayName = '이벤트형(6개월무료)';
-                  if (key === 'general') displayName = '일반형';
-                  if (key === 'advanced') displayName = '응용형';
-                  if (key === 'premium') displayName = '프리미엄';
-                  if (key === 'corporate') displayName = '기업용';
+                  if (p.id === 'prod_1778899977850' || p.id === 'event') displayName = '체험용(2개월무료)';
+                  if (p.id === 'general') displayName = '기본형 (Basic-A)';
+                  if (p.id === 'prod_1779351721158') displayName = '기본형(Basic-B)';
+                  if (p.id === 'prod_1778900193128' || p.id === 'advanced') displayName = '표준형(Standard-A)';
+                  if (p.id === 'prod_1779363055944') displayName = '표준형(Standard-B)';
+                  if (p.id === 'premium_nfc' || p.id === 'premium') displayName = '프리미엄 (Premium)';
+                  if (p.id === 'corporate') displayName = '기업용 (커스텀 디자인)';
                   return (
                     <option key={p.id} value={p.id}>{displayName}</option>
                   );
@@ -331,7 +307,7 @@ const CardEditor = () => {
                     <strong style={{ fontWeight: 800 }}>{currentProduct.name} 요금제 혜택:</strong> {currentProduct.description}
                     {currentProduct.price !== undefined && (
                       <span style={{ marginLeft: '1.2rem', background: '#dbeafe', padding: '0.25rem 0.75rem', borderRadius: '50px', fontWeight: 800, color: '#1e40af', display: 'inline-block', fontSize: '0.8rem' }}>
-                        연간 구독료: {currentProduct.price.toLocaleString()}원
+                        요금: 연간 {currentProduct.price?.annual !== undefined ? currentProduct.price.annual.toLocaleString() : (typeof currentProduct.price === 'number' ? currentProduct.price.toLocaleString() : 0)}원 / 3개월 {currentProduct.price?.threeMonths !== undefined ? currentProduct.price.threeMonths.toLocaleString() : 0}원 / 2개월 {currentProduct.price?.twoMonths !== undefined ? currentProduct.price.twoMonths.toLocaleString() : 0}원
                       </span>
                     )}
                   </div>

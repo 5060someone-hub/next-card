@@ -10,7 +10,9 @@ export default function AdminProductManagement() {
   const [error, setError] = useState(null);
   const [newProductName, setNewProductName] = useState('');
   const [newProductDesc, setNewProductDesc] = useState('');
-  const [newProductPrice, setNewProductPrice] = useState('');
+  const [newProductPriceAnnual, setNewProductPriceAnnual] = useState('');
+  const [newProductPriceThreeMonths, setNewProductPriceThreeMonths] = useState('');
+  const [newProductPriceTwoMonths, setNewProductPriceTwoMonths] = useState('');
   const [features, setFeatures] = useState({
     allowLogo: false,
     allowProfile: true,
@@ -69,14 +71,20 @@ export default function AdminProductManagement() {
         body: JSON.stringify({ 
           name: newProductName, 
           description: newProductDesc,
-          price: Number(newProductPrice) || 0,
+          price: {
+            annual: Number(newProductPriceAnnual) || 0,
+            threeMonths: Number(newProductPriceThreeMonths) || 0,
+            twoMonths: Number(newProductPriceTwoMonths) || 0
+          },
           features: features 
         })
       });
       if (response.ok) {
         setNewProductName('');
         setNewProductDesc('');
-        setNewProductPrice('');
+        setNewProductPriceAnnual('');
+        setNewProductPriceThreeMonths('');
+        setNewProductPriceTwoMonths('');
         setFeatures({ 
           allowLogo: false, 
           allowProfile: true,
@@ -102,7 +110,9 @@ export default function AdminProductManagement() {
   const startEdit = (prod) => {
     setNewProductName(prod.name);
     setNewProductDesc(prod.description || '');
-    setNewProductPrice(prod.price !== undefined ? prod.price : '');
+    setNewProductPriceAnnual(prod.price?.annual !== undefined ? prod.price.annual : (typeof prod.price === 'number' ? prod.price : ''));
+    setNewProductPriceThreeMonths(prod.price?.threeMonths !== undefined ? prod.price.threeMonths : '');
+    setNewProductPriceTwoMonths(prod.price?.twoMonths !== undefined ? prod.price.twoMonths : '');
     setFeatures(prod.features || { 
       allowLogo: false, 
       allowProfile: true,
@@ -119,7 +129,9 @@ export default function AdminProductManagement() {
   const cancelEdit = () => {
     setNewProductName('');
     setNewProductDesc('');
-    setNewProductPrice('');
+    setNewProductPriceAnnual('');
+    setNewProductPriceThreeMonths('');
+    setNewProductPriceTwoMonths('');
     setFeatures({ 
       allowLogo: false, 
       allowProfile: true,
@@ -213,17 +225,43 @@ export default function AdminProductManagement() {
                   style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', minHeight: '60px', fontSize: '0.75rem' }}
                 />
               </div>
-              <div className="input-group" style={{ marginBottom: '0.75rem' }}>
-                <label style={{ display: 'block', fontSize: '0.719rem', fontWeight: 600, marginBottom: '0.35rem' }}>금액 (연간 구독료 - 원)</label>
-                <input 
-                  type="number" 
-                  value={newProductPrice} 
-                  onChange={(e) => setNewProductPrice(e.target.value)} 
-                  placeholder="예: 55000"
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
-                  min="0"
-                  required
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <div className="input-group">
+                  <label style={{ display: 'block', fontSize: '0.719rem', fontWeight: 600, marginBottom: '0.35rem' }}>연간 요금 (원)</label>
+                  <input 
+                    type="number" 
+                    value={newProductPriceAnnual} 
+                    onChange={(e) => setNewProductPriceAnnual(e.target.value)} 
+                    placeholder="예: 55000"
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
+                    min="0"
+                    required
+                  />
+                </div>
+                <div className="input-group">
+                  <label style={{ display: 'block', fontSize: '0.719rem', fontWeight: 600, marginBottom: '0.35rem' }}>3개월 요금 (원)</label>
+                  <input 
+                    type="number" 
+                    value={newProductPriceThreeMonths} 
+                    onChange={(e) => setNewProductPriceThreeMonths(e.target.value)} 
+                    placeholder="예: 15000"
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
+                    min="0"
+                    required
+                  />
+                </div>
+                <div className="input-group">
+                  <label style={{ display: 'block', fontSize: '0.719rem', fontWeight: 600, marginBottom: '0.35rem' }}>2개월 요금 (원)</label>
+                  <input 
+                    type="number" 
+                    value={newProductPriceTwoMonths} 
+                    onChange={(e) => setNewProductPriceTwoMonths(e.target.value)} 
+                    placeholder="예: 10000"
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
+                    min="0"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="features-section" style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem' }}>
@@ -359,7 +397,9 @@ export default function AdminProductManagement() {
                         </div>
                       </td>
                       <td style={{ fontWeight: 700, color: '#059669', fontSize: '0.813rem' }}>
-                        {prod.price !== undefined ? prod.price.toLocaleString() : '0'}원
+                        <div>연간: {prod.price?.annual !== undefined ? prod.price.annual.toLocaleString() : (typeof prod.price === 'number' ? prod.price.toLocaleString() : '0')}원</div>
+                        <div>3개월: {prod.price?.threeMonths !== undefined ? prod.price.threeMonths.toLocaleString() : '0'}원</div>
+                        <div>2개월: {prod.price?.twoMonths !== undefined ? prod.price.twoMonths.toLocaleString() : '0'}원</div>
                       </td>
                       <td style={{ color: '#64748b', fontSize: '0.75rem' }}>{prod.description || '-'}</td>
                       <td>

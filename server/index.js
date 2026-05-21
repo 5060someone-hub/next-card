@@ -63,7 +63,11 @@ const productSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   description: { type: String, default: '' },
-  price: { type: Number, default: 0 },
+  price: {
+    annual: { type: Number, default: 0 },
+    threeMonths: { type: Number, default: 0 },
+    twoMonths: { type: Number, default: 0 }
+  },
   order: { type: Number, default: 0 },
   features: {
     allowLogo: { type: Boolean, default: false },
@@ -155,7 +159,7 @@ async function seedData() {
           id: 'general', 
           name: '일반형 (Digital Only)', 
           description: '기본 디지털 명함 기능',
-          price: 55000,
+          price: { annual: 55000, threeMonths: 15000, twoMonths: 10000 },
           features: { 
             allowLogo: false, 
             allowProfile: true,
@@ -171,7 +175,7 @@ async function seedData() {
           id: 'premium_nfc', 
           name: '프리미엄 (NFC Card 포함)', 
           description: 'NFC 카드 배송 포함',
-          price: 22000,
+          price: { annual: 22000, threeMonths: 6000, twoMonths: 4000 },
           features: { 
             allowLogo: true, 
             allowProfile: true,
@@ -187,7 +191,7 @@ async function seedData() {
           id: 'corporate', 
           name: '기업용 (커스텀 디자인)', 
           description: '기업 맞춤형 대량 도입',
-          price: 99000,
+          price: { annual: 99000, threeMonths: 28000, twoMonths: 18000 },
           features: { 
             allowLogo: true, 
             allowProfile: true,
@@ -203,18 +207,22 @@ async function seedData() {
       console.log('Default products seeded.');
     }
 
-    // 기존 상품에 price 필드가 없거나 비어있는 경우 자동 마이그레이션
+    // 기존 상품에 price 필드가 Number일 경우 객체로 자동 마이그레이션
     const existingProds = await Product.find({});
     for (const p of existingProds) {
-      if (p.price === undefined || p.price === null) {
-        let pPrice = 0;
-        if (p.id === 'general') pPrice = 55000;
-        else if (p.id === 'premium_nfc' || p.id === 'premium') pPrice = 22000;
-        else if (p.id === 'corporate') pPrice = 99000;
-        
-        p.price = pPrice;
+      if (typeof p.price === 'number') {
+        const oldPrice = p.price;
+        p.price = {
+          annual: oldPrice,
+          threeMonths: Math.round(oldPrice * 0.3),
+          twoMonths: Math.round(oldPrice * 0.2)
+        };
         await p.save();
-        console.log(`[MIGRATION] Seeded price=${pPrice} for product=${p.id}`);
+        console.log(`[MIGRATION] Migrated price object for product=${p.id}`);
+      } else if (!p.price || typeof p.price !== 'object') {
+        p.price = { annual: 55000, threeMonths: 15000, twoMonths: 10000 };
+        await p.save();
+        console.log(`[MIGRATION] Seeded default price object for product=${p.id}`);
       }
     }
 
@@ -456,6 +464,32 @@ async function seedData() {
         await Setting.findOneAndUpdate({ key: 'landing_content' }, { value: val });
         console.log('Landing content updated with new fields.');
       }
+    }
+    // 명함 랜딩 페이지 기본 콘텐츠 시딩
+    const existingNamecard = await Setting.findOne({ key: 'namecard_landing_content' });
+    if (!existingNamecard) {
+      await Setting.create({
+        key: 'namecard_landing_content',
+        value: {
+          purchaseLink: 'https://adq.kr/products/high-end-namecard?page=1',
+          mainImage: 'https://images.unsplash.com/photo-1589041127529-fcece6f31899?q=80&w=800&auto=format&fit=crop',
+          thumbnails: [
+            'https://images.unsplash.com/photo-1616628188540-3532f8149eb4?q=80&w=200&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1616628188550-808682f32255?q=80&w=200&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1544391696-1c4943717540?q=80&w=200&auto=format&fit=crop'
+          ],
+          title: '수입지 하이엔드 명함',
+          subtitle: '첫인상을 결정짓는 완벽한 디테일, 최고급 수입지로 제작되는 프리미엄 명함입니다.',
+          price: '22,000',
+          specs: [
+            { icon: 'Check', label: '지질', desc: '엑스트라 누브, 띤또레또, 랑데뷰 등 최고급 수입지 선택 가능' },
+            { icon: 'Check', label: '두께', desc: '350g 이상의 묵직하고 고급스러운 두께감' },
+            { icon: 'Check', label: '후가공', desc: '박(금박/은박/먹박), 형압, 에폭시 등 커스텀 가공 지원' },
+            { icon: 'Check', label: '제작기간', desc: '시안 확정 후 영업일 기준 2~3일 소요' }
+          ]
+        }
+      });
+      console.log('Default namecard landing content seeded.');
     }
   } catch (err) {
     console.error('Seeding error:', err);
@@ -1210,7 +1244,7 @@ app.post('/api/admin/products', async (req, res) => {
     id: 'prod_' + Date.now(), 
     name, 
     description,
-    price: Number(price) || 0,
+    price: price || { annual: 0, threeMonths: 0, twoMonths: 0 },
     order: await Product.countDocuments(),
     features: features || { 
       allowLogo: false, 
@@ -1227,7 +1261,12 @@ app.post('/api/admin/products', async (req, res) => {
 
 app.put('/api/admin/products/:id', async (req, res) => {
   const { name, description, price, features } = req.body;
-  await Product.findOneAndUpdate({ id: req.params.id }, { name, description, price: Number(price) || 0, features });
+  await Product.findOneAndUpdate({ id: req.params.id }, { 
+    name, 
+    description, 
+    price: price || { annual: 0, threeMonths: 0, twoMonths: 0 }, 
+    features 
+  });
   res.json({ message: '수정 완료' });
 });
 
@@ -1272,6 +1311,29 @@ app.put('/api/landing-content', async (req, res) => {
   } catch (err) { 
     console.error('[LANDING_SAVE_ERROR]', err);
     res.status(500).json({ message: '실패' }); 
+  }
+});
+
+// [명함 랜딩페이지 API]
+app.get('/api/namecard-landing-content', async (req, res) => {
+  try {
+    const setting = await Setting.findOne({ key: 'namecard_landing_content' });
+    if (setting) res.json(setting.value);
+    else res.status(404).json({ message: '없음' });
+  } catch (err) { res.status(500).json({ message: '실패' }); }
+});
+
+app.put('/api/namecard-landing-content', async (req, res) => {
+  try {
+    await Setting.findOneAndUpdate(
+      { key: 'namecard_landing_content' },
+      { $set: { value: req.body } },
+      { upsert: true, new: true }
+    );
+    res.json({ message: '저장완료' });
+  } catch (err) {
+    console.error('[NAMECARD_LANDING_SAVE_ERROR]', err);
+    res.status(500).json({ message: '실패' });
   }
 });
 

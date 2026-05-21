@@ -21,12 +21,14 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
 // 등급 한국어 변환
 const GRADE_LABELS = {
-  general:   { label: '일반형 (Digital Only)',   desc: '기본 명함 기능을 사용 중입니다.',            color: 'general' },
+  general:   { label: '기본형 (Basic-A)',   desc: '기본 명함 기능을 사용 중입니다.',            color: 'general' },
   premium_nfc:   { label: '프리미엄 (Premium)', desc: '로고·디자인 테마 등 고급 기능을 사용 중입니다.', color: 'premium' },
   premium:   { label: '프리미엄 (Premium)', desc: '로고·디자인 테마 등 고급 기능을 사용 중입니다.', color: 'premium' },
-  corporate: { label: '기업 전용 (Corporate)', desc: '모든 프리미엄 기능을 제한 없이 사용 중입니다.', color: 'corporate' },
-  prod_1778899977850: { label: '이벤트형 (6개월 무료)', desc: '이벤트형 6개월 무료 요금제를 적용 중입니다.', color: 'event' },
-  prod_1778900193128: { label: '응용형 (MD추천)', desc: '응용형의 다양한 맞춤 편집 혜택을 이용 중입니다.', color: 'md' }
+  corporate: { label: '기업용 (커스텀 디자인)', desc: '모든 프리미엄 기능을 제한 없이 사용 중입니다.', color: 'corporate' },
+  prod_1778899977850: { label: '체험용(2개월무료)', desc: '체험용 2개월 무료 요금제를 적용 중입니다.', color: 'event' },
+  prod_1778900193128: { label: '표준형(Standard-A)', desc: '표준형 혜택을 이용 중입니다.', color: 'md' },
+  prod_1779351721158: { label: '기본형(Basic-B)', desc: '기본형 혜택을 이용 중입니다.', color: 'general' },
+  prod_1779363055944: { label: '표준형(Standard-B)', desc: '표준형 혜택을 이용 중입니다.', color: 'md' }
 };
 
 const formatDate = (dateStr) => {
@@ -72,10 +74,10 @@ const Settings = () => {
   const [requestedGrade, setRequestedGrade] = useState('premium_nfc');
   const [requestedDuration, setRequestedDuration] = useState(12); // 6 or 12
 
-  // 요금제 락 처리 (이벤트형일 경우 6개월 고정)
+  // 요금제 락 처리 (체험용일 경우 2개월 고정)
   useEffect(() => {
-    if (requestedGrade === 'prod_1778899977850') {
-      setRequestedDuration(6);
+    if (requestedGrade === 'prod_1778899977850' || requestedGrade === 'event') {
+      setRequestedDuration(2);
     }
   }, [requestedGrade]);
 
@@ -146,17 +148,23 @@ const Settings = () => {
 
   // 입금 금액 구하는 함수 (Live DB 기준 맵핑)
   const getAmount = (grade, duration) => {
-    if (grade === 'prod_1778899977850') return 0; // 이벤트형 등급은 무조건 0원
+    if (grade === 'prod_1778899977850' || grade === 'event') return 0; // 체험용 등급은 무조건 0원
     
     const prod = products.find(p => p.id === grade);
     if (!prod) return 0;
     
-    const basePrice = prod.price !== undefined ? prod.price : 0;
-    // 6개월 이용권일 경우, 12개월 금액 대비 55% 수준으로 자동 비례 계산
-    if (duration === 6) {
-      return Math.round(basePrice * 0.55);
+    if (prod.price && typeof prod.price === 'object') {
+      if (duration === 12) return prod.price.annual || 0;
+      if (duration === 3) return prod.price.threeMonths || 0;
+      if (duration === 2) return prod.price.twoMonths || 0;
+    } else if (typeof prod.price === 'number') {
+      // 마이그레이션 전 레거시 데이터 대비 (안전장치)
+      if (duration === 12) return prod.price;
+      if (duration === 3) return Math.round(prod.price * 0.3);
+      if (duration === 2) return Math.round(prod.price * 0.2);
     }
-    return basePrice;
+    
+    return 0;
   };
 
   // 무통장 입금 신청 등록 (명함 ID 기준으로 신청)
@@ -414,7 +422,7 @@ const Settings = () => {
                             const cardGrade = c.grade || 'general';
                             const cardName = c.cardData?.name || c.cardData?.nameEng || '이름 없음';
                             const cardCompany = c.cardData?.company ? `(${c.cardData.company})` : '';
-                            const gradeText = cardGrade === 'corporate' ? '기업용' : cardGrade === 'premium_nfc' ? '프리미엄' : cardGrade === 'prod_1778899977850' ? '이벤트형' : cardGrade === 'prod_1778900193128' ? '응용형' : '일반형';
+                            const gradeText = cardGrade === 'corporate' ? '기업용' : cardGrade === 'premium_nfc' ? '프리미엄' : cardGrade === 'prod_1778899977850' ? '체험용' : cardGrade === 'prod_1778900193128' ? '표준형(Standard-A)' : cardGrade === 'prod_1779363055944' ? '표준형(Standard-B)' : cardGrade === 'prod_1779351721158' ? '기본형(Basic-B)' : '기본형(Basic-A)';
                             return (
                               <option key={c._id} value={c._id}>
                                 {cardName} {cardCompany} - 현재 등급: {gradeText}
@@ -438,7 +446,7 @@ const Settings = () => {
 
                       const dbProd = products.find(p => p.id === selectedCard.grade);
                       const currentGradeInfo = GRADE_LABELS[selectedCard.grade] || {
-                        label: dbProd ? dbProd.name : '일반형 (Digital Only)',
+                        label: dbProd ? dbProd.name : '기본형 (Basic-A)',
                         desc: dbProd ? dbProd.description : '기본 명함 기능을 사용 중입니다.',
                         color: 'general'
                       };
@@ -528,8 +536,10 @@ const Settings = () => {
                                     <strong>{
                                       selectedCard.requestedGrade === 'corporate' ? '기업 전용' :
                                       selectedCard.requestedGrade === 'premium_nfc' ? '프리미엄' :
-                                      selectedCard.requestedGrade === 'prod_1778899977850' ? '이벤트형(6개월무료)' :
-                                      selectedCard.requestedGrade === 'prod_1778900193128' ? '응용형(MD추천)' : '일반형'
+                                      selectedCard.requestedGrade === 'prod_1778899977850' ? '체험용(2개월무료)' :
+                                      selectedCard.requestedGrade === 'prod_1778900193128' ? '표준형(Standard-A)' : 
+                                      selectedCard.requestedGrade === 'prod_1779351721158' ? '기본형(Basic-B)' :
+                                      selectedCard.requestedGrade === 'prod_1779363055944' ? '표준형(Standard-B)' : '기본형(Basic-A)'
                                     }</strong>
                                   </div>
                                   <div className="request-row">
@@ -586,14 +596,15 @@ const Settings = () => {
                                     <select 
                                       value={requestedDuration} 
                                       onChange={e => setRequestedDuration(Number(e.target.value))}
-                                      disabled={requestedGrade === 'prod_1778899977850'}
+                                      disabled={requestedGrade === 'prod_1778899977850' || requestedGrade === 'event'}
                                     >
-                                      {requestedGrade === 'prod_1778899977850' ? (
-                                        <option value={6}>6개월 이용권 (무료 이벤트 고정)</option>
+                                      {requestedGrade === 'prod_1778899977850' || requestedGrade === 'event' ? (
+                                        <option value={2}>2개월 이용권 (무료 체험 고정)</option>
                                       ) : (
                                         <>
-                                          <option value={12}>1년 (12개월) 이용권</option>
-                                          <option value={6}>6개월 이용권</option>
+                                          <option value={12}>12개월(연간) 이용권</option>
+                                          <option value={3}>3개월 이용권</option>
+                                          <option value={2}>2개월 이용권</option>
                                         </>
                                       )}
                                     </select>

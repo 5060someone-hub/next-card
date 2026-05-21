@@ -27,7 +27,8 @@ const Sidebar = () => {
     { name: '회원 및 발행관리', path: '/admin', icon: '👥' },
     { name: '상품 관리', path: '/admin/products', icon: '🛍️' },
     { name: '사이트 광고 관리', path: '/admin/ads', icon: '📢' },
-    { name: '랜딩 페이지 편집', path: '/admin/landing', icon: '🖊️' },
+    { name: '메인 페이지 편집', path: '/admin/landing', icon: '🖊️' },
+    { name: '명함 페이지 편집', path: '/admin/namecard', icon: '💳' },
     { name: '자주묻는질문 (FAQ)', path: '/admin/landing?tab=faq', icon: '❓' },
     { name: '제휴 및 도입 문의', path: '/admin/inquiries', icon: '✉️' },
   ];

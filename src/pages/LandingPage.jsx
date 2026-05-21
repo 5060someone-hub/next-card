@@ -304,6 +304,7 @@ const LandingPage = () => {
             {c.nav?.logo || 'NextCard'}<span>{c.nav?.logoSub || '.me'}</span>
           </div>
           <div className="nav-links">
+            <a href="/namecard" className="hide-mobile" style={{ fontWeight: 800, color: '#db2777' }}>하이엔드 명함</a>
             <a href="#pricing" className="hide-mobile">요금제</a>
             <a href="/login"  className="btn-login">로그인</a>
             <a href="/signup" className="btn-signup hide-mobile">시작하기</a>
@@ -323,8 +324,8 @@ const LandingPage = () => {
                 <a {...getLinkProps(c.hero.primaryBtnUrl, '/signup')} className="btn-primary">
                   {c.hero.primaryBtn} <ArrowRight size={18} />
                 </a>
-                <a {...getLinkProps(c.hero.secondaryBtnUrl, '#contact')} className="btn-secondary">
-                  {c.hero.secondaryBtn || '문의하기'}
+                <a href="/namecard" className="btn-secondary" style={{ background: '#0f172a', color: 'white', borderColor: '#0f172a' }}>
+                  하이엔드 명함 보기
                 </a>
               </div>
             </div>
