@@ -191,8 +191,9 @@ const AdminNamecardEditor = () => {
             </div>
           </div>
 
-          {/* 스펙 (Specs) */}
-          <div className="editor-section">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
+            {/* 스펙 (Specs) */}
+            <div className="editor-section" style={{ margin: 0 }}>
             <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <List size={20} /> 상세 스펙 항목
@@ -232,8 +233,8 @@ const AdminNamecardEditor = () => {
             ))}
           </div>
 
-          {/* 이미지 (Images) */}
-          <div className="editor-section">
+            {/* 이미지 (Images) */}
+            <div className="editor-section" style={{ margin: 0 }}>
             <div className="section-title">
               <Image size={20} /> 이미지 설정
             </div>
@@ -324,7 +325,7 @@ const AdminNamecardEditor = () => {
               </button>
             )}
           </div>
-
+          </div>
         </div>
       </div>
     </div>
