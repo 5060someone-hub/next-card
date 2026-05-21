@@ -161,7 +161,7 @@ export default function AdminProductManagement() {
           </button>
         </header>
 
-        <div className="admin-grid-two-cols" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginTop: '1rem' }}>
+        <div className="admin-grid-two-cols" style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: '1rem', marginTop: '1rem' }}>
           {/* Add Form */}
           <section className="form-card" style={{ background: 'white', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0', height: 'fit-content' }}>
             <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1rem' }}>
