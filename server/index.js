@@ -1190,11 +1190,12 @@ app.get('/api/admin/products', async (req, res) => {
 });
 
 app.post('/api/admin/products', async (req, res) => {
-  const { name, description, features } = req.body;
+  const { name, description, price, features } = req.body;
   const product = await Product.create({ 
     id: 'prod_' + Date.now(), 
     name, 
     description,
+    price: Number(price) || 0,
     features: features || { 
       allowLogo: false, 
       allowProfile: true,
@@ -1209,8 +1210,8 @@ app.post('/api/admin/products', async (req, res) => {
 });
 
 app.put('/api/admin/products/:id', async (req, res) => {
-  const { name, description, features } = req.body;
-  await Product.findOneAndUpdate({ id: req.params.id }, { name, description, features });
+  const { name, description, price, features } = req.body;
+  await Product.findOneAndUpdate({ id: req.params.id }, { name, description, price: Number(price) || 0, features });
   res.json({ message: '수정 완료' });
 });
 
