@@ -1,277 +1,400 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { 
-  Phone, 
-  Smartphone, 
-  Mail, 
-  MessageSquare, 
-  Globe, 
-  MapPin, 
-  Camera,
-  UserCircle,
-  Code,
+import {
+  Phone,
+  Mail,
+  Globe,
+  MessageSquare,
+  MapPin,
+  Building2,
   Briefcase,
-  Users
+  Smartphone,
+  Share2,
+  UserCircle,
+  Download
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import './PublicCard.css';
 
 const PublicCard = () => {
   const { id } = useParams();
   const [cardData, setCardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showPaperCard, setShowPaperCard] = useState(false);
   const [adConfig, setAdConfig] = useState(null);
   const [productFeatures, setProductFeatures] = useState(null);
-  const [error, setError] = useState(false);
-  const [showPaperCard, setShowPaperCard] = useState(false);
 
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchData = async () => {
       try {
-        // 1. 명함 데이터
-        const cardRes = await fetch(`${import.meta.env.VITE_API_URL}/api/card/${id}`);
-        if (cardRes.ok) {
-          const data = await cardRes.json();
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/card/view/${id}`);
+        if (response.ok) {
+          const data = await response.json();
           setCardData(data);
           
-          // 2. 상품 데이터 (광고 표시 여부 확인용)
-          const prodRes = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
+          // --- 통계 트래킹 (조회수 증가) ---
+          const urlParams = new URLSearchParams(window.location.search);
+          const source = urlParams.get('ref') || 'direct';
+          fetch(`${import.meta.env.VITE_API_URL}/api/analytics/track`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cardId: id,
+              userId: data.userId, // 백엔드에서 userId를 포함하여 반환한다고 가정
+              actionType: 'view',
+              source
+            })
+          }).catch(e => console.error('Tracking Error:', e));
+          
+          // 상품 정보 및 광고 설정 가져오기
+          const [prodRes, adRes] = await Promise.all([
+            fetch(`${import.meta.env.VITE_API_URL}/api/products`),
+            fetch(`${import.meta.env.VITE_API_URL}/api/settings/ad`)
+          ]);
+          
           if (prodRes.ok) {
             const products = await prodRes.json();
-            const myProduct = products.find(p => p.id === data.productType);
-            setProductFeatures(myProduct ? myProduct.features : null);
+            const product = products.find(p => p.id === data.productType);
+            setProductFeatures(product?.features);
           }
-        } else if (id === 'sample') {
-          // 샘플 데이터 fallback
-          setCardData({
-            name: '홍길동',
-            nameEng: 'Gildong Hong',
-            jobTitle: '대표이사 / CEO',
-            company: 'NextCard.kr 주식회사',
-            department: '경영전략팀',
-            address: '서울특별시 강남구 테헤란로43길 14 청수빌딩 13층',
-            bio: '디지털 명함의 새로운 기준, NextCard.kr\n모바일과 웹을 아우르는 최상의 하이브리드 네트워킹 경험을 선사합니다.',
-            phoneWork: '02-123-4567',
-            phonePersonal: '010-1234-5678',
-            email: 'gildong@nextcard.kr',
-            website: 'https://www.nextcard.kr',
-            logoUrl: '/logo.png',
-            profileUrl: '/profile.jpg',
-            productType: 'general',
-            sns: { kakaotalk: 'nextcard', instagram: 'nextcard' }
-          });
-          setProductFeatures({ showAds: true });
-        } else {
-          setError(true);
-        }
-
-        // 3. 글로벌 광고 설정
-        const adRes = await fetch(`${import.meta.env.VITE_API_URL}/api/settings/ad`);
-        if (adRes.ok) {
-          const adData = await adRes.json();
-          setAdConfig(adData);
+          if (adRes.ok) {
+            setAdConfig(await adRes.json());
+          }
         }
       } catch (err) {
-        console.error('데이터 로드 실패:', err);
-        setError(true);
+        console.error('Fetch error:', err);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchInitialData();
+    fetchData();
   }, [id]);
 
-  if (error) return <div className="error-view">명함을 찾을 수 없습니다.</div>;
-  if (!cardData) return <div className="loading">불러오는 중...</div>;
+  if (loading) return <div className="loading-screen">로딩 중...</div>;
+  if (!cardData) return <div className="error-screen">명함을 찾을 수 없습니다.</div>;
+
+  const trackEvent = (actionType, linkUrl = '') => {
+    if (!cardData) return;
+    const urlParams = new URLSearchParams(window.location.search);
+    fetch(`${import.meta.env.VITE_API_URL}/api/analytics/track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cardId: id,
+        userId: cardData.userId,
+        actionType,
+        linkUrl,
+        source: urlParams.get('ref') || 'direct'
+      })
+    }).catch(e => console.error(e));
+  };
+
+  const handleSaveContact = () => {
+    trackEvent('save_contact');
+    
+    // VCF 파일 생성 로직
+    const vcfData = `BEGIN:VCARD
+VERSION:3.0
+N:${cardData.name}
+FN:${cardData.name}
+ORG:${cardData.company}
+TITLE:${cardData.jobTitle}
+TEL;TYPE=WORK,VOICE:${cardData.phoneWork || ''}
+TEL;TYPE=CELL,VOICE:${cardData.phonePersonal || ''}
+EMAIL:${cardData.email || ''}
+URL:${cardData.website || ''}
+NOTE:${cardData.intro || ''}
+END:VCARD`;
+
+    const blob = new Blob([vcfData], { type: 'text/vcard' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${cardData.name}_명함.vcf`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const themeColor = cardData.themeColor || '#db2777';
+  const iconColor = cardData.btnIconColor || '#ffffff';
+
+  // Brightness check for background color to adjust contrast elements
+  const isLightBg = (color) => {
+    if (!color || color === 'transparent') return false;
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128;
+  };
+
+  const glassBg = isLightBg(cardData.bgColor) ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+  const glassBorder = isLightBg(cardData.bgColor) ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+
+  // Comprehensive Action Mapping (Unlimited SNS)
+  const getSnsIcon = (platform, color) => {
+    const hex = (color || '#ffffff').replace('#', '');
+    switch(platform) {
+      case 'instagram': return <img src={`https://cdn.simpleicons.org/instagram/${hex}`} width="20" height="20" alt="insta" />;
+      case 'kakaotalk': return <img src={`https://cdn.simpleicons.org/kakaotalk/${hex}`} width="20" height="20" alt="kakao" />;
+      case 'facebook': return <img src={`https://cdn.simpleicons.org/facebook/${hex}`} width="20" height="20" alt="fb" />;
+      case 'tiktok': return <img src={`https://cdn.simpleicons.org/tiktok/${hex}`} width="20" height="20" alt="tiktok" />;
+      case 'x': return <img src={`https://cdn.simpleicons.org/x/${hex}`} width="20" height="20" alt="x" />;
+      case 'threads': return <img src={`https://cdn.simpleicons.org/threads/${hex}`} width="20" height="20" alt="threads" />;
+      case 'linkedin': return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color || '#ffffff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/>
+        </svg>
+      );
+      default: return <Share2 size={20} color={color || '#ffffff'} />;
+    }
+  };
+
+  const actions = [
+    { icon: <Phone size={22} color={iconColor} />, label: '회사전화', value: cardData.phoneWork, href: `tel:${cardData.phoneWork}` },
+    { icon: <Smartphone size={22} color={iconColor} />, label: '개인전화', value: cardData.phonePersonal, href: `tel:${cardData.phonePersonal}` },
+    { icon: <Mail size={22} color={iconColor} />, label: '메일보내기', value: cardData.email, href: `mailto:${cardData.email}` },
+    { icon: <MessageSquare size={22} color={iconColor} />, label: '문자보내기', value: cardData.phonePersonal, href: `sms:${cardData.phonePersonal}` },
+    { icon: <MapPin size={22} color={iconColor} />, label: '지도보기', value: cardData.address, href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cardData.address || '')}` },
+    { icon: <Globe size={22} color={iconColor} />, label: '웹사이트', value: cardData.website, href: cardData.website?.startsWith('http') ? cardData.website : `https://${cardData.website}` },
+    ...Object.entries(cardData.sns || {}).map(([platform, value]) => ({
+      icon: getSnsIcon(platform, iconColor),
+      label: platform.charAt(0).toUpperCase() + platform.slice(1),
+      value,
+      href: value?.startsWith('http') ? value : (platform === 'kakaotalk' ? `https://pf.kakao.com/${value}` : `https://${platform}.com/${value}`)
+    }))
+  ].filter(a => a.value);
+
+  const finalBtnBg = cardData.btnBgColor || glassBg;
+  const finalBlockBg = cardData.blockBgColor || glassBg;
 
   return (
-    <div className="public-card-wrapper">
-      <div className="public-card-container">
+    <div className="public-card-v3-root" style={{ 
+      background: '#000', 
+      minHeight: '100vh', 
+      display: 'flex', 
+      justifyContent: 'center',
+      paddingBottom: '40px'
+    }}>
+      <div className="card-container" style={{ 
+        width: '100%', 
+        maxWidth: '480px', 
+        background: cardData.bgColor || '#111827', 
+        color: cardData.textColor || '#fff',
+        padding: '3rem 1.5rem',
+        minHeight: '100vh',
+        position: 'relative'
+      }}>
+        {/* Top Logo Section */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem', width: '100%' }}>
+          {cardData.logoUrl ? (
+            <img 
+              src={cardData.logoUrl} 
+              alt="Logo" 
+              style={{ maxWidth: `${cardData.logoSize || 40}%`, height: 'auto', objectFit: 'contain' }} 
+              crossOrigin="anonymous" 
+            />
+          ) : null}
+        </div>
 
-
-        {cardData.logoUrl && (
-          <div className="card-logo">
-            <img src={cardData.logoUrl} alt="Company Logo" style={{ maxWidth: `${cardData.logoSize || 40}%` }} />
-          </div>
-        )}
-
-        <div className="header-divider"></div>
-
-        {/* Profile Image */}
+        {/* Profile Section */}
         {cardData.profileUrl && (
-          <div className="card-profile-image">
-            <img src={cardData.profileUrl} alt="Profile" style={{ width: `${cardData.profileSize || 120}px`, height: `${cardData.profileSize || 120}px` }} />
-          </div>
-        )}
-
-        {/* Name & Title */}
-        <header className="card-header-info">
-          <h1>{cardData.name} <span className="eng-name">{cardData.nameEng}</span></h1>
-          {cardData.jobTitle && <p className="job-title">{cardData.jobTitle}</p>}
-        </header>
-
-        {/* Info Box */}
-        {(cardData.company || cardData.department || cardData.address) && (
-          <section className="info-box">
-            {cardData.company && (
-              <div className="info-item">
-                <div className="info-icon pink"><Briefcase size={20} /></div>
-                <div className="info-text">
-                  <label>Company</label>
-                  <p>{cardData.company}</p>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem', width: '100%' }}>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <div style={{ 
+                width: `${cardData.profileSize || 130}px`, 
+                height: `${cardData.profileSize || 130}px`, 
+                borderRadius: '50%', 
+                padding: '4px',
+                background: `linear-gradient(45deg, ${themeColor}, #0ea5e9)`,
+                display: 'inline-block'
+              }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#374151' }}>
+                  <img src={cardData.profileUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" alt="Profile" />
                 </div>
-              </div>
-            )}
-            {cardData.department && (
-              <div className="info-item">
-                <div className="info-icon pink"><Users size={20} /></div>
-                <div className="info-text">
-                  <label>Department</label>
-                  <p>{cardData.department}</p>
-                </div>
-              </div>
-            )}
-            {cardData.address && (
-              <div className="info-item">
-                <div className="info-icon pink"><MapPin size={20} /></div>
-                <div className="info-text">
-                  <label>Address</label>
-                  <p>{cardData.address}</p>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* About Section */}
-        {cardData.bio && (
-          <section className="about-box">
-            <label>ABOUT</label>
-            <p>{cardData.bio}</p>
-          </section>
-        )}
-
-        {/* Action Grid */}
-        <section className="action-grid">
-          {cardData.phoneWork && (
-            <a href={`tel:${cardData.phoneWork}`} className="action-item">
-              <Phone size={24} />
-              <span>회사전화</span>
-            </a>
-          )}
-          {cardData.phonePersonal && (
-            <a href={`tel:${cardData.phonePersonal}`} className="action-item">
-              <Smartphone size={24} />
-              <span>개인전화</span>
-            </a>
-          )}
-          {cardData.email && (
-            <a href={`mailto:${cardData.email}`} className="action-item">
-              <Mail size={24} />
-              <span>이메일</span>
-            </a>
-          )}
-          {cardData.phonePersonal && (
-            <a href={`sms:${cardData.phonePersonal}`} className="action-item">
-              <MessageSquare size={24} />
-              <span>문자</span>
-            </a>
-          )}
-          {cardData.website && (
-            <a href={cardData.website.startsWith('http') ? cardData.website : `https://${cardData.website}`} target="_blank" rel="noopener noreferrer" className="action-item">
-              <Globe size={24} />
-              <span>웹사이트</span>
-            </a>
-          )}
-          <a href={`https://map.kakao.com/?q=${encodeURIComponent(cardData.address)}`} target="_blank" rel="noopener noreferrer" className="action-item">
-            <MapPin size={24} />
-            <span>회사위치</span>
-          </a>
-
-          {/* SNS Links */}
-          {cardData.sns?.kakaotalk && (
-            <a href={cardData.sns.kakaotalk.startsWith('http') ? cardData.sns.kakaotalk : `https://open.kakao.com/o/${cardData.sns.kakaotalk}`} target="_blank" rel="noopener noreferrer" className="action-item">
-              <img src="https://cdn.simpleicons.org/kakaotalk/374151" width="24" height="24" alt="KakaoTalk" />
-              <span>카카오톡</span>
-            </a>
-          )}
-          {cardData.sns?.instagram && (
-            <a href={cardData.sns.instagram.startsWith('http') ? cardData.sns.instagram : `https://instagram.com/${cardData.sns.instagram.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer" className="action-item">
-              <img src="https://cdn.simpleicons.org/instagram/111827" width="24" height="24" alt="Instagram" />
-              <span>인스타그램</span>
-            </a>
-          )}
-          {cardData.sns?.facebook && (
-            <a href={cardData.sns.facebook.startsWith('http') ? cardData.sns.facebook : `https://facebook.com/${cardData.sns.facebook}`} target="_blank" rel="noopener noreferrer" className="action-item">
-              <img src="https://cdn.simpleicons.org/facebook/111827" width="24" height="24" alt="Facebook" />
-              <span>페이스북</span>
-            </a>
-          )}
-          {cardData.sns?.tiktok && (
-            <a href={cardData.sns.tiktok.startsWith('http') ? cardData.sns.tiktok : `https://tiktok.com/@${cardData.sns.tiktok.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer" className="action-item">
-              <img src="https://cdn.simpleicons.org/tiktok/111827" width="24" height="24" alt="TikTok" />
-              <span>틱톡</span>
-            </a>
-          )}
-          {cardData.sns?.x && (
-            <a href={cardData.sns.x.startsWith('http') ? cardData.sns.x : `https://x.com/${cardData.sns.x.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer" className="action-item">
-              <img src="https://cdn.simpleicons.org/x/111827" width="24" height="24" alt="X" />
-              <span>X (트위터)</span>
-            </a>
-          )}
-          {cardData.sns?.threads && (
-            <a href={cardData.sns.threads.startsWith('http') ? cardData.sns.threads : `https://threads.net/@${cardData.sns.threads.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer" className="action-item">
-              <img src="https://cdn.simpleicons.org/threads/111827" width="24" height="24" alt="Threads" />
-              <span>쓰레드</span>
-            </a>
-          )}
-          {cardData.sns?.linkedin && (
-            <a href={cardData.sns.linkedin.startsWith('http') ? cardData.sns.linkedin : `https://linkedin.com/in/${cardData.sns.linkedin}`} target="_blank" rel="noopener noreferrer" className="action-item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#111827">
-                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-              </svg>
-              <span>링크드인</span>
-            </a>
-          )}
-        </section>
-
-        {/* Paper Business Card Modal */}
-        {showPaperCard && cardData.paperCardUrl && (
-          <div className="paper-card-modal" onClick={() => setShowPaperCard(false)}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
-              <button className="modal-close" onClick={() => setShowPaperCard(false)}>&times;</button>
-              <label>PAPER BUSINESS CARD</label>
-              <div className="paper-card-container">
-                <img src={cardData.paperCardUrl} alt="Paper Card" />
               </div>
             </div>
           </div>
         )}
 
-        {/* Footer Button */}
-        <footer className="card-footer-action">
-          <button className="btn-footer" onClick={() => setShowPaperCard(true)}>종이명함</button>
-        </footer>
+        <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.25rem', width: '100%' }}>
+            <div style={{ height: '3px', width: '60px', background: `linear-gradient(90deg, ${themeColor}, #0ea5e9)`, marginBottom: '0.75rem' }}></div>
+            <h1 style={{ margin: '0 0 0.35rem 0', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: `${cardData.nameFontSizeKor || 26}px` }}>{cardData.name}</span>
+              {cardData.nameEng && (
+                <span style={{ fontSize: `${cardData.nameFontSizeEng || 18}px`, fontWeight: 400, opacity: 0.8, marginLeft: '0.5rem' }}>{cardData.nameEng}</span>
+              )}
+            </h1>
+            <p style={{ margin: 0, opacity: 0.6, fontSize: `${cardData.jobTitleFontSize || 17}px`, textAlign: 'center' }}>
+              {cardData.jobTitle}
+            </p>
+          </div>
 
-        {/* Dynamic Ad Section */}
-        {productFeatures?.showAds && adConfig && (
-          <div className="site-ad-banner" style={{ marginTop: '2rem', padding: '0 1rem 1rem' }}>
+        {/* Business Info Block */}
+        <div style={{ 
+          background: finalBlockBg, 
+          borderRadius: '16px', 
+          padding: '1.15rem 0.85rem', 
+          marginBottom: '1rem', 
+          border: `1px solid ${glassBorder}`,
+          boxShadow: '0 8px 12px -3px rgba(0,0,0,0.08)'
+        }}>
+          <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '0.85rem' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Building2 size={18} color={themeColor} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.7rem', color: themeColor, fontWeight: 700, marginBottom: '1px', opacity: 0.9 }}>Company</div>
+              <div style={{ fontSize: `${cardData.companyFontSize || 14}px`, fontWeight: 700 }}>{cardData.company}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '0.85rem' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Briefcase size={18} color={themeColor} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.7rem', color: themeColor, fontWeight: 700, marginBottom: '1px', opacity: 0.9 }}>Department</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 500 }}>{cardData.department}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '0.6rem' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <MapPin size={18} color={themeColor} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.7rem', color: themeColor, fontWeight: 700, marginBottom: '1px', opacity: 0.9 }}>Address</div>
+              <div style={{ fontSize: '0.8rem', opacity: 0.8, lineHeight: '1.4' }}>{cardData.address}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* About Section */}
+        <div style={{ 
+          background: finalBlockBg, 
+          borderRadius: '16px', 
+          padding: '1.15rem 0.85rem', 
+          marginBottom: '1rem', 
+          border: `1px solid ${glassBorder}`
+        }}>
+          <div style={{ fontSize: '0.7rem', color: themeColor, fontWeight: 900, marginBottom: '0.5rem', letterSpacing: '3px' }}>ABOUT</div>
+          <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.6', opacity: 0.9, whiteSpace: 'pre-wrap', textAlign: cardData.introAlign || 'center' }}>
+            {cardData.intro}
+          </p>
+        </div>
+
+        {/* Action Grid - 3 Columns */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '1.25rem' }}>
+          {actions.map((action, idx) => (
             <a 
-              href={adConfig.link} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '0.875rem',
-                borderRadius: '12px',
-                backgroundColor: adConfig.bgColor,
-                color: adConfig.textColor,
+              key={idx} 
+              href={action.href} 
+              style={{ textDecoration: 'none' }}
+              onClick={() => trackEvent('click_link', action.href)}
+            >
+              <div className="action-button-v3" style={{ 
+                background: finalBtnBg, 
+                borderRadius: '12px', 
+                padding: '0.65rem 0.35rem', 
                 textAlign: 'center',
-                textDecoration: 'none',
-                fontWeight: 600,
-                fontSize: '0.8rem',
-                border: '1px solid rgba(0,0,0,0.05)',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                border: `1px solid ${glassBorder}`,
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}>
+                <div style={{ marginBottom: '0.35rem', display: 'flex', justifyContent: 'center' }}>{action.icon}</div>
+                <div style={{ fontSize: '0.65rem', opacity: 0.7, fontWeight: 600, color: cardData.textColor || '#fff' }}>{action.label}</div>
+              </div>
+            </a>
+          ))}
+        </div>
+
+        {/* Save Contact Button */}
+        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+          <button 
+            onClick={handleSaveContact}
+            style={{ 
+              width: '100%', 
+              padding: '1.15rem', 
+              background: themeColor, 
+              color: '#fff', 
+              borderRadius: '15px', 
+              border: 'none',
+              fontSize: '1.05rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              boxShadow: `0 4px 12px ${themeColor}66`
+            }}
+          >
+            <Download size={20} /> 연락처 폰에 저장하기
+          </button>
+        </div>
+
+        {/* Paper Card Trigger */}
+        {cardData.paperCardUrl && (
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <button 
+              onClick={() => setShowPaperCard(true)}
+              style={{ 
+                width: '100%', 
+                padding: '1.15rem', 
+                background: '#000', 
+                color: '#fff', 
+                borderRadius: '15px', 
+                border: '1px solid rgba(255,255,255,0.2)',
+                fontSize: '1rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
               }}
             >
-              {adConfig.text}
+              종이명함 보기
+            </button>
+          </div>
+        )}
+
+        {/* Footer QR */}
+        <div style={{ textAlign: 'center', padding: '2rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ 
+            background: '#fff', 
+            padding: '12px', 
+            borderRadius: '16px', 
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            display: 'inline-block'
+          }}>
+            <QRCodeSVG value={window.location.href} size={100} bgColor="#ffffff" fgColor="#000000" />
+          </div>
+          <p style={{ fontSize: '0.65rem', marginTop: '1rem', letterSpacing: '1px', opacity: 0.4 }}>SCAN TO CONNECT</p>
+        </div>
+
+        {/* Paper Card Modal */}
+        {showPaperCard && (
+          <div 
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+            onClick={() => setShowPaperCard(false)}
+          >
+            <div style={{ width: '100%', maxWidth: '600px', borderRadius: '12px', overflow: 'hidden' }}>
+              <img src={cardData.paperCardUrl} style={{ width: '100%', display: 'block' }} alt="Paper Card" />
+            </div>
+          </div>
+        )}
+
+        {/* Ad Section */}
+        {((cardData.showAds !== false && productFeatures?.showAds) || (cardData.showAds === true)) && adConfig && (
+          <div style={{ marginTop: '2rem' }}>
+            <a href={adConfig.link} target="_blank" rel="noopener noreferrer" style={{
+              display: 'block', width: '100%', padding: '1rem', borderRadius: '15px',
+              background: adConfig.bgColor, color: adConfig.textColor,
+              textAlign: 'center', textDecoration: 'none', fontWeight: 700, fontSize: '0.85rem',
+              overflow: 'hidden'
+            }}>
+              <div className="ad-marquee-container">
+                <span className="ad-marquee-text">
+                  {adConfig.text} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {adConfig.text}
+                </span>
+              </div>
             </a>
           </div>
         )}

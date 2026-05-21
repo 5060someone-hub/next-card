@@ -14,12 +14,17 @@ export default function AdminAdManagement() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const navigate = useNavigate();
   const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
 
   useEffect(() => {
-    if (!auth.isLoggedIn || (auth.role !== 'admin' && auth.email !== 'vikitour.boss@gmail.com')) {
+    const isMaster = auth.role === 'admin' || 
+                     auth.email === 'vikitour.boss@gmail.com' || 
+                     auth.email === 'adqkorea@gmail.com' || 
+                     auth.email === 'cyy3172@naver.com';
+
+    if (!auth.isLoggedIn || !isMaster) {
       navigate('/dashboard');
       return;
     }
@@ -45,7 +50,7 @@ export default function AdminAdManagement() {
     e.preventDefault();
     setSaving(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/settings/ad`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/settings/ad`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(adConfig)
@@ -87,9 +92,9 @@ export default function AdminAdManagement() {
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>
                   <Type size={14} /> 광고 문구
                 </label>
-                <textarea 
-                  value={adConfig.text} 
-                  onChange={(e) => setAdConfig({...adConfig, text: e.target.value})} 
+                <textarea
+                  value={adConfig.text}
+                  onChange={(e) => setAdConfig({ ...adConfig, text: e.target.value })}
                   placeholder="예: 디지털 명함의 새로운 기준, NextCard.kr에서 무료로 시작하세요!"
                   style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', minHeight: '80px' }}
                   required
@@ -100,10 +105,10 @@ export default function AdminAdManagement() {
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>
                   <LinkIcon size={14} /> 연결 링크 (URL)
                 </label>
-                <input 
+                <input
                   type="url"
-                  value={adConfig.link} 
-                  onChange={(e) => setAdConfig({...adConfig, link: e.target.value})} 
+                  value={adConfig.link}
+                  onChange={(e) => setAdConfig({ ...adConfig, link: e.target.value })}
                   placeholder="https://nextcard.kr"
                   style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}
                   required
@@ -115,10 +120,10 @@ export default function AdminAdManagement() {
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>
                     <Palette size={14} /> 배경 색상
                   </label>
-                  <input 
+                  <input
                     type="color"
-                    value={adConfig.bgColor} 
-                    onChange={(e) => setAdConfig({...adConfig, bgColor: e.target.value})} 
+                    value={adConfig.bgColor}
+                    onChange={(e) => setAdConfig({ ...adConfig, bgColor: e.target.value })}
                     style={{ width: '100%', height: '40px', padding: '2px', borderRadius: '8px', border: '1px solid #e2e8f0', cursor: 'pointer' }}
                   />
                 </div>
@@ -126,10 +131,10 @@ export default function AdminAdManagement() {
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>
                     <Palette size={14} /> 텍스트 색상
                   </label>
-                  <input 
+                  <input
                     type="color"
-                    value={adConfig.textColor} 
-                    onChange={(e) => setAdConfig({...adConfig, textColor: e.target.value})} 
+                    value={adConfig.textColor}
+                    onChange={(e) => setAdConfig({ ...adConfig, textColor: e.target.value })}
                     style={{ width: '100%', height: '40px', padding: '2px', borderRadius: '8px', border: '1px solid #e2e8f0', cursor: 'pointer' }}
                   />
                 </div>
@@ -144,12 +149,12 @@ export default function AdminAdManagement() {
           {/* Preview Section */}
           <section className="preview-section">
             <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>미리보기</h3>
-            <div style={{ 
-              background: 'white', 
-              padding: '2rem', 
-              borderRadius: '24px', 
-              border: '1px solid #e2e8f0', 
-              display: 'flex', 
+            <div style={{
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '24px',
+              border: '1px solid #e2e8f0',
+              display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
@@ -157,10 +162,10 @@ export default function AdminAdManagement() {
               boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
             }}>
               <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1.5rem' }}>명함 하단에 다음과 같이 표시됩니다.</p>
-              
-              <a 
-                href={adConfig.link} 
-                target="_blank" 
+
+              <a
+                href={adConfig.link}
+                target="_blank"
                 rel="noopener noreferrer"
                 style={{
                   display: 'block',
@@ -184,3 +189,5 @@ export default function AdminAdManagement() {
         </div>
       </main>
     </div>
+  );
+}

@@ -9,3 +9,6 @@ dist-ssr
 .DS_Store
 server/node_modules
 server/db.json
+
+.vercel
+.env*.local

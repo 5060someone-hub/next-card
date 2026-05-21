@@ -89,67 +89,198 @@
   }
 }
 
-@media (max-width: 768px) {
+/* Responsive Sidebar Drawer & Mobile Header Optimization */
+.mobile-header {
+  display: none;
+}
+
+@media (max-width: 1024px) {
   .sidebar {
-    width: 100%;
-    height: auto;
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
+    width: 220px;
+    padding: 1.5rem 1rem;
+  }
+  .sidebar-logo .logo-text {
+    font-size: 1.2rem;
+  }
+  .sidebar-link {
     padding: 0.75rem 1rem;
-    flex-direction: row;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 1. Mobile Header (Fixed Top Bar) */
+  .mobile-header {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 1.25rem;
     align-items: center;
     justify-content: space-between;
+    z-index: 1000;
+    box-shadow: var(--shadow-sm);
   }
 
-  .sidebar-logo {
-    margin-bottom: 0;
+  .mobile-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+  }
+
+  .mobile-logo .logo-icon {
+    font-size: 1.4rem;
+  }
+
+  /* 2. Hamburger Button */
+  .hamburger-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 24px;
+    height: 18px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
     padding: 0;
+    z-index: 1002;
+  }
+
+  .hamburger-line {
+    width: 100%;
+    height: 2px;
+    background-color: var(--text-primary);
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Animated Hamburger to X */
+  .hamburger-btn.open .hamburger-line:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+
+  .hamburger-btn.open .hamburger-line:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger-btn.open .hamburger-line:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+
+  /* 3. Sliding Sidebar Drawer */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px; /* Hide completely off-screen by default */
+    width: 280px !important;
+    height: 100vh !important;
+    z-index: 1001;
+    box-shadow: var(--shadow-xl);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: var(--bg-primary);
+    border-right: 1px solid var(--border-color);
+    flex-direction: column !important; /* Force vertical flow in drawer */
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    padding: 2rem 1.5rem !important;
+  }
+
+  /* Slide in active state */
+  .sidebar.open {
+    transform: translateX(280px);
+  }
+
+  /* Sidebar Elements Reset in Drawer */
+  .sidebar-logo {
+    display: block !important;
+    margin-bottom: 2rem !important;
   }
 
   .sidebar-logo .logo-text {
-    display: none; /* 모바일에서는 공간 절약을 위해 로고 아이콘만 표시 */
+    display: inline !important;
+    font-size: 1.4rem !important;
   }
 
   .sidebar-nav {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    margin: 0 1rem;
+    display: block !important;
+    margin: 0 !important;
   }
 
   .sidebar-nav ul {
-    display: flex;
-    gap: 0.25rem;
-    margin: 0;
-    padding: 0;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
   }
 
   .sidebar-link {
-    padding: 0.5rem;
-    margin-bottom: 0;
-    border-radius: 8px;
+    display: flex !important;
+    padding: 0.875rem 1.25rem !important;
+    gap: 1rem !important;
+    font-size: 0.95rem !important;
+    border-radius: 12px !important;
   }
 
   .sidebar-link .sidebar-name {
-    display: none; /* 아이콘 기반 하단/상단 탭 형태로 간결화 */
+    display: inline !important; /* Show item labels in drawer! */
+  }
+
+  .sidebar-section-title {
+    display: block !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin: 1.5rem 0 0.5rem 0.5rem;
   }
 
   .sidebar-footer {
-    padding-top: 0;
-    border-top: none;
+    display: block !important;
+    padding-top: 1.5rem !important;
+    border-top: 1px solid var(--border-color) !important;
+    margin-top: auto;
   }
 
   .btn-logout {
-    padding: 0.5rem;
-    width: auto;
+    display: flex !important;
+    width: 100% !important;
+    padding: 0.875rem 1.25rem !important;
+    gap: 1rem !important;
+    color: var(--text-secondary);
   }
-  
-  .btn-logout::after {
-    content: '';
+
+  .btn-logout::before {
+    display: inline !important;
   }
-  
-  .btn-logout text, .btn-logout span {
-    display: none;
+
+  /* 4. Background Overlay */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  /* Adjust sibling container spacing */
+  .dashboard-content,
+  .admin-dashboard-content,
+  .settings-content,
+  .editor-content,
+  .card-editor-content,
+  main {
+    padding-top: 75px !important; /* Leave room for fixed mobile-header */
   }
 }
 

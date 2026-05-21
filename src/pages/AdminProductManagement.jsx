@@ -10,6 +10,7 @@ export default function AdminProductManagement() {
   const [error, setError] = useState(null);
   const [newProductName, setNewProductName] = useState('');
   const [newProductDesc, setNewProductDesc] = useState('');
+  const [newProductPrice, setNewProductPrice] = useState('');
   const [features, setFeatures] = useState({
     allowLogo: false,
     allowProfile: true,
@@ -26,7 +27,12 @@ export default function AdminProductManagement() {
   const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
 
   useEffect(() => {
-    if (!auth.isLoggedIn || (auth.role !== 'admin' && auth.email !== 'vikitour.boss@gmail.com')) {
+    const isMaster = auth.role === 'admin' || 
+                     auth.email === 'vikitour.boss@gmail.com' || 
+                     auth.email === 'adqkorea@gmail.com' || 
+                     auth.email === 'cyy3172@naver.com';
+
+    if (!auth.isLoggedIn || !isMaster) {
       navigate('/dashboard');
       return;
     }
@@ -63,12 +69,14 @@ export default function AdminProductManagement() {
         body: JSON.stringify({ 
           name: newProductName, 
           description: newProductDesc,
+          price: Number(newProductPrice) || 0,
           features: features 
         })
       });
       if (response.ok) {
         setNewProductName('');
         setNewProductDesc('');
+        setNewProductPrice('');
         setFeatures({ 
           allowLogo: false, 
           allowProfile: true,
@@ -94,6 +102,7 @@ export default function AdminProductManagement() {
   const startEdit = (prod) => {
     setNewProductName(prod.name);
     setNewProductDesc(prod.description || '');
+    setNewProductPrice(prod.price !== undefined ? prod.price : '');
     setFeatures(prod.features || { 
       allowLogo: false, 
       allowProfile: true,
@@ -110,6 +119,7 @@ export default function AdminProductManagement() {
   const cancelEdit = () => {
     setNewProductName('');
     setNewProductDesc('');
+    setNewProductPrice('');
     setFeatures({ 
       allowLogo: false, 
       allowProfile: true,
@@ -151,39 +161,51 @@ export default function AdminProductManagement() {
           </button>
         </header>
 
-        <div className="admin-grid-two-cols" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem', marginTop: '2rem' }}>
+        <div className="admin-grid-two-cols" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginTop: '1rem' }}>
           {/* Add Form */}
-          <section className="form-card" style={{ background: 'white', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', height: 'fit-content' }}>
-            <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Plus size={20} color="#2563eb" /> {editingId ? '상품 정보 수정' : '새 상품 추가'}
+          <section className="form-card" style={{ background: 'white', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0', height: 'fit-content' }}>
+            <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1rem' }}>
+              <Plus size={18} color="#2563eb" /> {editingId ? '상품 정보 수정' : '새 상품 추가'}
             </h3>
             <form onSubmit={handleAddProduct}>
-              <div className="input-group" style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>상품명</label>
+              <div className="input-group" style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '0.719rem', fontWeight: 600, marginBottom: '0.35rem' }}>상품명</label>
                 <input 
                   type="text" 
                   value={newProductName} 
                   onChange={(e) => setNewProductName(e.target.value)} 
                   placeholder="예: 프리미엄 NFC 명함"
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
                   required
                 />
               </div>
-              <div className="input-group" style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>설명</label>
+              <div className="input-group" style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '0.719rem', fontWeight: 600, marginBottom: '0.35rem' }}>설명</label>
                 <textarea 
                   value={newProductDesc} 
                   onChange={(e) => setNewProductDesc(e.target.value)} 
                   placeholder="상품에 대한 간단한 설명"
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', minHeight: '80px' }}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', minHeight: '60px', fontSize: '0.75rem' }}
+                />
+              </div>
+              <div className="input-group" style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '0.719rem', fontWeight: 600, marginBottom: '0.35rem' }}>금액 (연간 구독료 - 원)</label>
+                <input 
+                  type="number" 
+                  value={newProductPrice} 
+                  onChange={(e) => setNewProductPrice(e.target.value)} 
+                  placeholder="예: 55000"
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
+                  min="0"
+                  required
                 />
               </div>
 
-              <div className="features-section" style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
-                <h4 style={{ fontSize: '0.875rem', fontWeight: 700, marginBottom: '1rem', color: '#1e293b' }}>세부 기능 제한 설정</h4>
+              <div className="features-section" style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem' }}>
+                <h4 style={{ fontSize: '0.719rem', fontWeight: 700, marginBottom: '0.75rem', color: '#1e293b' }}>세부 기능 제한 설정</h4>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>
                     <input 
                       type="checkbox" 
                       checked={features.allowLogo} 
@@ -192,7 +214,7 @@ export default function AdminProductManagement() {
                     회사 로고 업로드 허용
                   </label>
 
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>
                     <input 
                       type="checkbox" 
                       checked={features.allowProfile} 
@@ -201,7 +223,7 @@ export default function AdminProductManagement() {
                     프로필 사진 업로드 허용
                   </label>
                   
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>
                     <input 
                       type="checkbox" 
                       checked={features.allowPaperCard} 
@@ -210,7 +232,7 @@ export default function AdminProductManagement() {
                     종이명함 스캔본 허용
                   </label>
                   
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>
                     <input 
                       type="checkbox" 
                       checked={features.allowCustomUrl} 
@@ -219,7 +241,7 @@ export default function AdminProductManagement() {
                     커스텀 URL 설정 허용
                   </label>
 
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>
                     <input 
                       type="checkbox" 
                       checked={features.showAds} 
@@ -228,7 +250,7 @@ export default function AdminProductManagement() {
                     하단 사이트 광고 표시
                   </label>
 
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>
                     <input 
                       type="checkbox" 
                       checked={features.allowSinglePage} 
@@ -290,6 +312,7 @@ export default function AdminProductManagement() {
               <thead>
                 <tr>
                   <th>상품 정보</th>
+                  <th>금액</th>
                   <th>설명</th>
                   <th>관리</th>
                 </tr>
@@ -310,7 +333,10 @@ export default function AdminProductManagement() {
                           <span style={{ fontWeight: 600 }}>{prod.name}</span>
                         </div>
                       </td>
-                      <td style={{ color: '#64748b', fontSize: '0.875rem' }}>{prod.description || '-'}</td>
+                      <td style={{ fontWeight: 700, color: '#059669', fontSize: '0.813rem' }}>
+                        {prod.price !== undefined ? prod.price.toLocaleString() : '0'}원
+                      </td>
+                      <td style={{ color: '#64748b', fontSize: '0.75rem' }}>{prod.description || '-'}</td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <button 

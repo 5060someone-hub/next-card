@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 import './Auth.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
     
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, {
@@ -30,19 +34,26 @@ const Login = () => {
           isLoggedIn: true 
         }));
         
-        if (data.user.role === 'admin') {
-          alert(`반갑습니다, 운영자 ${data.user.name}님!`);
-          navigate('/admin');
-        } else {
-          alert(`반갑습니다, ${data.user.name}님!`);
-          navigate('/dashboard');
-        }
+        const isMaster = data.user.role === 'admin' || 
+                         data.user.email === 'vikitour.boss@gmail.com' || 
+                         data.user.email === 'adqkorea@gmail.com' || 
+                         data.user.email === 'cyy3172@naver.com';
+
+        setSuccessMsg(`반갑습니다, ${data.user.name}님! 잠시 후 이동합니다.`);
+        
+        setTimeout(() => {
+          if (isMaster) {
+            navigate('/admin');
+          } else {
+            navigate('/dashboard');
+          }
+        }, 1000);
       } else {
-        alert(data.message || '이메일 또는 비밀번호가 일치하지 않습니다.');
+        setErrorMsg(data.message || '이메일 또는 비밀번호가 일치하지 않습니다.');
       }
     } catch (err) {
       console.error('로그인 오류:', err);
-      alert('서버 연결에 실패했습니다.');
+      setErrorMsg('서버와 연결할 수 없습니다. 인터넷 상태 또는 백엔드 서버 상태를 확인해 주세요.');
     }
   };
 
@@ -54,6 +65,20 @@ const Login = () => {
           <h1>반갑습니다!</h1>
           <p>디지털 명함의 새로운 기준, NextCard.kr</p>
         </div>
+
+        {errorMsg && (
+          <div className="auth-error-banner">
+            <AlertCircle size={20} style={{ flexShrink: 0 }} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="auth-success-banner">
+            <CheckCircle2 size={20} style={{ flexShrink: 0 }} />
+            <span>{successMsg}</span>
+          </div>
+        )}
 
         <form className="auth-form" onSubmit={handleLogin}>
           <div className="input-group">
