@@ -177,8 +177,31 @@ const NetworkLog = () => {
           <div className="header-title">
             <h1><Users size={28} color="#2563eb" /> 인맥 로그</h1>
             <p>내 명함을 통해 연결된 소중한 인연들을 체계적으로 관리하세요.</p>
+            <div className="network-help-box">
+              <div className="help-section">
+                <strong>수동 등록 (직접 추가)</strong>
+                <p>인맥로그 페이지 상단의 [ + 인맥 추가 ] 버튼을 눌러, 직접 만난 사람의 이름, 회사, 연락처, 메모, 태그 등을 입력하여 저장할 때 등록됩니다.</p>
+              </div>
+              <div className="help-section">
+                <strong>자동 등록 (상대방이 연락처를 남길 때)</strong>
+                <p>외부에 공유된 회원님의 <strong>디지털 명함(Public Card)</strong>을 본 상대방이 "연락처 저장" 또는 "내 연락처 남기기" 기능을 통해 본인의 이름과 연락처 정보를 남기면, 이곳 인맥로그에 자동으로 수집 및 등록됩니다.</p>
+              </div>
+            </div>
           </div>
-          <div className="header-actions">
+          <div className="header-actions-container">
+            <div className="action-buttons">
+              <button 
+                className={`btn-export ${!canUseAdvancedFeatures ? 'locked' : ''}`} 
+                onClick={handleExportExcel}
+                title={!canUseAdvancedFeatures ? "응용형 등급 이상부터 사용 가능합니다." : "엑셀 다운로드"}
+              >
+                <Download size={18} /> 
+                {canUseAdvancedFeatures ? '엑셀 저장' : '엑셀 저장 (PRO)'}
+              </button>
+              <button className="btn-add-log" onClick={() => handleOpenModal()}>
+                <Plus size={18} /> 인맥 추가
+              </button>
+            </div>
             <div className="search-box">
               <Search size={18} color="#64748b" />
               <input 
@@ -188,18 +211,6 @@ const NetworkLog = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
-            <button 
-              className={`btn-export ${!canUseAdvancedFeatures ? 'locked' : ''}`} 
-              onClick={handleExportExcel}
-              title={!canUseAdvancedFeatures ? "응용형 등급 이상부터 사용 가능합니다." : "엑셀 다운로드"}
-            >
-              <Download size={18} /> 
-              {canUseAdvancedFeatures ? '엑셀 저장' : '엑셀 저장 (PRO)'}
-            </button>
-            <button className="btn-add-log" onClick={() => handleOpenModal()}>
-              <Plus size={18} /> 인맥 추가
-            </button>
           </div>
         </header>
 
