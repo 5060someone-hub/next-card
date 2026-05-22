@@ -327,7 +327,11 @@ const Settings = () => {
 
           {/* Main Content Area */}
           <section className="settings-main-form">
-
+              
+              <button className={`mobile-accordion-tab ${activeTab === 'account' ? 'active' : ''}`} onClick={() => setActiveTab('account')}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><User size={18} /> 계정 정보</div>
+                <ChevronRight size={18} className="chevron" />
+              </button>
             {/* ─── 계정 정보 ─── */}
             {activeTab === 'account' && (
               <div className="settings-card animate-in">
@@ -346,12 +350,16 @@ const Settings = () => {
                   <input type="tel" value={settings.phone} onChange={e => setSettings({...settings, phone: e.target.value})} />
                 </div>
                 {saveMsg && <p className="save-msg">{saveMsg}</p>}
-                <button className="btn-save" onClick={handleSave} disabled={loading}>
-                  <Save size={18} /> {loading ? '저장 중...' : '변경사항 저장'}
-                </button>
+                  <button className="btn-save" onClick={handleSave} disabled={loading}>
+                    {loading ? <Loader2 size={16} className="spin" /> : <Save size={16} />} 저장하기
+                  </button>
               </div>
             )}
 
+              <button className={`mobile-accordion-tab ${activeTab === 'security' ? 'active' : ''}`} onClick={() => setActiveTab('security')}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><Lock size={18} /> 보안 및 비밀번호</div>
+                <ChevronRight size={18} className="chevron" />
+              </button>
             {/* ─── 보안 ─── */}
             {activeTab === 'security' && (
               <div className="settings-card animate-in">
@@ -373,6 +381,10 @@ const Settings = () => {
               </div>
             )}
 
+              <button className={`mobile-accordion-tab ${activeTab === 'privacy' ? 'active' : ''}`} onClick={() => setActiveTab('privacy')}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><Shield size={18} /> 프라이버시 설정</div>
+                <ChevronRight size={18} className="chevron" />
+              </button>
             {/* ─── 프라이버시 ─── */}
             {activeTab === 'privacy' && (
               <div className="settings-card animate-in">
@@ -406,6 +418,10 @@ const Settings = () => {
               </div>
             )}
 
+              <button className={`mobile-accordion-tab ${activeTab === 'subscription' ? 'active' : ''}`} onClick={() => setActiveTab('subscription')}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><CreditCard size={18} /> 구독 및 멤버십 플랜</div>
+                <ChevronRight size={18} className="chevron" />
+              </button>
             {/* ─── 구독 플랜 (DB 연동 및 다중명함 개별 관리) ─── */}
             {activeTab === 'subscription' && (
               <div className="settings-card animate-in">

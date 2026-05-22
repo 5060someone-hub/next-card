@@ -586,7 +586,11 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 
 
-/* ����� ������ (Responsive Mobile) */
+/* 모바일 반응형 및 아코디언 탭 스타일 */
+.mobile-accordion-tab {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .settings-content {
     padding: 1.5rem 1rem;
@@ -598,28 +602,59 @@ input:checked + .slider:before { transform: translateX(22px); }
   }
 
   .settings-tabs {
-    flex-direction: row;
-    overflow-x: auto;
-    padding-bottom: 0.5rem;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Firefox */
+    display: none !important; /* 가로 스크롤 탭 숨기기 */
   }
   
-  .settings-tabs::-webkit-scrollbar {
-    display: none; /* Chrome, Safari */
-  }
-  
-  .tab-btn {
-    flex: 0 0 auto;
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-    justify-content: center;
-  }
-  
-  .settings-card {
-    padding: 1.5rem;
+  .mobile-accordion-tab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 1.25rem 1.25rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
     border-radius: 16px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .mobile-accordion-tab:hover {
+    background: #f8fafc;
+  }
+  
+  .mobile-accordion-tab.active {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-bottom: 0;
+    border-bottom: 1px solid transparent;
+    color: #db2777;
+    background: #fff;
+  }
+  
+  .mobile-accordion-tab .chevron {
+    transition: transform 0.3s ease;
+    color: #94a3b8;
+  }
+  
+  .mobile-accordion-tab.active .chevron {
+    transform: rotate(90deg);
+    color: #db2777;
+  }
+  
+  /* 아코디언 펼쳐졌을 때 아래 내용 박스 반경 조정 */
+  .settings-card {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    margin-top: -1px;
+    margin-bottom: 1.5rem !important;
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 -1px 0 0 #e2e8f0;
+    padding: 1.5rem;
   }
   
   .plan-badge {
@@ -657,4 +692,3 @@ input:checked + .slider:before { transform: translateX(22px); }
     gap: 0.25rem;
   }
 }
-
