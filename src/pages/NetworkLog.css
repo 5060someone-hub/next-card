@@ -337,3 +337,41 @@
   margin-left: 0.5rem;
   vertical-align: middle;
 }
+
+/* 모바일 반응형 스타일 (세로 배치) */
+@media (max-width: 768px) {
+  .network-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .network-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .network-stats-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .logs-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .btn-export, .btn-add-log {
+    justify-content: center;
+  }
+}
