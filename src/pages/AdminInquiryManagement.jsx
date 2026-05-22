@@ -318,23 +318,23 @@ export default function AdminInquiryManagement() {
         {selectedInquiry && (
           <div className="modal-overlay" onClick={() => setSelectedInquiry(null)}>
             <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '90%' }}>
-              <div className="modal-header" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '16px' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>✉️ 문의사항 상세 보기</h2>
+              <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>✉️ 문의사항 상세 보기</h2>
                 <button className="btn-close" onClick={() => setSelectedInquiry(null)}><X size={20} /></button>
               </div>
 
               <div className="preview-body" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
-                <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>접수 일시:</span>
-                    <strong style={{ color: 'var(--text-main)' }}>{formatDate(selectedInquiry.createdAt)}</strong>
+                    <span style={{ color: '#64748b' }}>접수 일시:</span>
+                    <strong style={{ color: '#1e293b' }}>{formatDate(selectedInquiry.createdAt)}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>성함 / 회사명:</span>
-                    <strong style={{ color: 'var(--text-main)', fontSize: '1.05rem' }}>{selectedInquiry.name}</strong>
+                    <span style={{ color: '#64748b' }}>성함 / 회사명:</span>
+                    <strong style={{ color: '#1e293b', fontSize: '1.05rem' }}>{selectedInquiry.name}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>문의 유형:</span>
+                    <span style={{ color: '#64748b' }}>문의 유형:</span>
                     <span className={getTypeStyle(selectedInquiry.type)} style={{ margin: 0 }}>
                       {getTypeText(selectedInquiry.type)}
                     </span>
@@ -342,7 +342,7 @@ export default function AdminInquiryManagement() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>연락처 정보</h4>
+                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#64748b' }}>연락처 정보</h4>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <a 
                       href={`tel:${selectedInquiry.phone}`} 
@@ -382,13 +382,13 @@ export default function AdminInquiryManagement() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>문의 내용</h4>
+                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#64748b' }}>문의 내용</h4>
                   <div style={{ 
-                    background: 'rgba(15, 23, 42, 0.4)', 
-                    border: '1px solid rgba(255, 255, 255, 0.08)', 
+                    background: '#f1f5f9', 
+                    border: '1px solid #e2e8f0', 
                     padding: '20px', 
                     borderRadius: '12px', 
-                    color: 'var(--text-main)', 
+                    color: '#334155', 
                     fontSize: '1rem',
                     lineHeight: '1.6',
                     whiteSpace: 'pre-wrap',
@@ -399,7 +399,7 @@ export default function AdminInquiryManagement() {
                 </div>
               </div>
 
-              <div className="modal-footer" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '16px', marginTop: '20px' }}>
+              <div className="modal-footer" style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px', marginTop: '20px' }}>
                 <button className="btn-secondary" onClick={() => setSelectedInquiry(null)} style={{ padding: '10px 20px' }}>닫기</button>
               </div>
             </div>
