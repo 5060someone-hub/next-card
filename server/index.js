@@ -5,30 +5,7 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
-// ==========================================
-// 관리자 요금 변경 내역
-// ==========================================
-app.get('/api/admin/plan-changes', async (req, res) => {
-  try {
-    const changes = await PlanChange.find({})
-      .populate('userId', 'name email phone')
-      .populate('cardId', 'cardData')
-      .sort({ changedAt: -1 })
-      .limit(100);
-    res.json(changes);
-  } catch (err) {
-    res.status(500).json({ message: '요금 변경 내역 조회 실패', error: err.message });
-  }
-});
 
-app.put('/api/admin/plan-changes/read', async (req, res) => {
-  try {
-    await PlanChange.updateMany({ isRead: false }, { $set: { isRead: true } });
-    res.json({ message: '모든 알림 읽음 처리 완료' });
-  } catch (err) {
-    res.status(500).json({ message: '알림 상태 업데이트 실패', error: err.message });
-  }
-});
 
 // ==========================================
 // 설정: 무통장 입금 정보 관리
@@ -752,6 +729,39 @@ app.get('/api/cards/:userId', async (req, res) => {
   }
 });
 
+// 명함 VCF 파일 직접 다운로드 (안드로이드 브라우저 버그 우회용)
+app.get('/api/card/vcf/:id', async (req, res) => {
+  try {
+    const card = await Card.findById(req.params.id);
+    if (!card) {
+      return res.status(404).send('명함을 찾을 수 없습니다.');
+    }
+    
+    // vCard 생성 (가장 호환성 높은 순수 3.0 포맷)
+    let vcf = "BEGIN:VCARD\\r\\nVERSION:3.0\\r\\n";
+    vcf += `N:${card.name || ''};;;;\\r\\n`;
+    vcf += `FN:${card.name || ''}\\r\\n`;
+    if (card.company) vcf += `ORG:${card.company}\\r\\n`;
+    if (card.jobTitle) vcf += `TITLE:${card.jobTitle}\\r\\n`;
+    if (card.phoneWork) vcf += `TEL;TYPE=WORK:${card.phoneWork}\\r\\n`;
+    if (card.phonePersonal) vcf += `TEL;TYPE=CELL:${card.phonePersonal}\\r\\n`;
+    if (card.email) vcf += `EMAIL:${card.email}\\r\\n`;
+    if (card.website) vcf += `URL:${card.website}\\r\\n`;
+    if (card.intro) vcf += `NOTE:${(card.intro || '').replace(/\\n/g, '\\\\n')}\\r\\n`;
+    vcf += "END:VCARD\\r\\n";
+
+    // 헤더 설정 (서버에서 강제로 파일로 다운로드 시키면 안드로이드 다운로드 매니저 버그가 발생하지 않음)
+    res.setHeader('Content-Type', 'text/vcard; charset=utf-8');
+    const encodedName = encodeURIComponent(card.name || 'contact');
+    res.setHeader('Content-Disposition', `attachment; filename="${encodedName}.vcf"`);
+    
+    // 버퍼로 변환하여 전송
+    res.send(Buffer.from(vcf, 'utf-8'));
+  } catch (err) {
+    res.status(500).send('서버 오류');
+  }
+});
+
 // 신규 명함 개설
 app.post('/api/card/create', async (req, res) => {
   const { userId } = req.body;
@@ -1300,6 +1310,56 @@ app.put('/api/admin/inquiry/:id/read', async (req, res) => {
     res.json({ message: '읽음 처리 완료', inquiry });
   } catch (err) {
     res.status(500).json({ message: '처리 실패', error: err.message });
+  }
+});
+
+// ==========================================
+// 관리자 요금 변경 내역
+// ==========================================
+app.get('/api/admin/plan-changes', async (req, res) => {
+  try {
+    const changes = await PlanChange.find({})
+      .populate('userId', 'name email phone')
+      .populate('cardId', 'cardData')
+      .sort({ changedAt: -1 })
+      .limit(100);
+    res.json(changes);
+  } catch (err) {
+    res.status(500).json({ message: '요금 변경 내역 조회 실패', error: err.message });
+  }
+});
+
+app.put('/api/admin/plan-changes/read', async (req, res) => {
+  try {
+    await PlanChange.updateMany({ isRead: false }, { $set: { isRead: true } });
+    res.json({ message: '모든 알림 읽음 처리 완료' });
+  } catch (err) {
+    res.status(500).json({ message: '알림 상태 업데이트 실패', error: err.message });
+  }
+});
+
+// ==========================================
+// 관리자 요금 변경 내역
+// ==========================================
+app.get('/api/admin/plan-changes', async (req, res) => {
+  try {
+    const changes = await PlanChange.find({})
+      .populate('userId', 'name email phone')
+      .populate('cardId', 'cardData')
+      .sort({ changedAt: -1 })
+      .limit(100);
+    res.json(changes);
+  } catch (err) {
+    res.status(500).json({ message: '요금 변경 내역 조회 실패', error: err.message });
+  }
+});
+
+app.put('/api/admin/plan-changes/read', async (req, res) => {
+  try {
+    await PlanChange.updateMany({ isRead: false }, { $set: { isRead: true } });
+    res.json({ message: '모두 읽음 처리 완료' });
+  } catch (err) {
+    res.status(500).json({ message: '상태 업데이트 실패', error: err.message });
   }
 });
 

@@ -27,7 +27,7 @@ const PublicCard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/card/view/${id}`);
+        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/view/${id}`);
         if (response.ok) {
           const data = await response.json();
           setCardData(data);
@@ -35,7 +35,7 @@ const PublicCard = () => {
           // --- 통계 트래킹 (조회수 증가) ---
           const urlParams = new URLSearchParams(window.location.search);
           const source = urlParams.get('ref') || 'direct';
-          fetch(`${import.meta.env.VITE_API_URL}/api/analytics/track`, {
+          fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/analytics/track`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -48,8 +48,8 @@ const PublicCard = () => {
           
           // 상품 정보 및 광고 설정 가져오기
           const [prodRes, adRes] = await Promise.all([
-            fetch(`${import.meta.env.VITE_API_URL}/api/products`),
-            fetch(`${import.meta.env.VITE_API_URL}/api/settings/ad`)
+            fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/products`),
+            fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/ad`)
           ]);
           
           if (prodRes.ok) {
@@ -76,7 +76,7 @@ const PublicCard = () => {
   const trackEvent = (actionType, linkUrl = '') => {
     if (!cardData) return;
     const urlParams = new URLSearchParams(window.location.search);
-    fetch(`${import.meta.env.VITE_API_URL}/api/analytics/track`, {
+    fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/analytics/track`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -92,27 +92,10 @@ const PublicCard = () => {
   const handleSaveContact = () => {
     trackEvent('save_contact');
     
-    // VCF 파일 생성 로직
-    const vcfData = `BEGIN:VCARD
-VERSION:3.0
-N:${cardData.name}
-FN:${cardData.name}
-ORG:${cardData.company}
-TITLE:${cardData.jobTitle}
-TEL;TYPE=WORK,VOICE:${cardData.phoneWork || ''}
-TEL;TYPE=CELL,VOICE:${cardData.phonePersonal || ''}
-EMAIL:${cardData.email || ''}
-URL:${cardData.website || ''}
-NOTE:${cardData.intro || ''}
-END:VCARD`;
-
-    const blob = new Blob([vcfData], { type: 'text/vcard' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${cardData.name}_명함.vcf`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    // 가장 확실하고 버그가 없는 방식: 서버에서 생성된 VCF 파일을 다이렉트로 다운로드 받습니다.
+    // 브라우저의 자체 Blob 생성 버그를 완벽하게 우회합니다.
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+    window.location.href = `${apiUrl}/api/card/vcf/${cardData._id}`;
   };
 
   const themeColor = cardData.themeColor || '#db2777';
