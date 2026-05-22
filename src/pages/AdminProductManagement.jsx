@@ -46,8 +46,8 @@ export default function AdminProductManagement() {
     setLoading(true);
     try {
       const [prodRes, bankRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/api/admin/products`),
-        fetch(`${import.meta.env.VITE_API_URL}/api/settings/bank-info`)
+        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/products`),
+        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/bank-info`)
       ]);
       if (prodRes.ok) setProducts(await prodRes.json());
       if (bankRes.ok) setBankInfo(await bankRes.json());
@@ -60,7 +60,7 @@ export default function AdminProductManagement() {
 
   const handleSaveBankInfo = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/settings/bank-info`, {
+      const res = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/bank-info`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bankInfo)
@@ -98,8 +98,8 @@ export default function AdminProductManagement() {
 
     try {
       const url = editingId 
-        ? `${import.meta.env.VITE_API_URL}/api/admin/products/${editingId}`
-        : `${import.meta.env.VITE_API_URL}/api/admin/products`;
+        ? `${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/products/${editingId}`
+        : `${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/products`;
       
       const response = await fetch(url, {
         method: editingId ? 'PUT' : 'POST',
@@ -184,7 +184,7 @@ export default function AdminProductManagement() {
   const handleDeleteProduct = async (id) => {
     if (!window.confirm('정말 이 상품을 삭제하시겠습니까?')) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/products/${id}`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/products/${id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -208,7 +208,7 @@ export default function AdminProductManagement() {
     
     try {
       const orderedIds = newProducts.map(p => p.id);
-      await fetch(`${import.meta.env.VITE_API_URL}/api/admin/products/reorder`, {
+      await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/products/reorder`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderedIds })

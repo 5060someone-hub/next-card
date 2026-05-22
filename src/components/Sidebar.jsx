@@ -44,7 +44,7 @@ const Sidebar = () => {
     if (isAdmin) {
       const fetchNotifications = async () => {
         try {
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/notifications`);
+          const res = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/notifications`);
           if (res.ok) {
             const data = await res.json();
             setNotifications(data);

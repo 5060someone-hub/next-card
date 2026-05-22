@@ -47,7 +47,7 @@ export default function AdminInquiryManagement() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/inquiries`);
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/inquiries`);
       if (response.ok) {
         const data = await response.json();
         setInquiries(data);
@@ -67,7 +67,7 @@ export default function AdminInquiryManagement() {
     setSelectedInquiry(item);
     if (item.isRead === false) {
       try {
-        await fetch(`${import.meta.env.VITE_API_URL}/api/admin/inquiry/${item._id}/read`, { method: 'PUT' });
+        await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/inquiry/${item._id}/read`, { method: 'PUT' });
         setInquiries(prev => prev.map(i => i._id === item._id ? { ...i, isRead: true } : i));
       } catch (err) {
         console.error('Failed to mark as read', err);
@@ -78,7 +78,7 @@ export default function AdminInquiryManagement() {
   const handleDeleteInquiry = async (id, name) => {
     if (!window.confirm(`[${name}] 님의 문의 내역을 정말로 삭제하시겠습니까?`)) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/inquiry/${id}`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/inquiry/${id}`, {
         method: 'DELETE'
       });
       if (response.ok) {

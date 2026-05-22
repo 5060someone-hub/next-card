@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, RefreshCw, CreditCard, Calendar, AlertCircle, Loader2 } from 'lucide-react';
 import './Dashboard.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'http://127.0.0.1:5000';
 
 const Dashboard = () => {
   const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import './Settings.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'http://127.0.0.1:5000';
 
 // 등급 한국어 변환
 const GRADE_LABELS = {

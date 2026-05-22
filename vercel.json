@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/v/(.*)",
+      "destination": "/api/og?id=$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

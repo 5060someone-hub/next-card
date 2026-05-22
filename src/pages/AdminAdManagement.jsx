@@ -34,7 +34,7 @@ export default function AdminAdManagement() {
   const fetchAdConfig = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/settings/ad`);
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/ad`);
       if (response.ok) {
         const data = await response.json();
         setAdConfig(data);
@@ -50,7 +50,7 @@ export default function AdminAdManagement() {
     e.preventDefault();
     setSaving(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/settings/ad`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/ad`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(adConfig)

@@ -62,7 +62,7 @@ const CardEditor = () => {
       
       // 1. 상품 로드
       try {
-        const prodRes = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
+        const prodRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/products`);
         if (prodRes.ok) {
           setProducts(await prodRes.json());
         }
@@ -73,7 +73,7 @@ const CardEditor = () => {
       // 2. 명함 데이터 로드
       if (cardId) {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/card-detail/${cardId}`);
+          const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card-detail/${cardId}`);
           if (response.ok) {
             const fullCard = await response.json();
             const data = fullCard.cardData || {};
@@ -97,14 +97,14 @@ const CardEditor = () => {
       } else {
         // cardId가 없는 경우, 유저의 첫 번째 명함을 찾아 리다이렉트
         try {
-          const listRes = await fetch(`${import.meta.env.VITE_API_URL}/api/cards/${auth.id}`);
+          const listRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/cards/${auth.id}`);
           if (listRes.ok) {
             const userCards = await listRes.json();
             if (userCards.length > 0) {
               navigate(`/cards?id=${userCards[0]._id}`);
             } else {
               // 명함이 전혀 없으면 새 명함을 즉시 자동 생성 후 리다이렉트
-              const createRes = await fetch(`${import.meta.env.VITE_API_URL}/api/card/create`, {
+              const createRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: auth.id })
@@ -193,7 +193,7 @@ const CardEditor = () => {
     if (!cardId) return;
     setSaving(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/card/save/${cardId}`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/save/${cardId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cardData: formData }),

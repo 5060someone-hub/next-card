@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import './AdminLandingEditor.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'http://127.0.0.1:5000';
 
 // ── 기본 콘텐츠 (API 실패 시 폴백) ──
 const DEFAULT_CONTENT = {

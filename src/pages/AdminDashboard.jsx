@@ -42,11 +42,11 @@ export default function AdminDashboard() {
     setError(null);
     try {
       // 명함 목록 가져오기
-      const cardRes = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/cards`);
+      const cardRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/cards`);
       // 회원 목록 가져오기
-      const userRes = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`);
+      const userRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/users`);
       // 상품 목록 가져오기
-      const productRes = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/products`);
+      const productRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/products`);
       
       if (cardRes.ok && userRes.ok && productRes.ok) {
         const cardData = await cardRes.json();
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
     if (!customUrl) return alert('커스텀 URL을 입력해주세요.');
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/card/${selectedCard.userId}/publish`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/card/${selectedCard.userId}/publish`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customCardUrl: customUrl, status: 'published' })

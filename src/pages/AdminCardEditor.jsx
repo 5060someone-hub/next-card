@@ -44,7 +44,7 @@ const AdminCardEditor = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/products`);
       if (response.ok) {
         setProducts(await response.json());
       }
@@ -61,7 +61,7 @@ const AdminCardEditor = () => {
   const fetchCardData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/card-detail/${cardId}`);
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card-detail/${cardId}`);
       if (response.ok) {
         const card = await response.json();
         if (card && card.cardData) {
@@ -117,7 +117,7 @@ const AdminCardEditor = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/card/save/${currentCardId || cardId}`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/save/${currentCardId || cardId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cardData: cardEditForm })

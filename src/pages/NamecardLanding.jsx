@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, Check, Loader2 } from 'lucide-react';
 import './NamecardLanding.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'http://127.0.0.1:5000';
 
 const NamecardLanding = () => {
   const navigate = useNavigate();

@@ -73,9 +73,9 @@ export default function AdminUserManagement() {
     setError(null);
     try {
       const [userRes, cardRes, prodRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`),
-        fetch(`${import.meta.env.VITE_API_URL}/api/admin/cards`),
-        fetch(`${import.meta.env.VITE_API_URL}/api/products`)
+        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/users`),
+        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/cards`),
+        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/products`)
       ]);
       
       if (userRes.ok && cardRes.ok && prodRes.ok) {
@@ -122,7 +122,7 @@ export default function AdminUserManagement() {
         ...editForm,
         paymentDate: editForm.paymentDate || null
       };
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/user/${editingUser.id}`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/user/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(saveBody)
@@ -146,7 +146,7 @@ export default function AdminUserManagement() {
     if (userName === '마스터운영자') return alert('마스터 계정은 삭제할 수 없습니다.');
     if (!window.confirm(`[${userName}] 회원을 정말로 삭제하시겠습니까?`)) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/user/${userId}`, { method: 'DELETE' });
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/user/${userId}`, { method: 'DELETE' });
       if (response.ok) {
         alert('삭제 완료');
         fetchData();
@@ -165,7 +165,7 @@ export default function AdminUserManagement() {
   const handleSaveApproval = async () => {
     if (!approvingUser) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/payment/approve/${approvingUser._id}`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/payment/approve/${approvingUser._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ duration: approvalDuration })
@@ -189,7 +189,7 @@ export default function AdminUserManagement() {
   const handleRejectPayment = async (cardId, label) => {
     if (!window.confirm(`[${label}] 명함의 무통장 입금 신청을 정말로 반려하시겠습니까?\n신청 내역이 리셋되며 대기 목록에서 제외됩니다.`)) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/payment/reject/${cardId}`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/payment/reject/${cardId}`, {
         method: 'PUT'
       });
       if (response.ok) {
@@ -214,7 +214,7 @@ export default function AdminUserManagement() {
 
   const handleSavePublish = async (url) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/card/${selectedUserForPublish.id}/publish`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/card/${selectedUserForPublish.id}/publish`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customCardUrl: url, status: 'published' })

@@ -35,7 +35,7 @@ const NetworkLog = () => {
 
   const fetchUserGrade = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cards/${auth.id}`);
+      const res = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/cards/${auth.id}`);
       if (res.ok) {
         const cards = await res.json();
         if (cards && cards.length > 0) {
@@ -50,7 +50,7 @@ const NetworkLog = () => {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/logs/${auth.id}`);
+      const res = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/logs/${auth.id}`);
       if (res.ok) {
         const data = await res.json();
         setLogs(data);
@@ -115,7 +115,7 @@ const NetworkLog = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('이 인맥 기록을 삭제하시겠습니까?')) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/logs/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/logs/${id}`, { method: 'DELETE' });
       if (res.ok) {
         fetchLogs();
       }
@@ -142,8 +142,8 @@ const NetworkLog = () => {
 
     try {
       const url = editingId 
-        ? `${import.meta.env.VITE_API_URL}/api/logs/${editingId}`
-        : `${import.meta.env.VITE_API_URL}/api/logs`;
+        ? `${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/logs/${editingId}`
+        : `${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/logs`;
       
       const method = editingId ? 'PUT' : 'POST';
 

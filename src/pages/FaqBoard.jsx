@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ChevronRight, Search, MessageCircle, Mail, Globe, Loader2 } from 'lucide-react';
 import './FaqBoard.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'http://127.0.0.1:5000';
 
 const FaqBoard = () => {
   const [c, setC] = useState(null);

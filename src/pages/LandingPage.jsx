@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Check, ChevronRight, MessageCircle, Mail, Globe, Loader2, X } from 'lucide-react';
 import './LandingPage.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'http://127.0.0.1:5000';
 
 // ── 기본 콘텐츠 (서버 응답 전 폴백) ──
 const DEFAULT_CONTENT = {

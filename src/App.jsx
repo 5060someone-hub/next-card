@@ -30,7 +30,7 @@ const MobileAppWrapper = ({ children }) => (
 );
 
 function App() {
-  console.log('📡 VITE_API_URL:', import.meta.env.VITE_API_URL);
+  console.log('📡 VITE_API_URL:', (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000'));
   return (
     <Router>
       <Routes>

@@ -733,15 +733,16 @@ app.get('/api/cards/:userId', async (req, res) => {
 app.get('/api/card/vcf/:identifier', async (req, res) => {
   try {
     const { identifier } = req.params;
+    const cleanIdentifier = identifier.replace(/\.vcf$/i, '');
     let card = null;
 
     // card view와 동일하게: 커스텀 URL 먼저, 그 다음 ObjectId로 검색
-    card = await Card.findOne({ 'cardData.customCardUrl': identifier });
-    if (!card && mongoose.Types.ObjectId.isValid(identifier)) {
+    card = await Card.findOne({ 'cardData.customCardUrl': cleanIdentifier });
+    if (!card && mongoose.Types.ObjectId.isValid(cleanIdentifier)) {
       card = await Card.findOne({
         $or: [
-          { _id: new mongoose.Types.ObjectId(identifier) },
-          { userId: new mongoose.Types.ObjectId(identifier) }
+          { _id: new mongoose.Types.ObjectId(cleanIdentifier) },
+          { userId: new mongoose.Types.ObjectId(cleanIdentifier) }
         ]
       });
     }
@@ -757,20 +758,36 @@ app.get('/api/card/vcf/:identifier', async (req, res) => {
       `N:${d.name || ''};;;;`,
       `FN:${d.name || ''}`
     ];
-    if (d.company)       lines.push(`ORG:${d.company}`);
+    
+    if (d.company || d.department) {
+      const orgStr = [d.company || '', d.department || ''].filter(Boolean).join(';');
+      lines.push(`ORG:${orgStr}`);
+    }
     if (d.jobTitle)      lines.push(`TITLE:${d.jobTitle}`);
     if (d.phoneWork)     lines.push(`TEL;TYPE=WORK:${d.phoneWork}`);
     if (d.phonePersonal) lines.push(`TEL;TYPE=CELL:${d.phonePersonal}`);
     if (d.email)         lines.push(`EMAIL:${d.email}`);
     if (d.website)       lines.push(`URL:${d.website}`);
-    if (d.intro)         lines.push(`NOTE:${d.intro.replace(/\n/g, '\\n')}`);
+    if (d.address)       lines.push(`ADR;TYPE=WORK:;;${String(d.address).replace(/;/g, ' ').replace(/\r?\n/g, ' ')};;;;`);
+    if (d.intro)         lines.push(`NOTE:${String(d.intro).replace(/\r?\n/g, '\\n')}`);
+    
+    // SNS 추가
+    if (d.sns) {
+      Object.entries(d.sns).forEach(([platform, value]) => {
+        if (value) {
+          const url = String(value).startsWith('http') ? value : (platform === 'kakaotalk' ? `https://pf.kakao.com/${value}` : `https://${platform}.com/${value}`);
+          lines.push(`URL;type=${platform}:${url}`);
+        }
+      });
+    }
+    
     lines.push('END:VCARD');
 
     const vcf = lines.join('\r\n') + '\r\n';
 
     res.setHeader('Content-Type', 'text/vcard; charset=utf-8');
     const safeName = encodeURIComponent(d.name || 'contact');
-    res.setHeader('Content-Disposition', `attachment; filename="${safeName}.vcf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="contact.vcf"; filename*=UTF-8''${safeName}.vcf`);
     res.send(Buffer.from(vcf, 'utf-8'));
   } catch (err) {
     console.error('VCF 생성 오류:', err);

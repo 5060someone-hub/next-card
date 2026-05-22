@@ -28,7 +28,7 @@ const Analytics = () => {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/analytics/stats/${auth.id}`);
+      const res = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/analytics/stats/${auth.id}`);
       if (res.ok) {
         const data = await res.json();
         setStats(data);

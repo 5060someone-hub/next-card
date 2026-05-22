@@ -28,12 +28,12 @@ export default function AdminPlanChanges() {
   const fetchChanges = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/plan-changes`);
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/plan-changes`);
       if (response.ok) {
         const data = await response.json();
         setChanges(data);
         // 읽음 처리
-        fetch(`${import.meta.env.VITE_API_URL}/api/admin/plan-changes/read`, { method: 'PUT' }).catch(e => console.error(e));
+        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/plan-changes/read`, { method: 'PUT' }).catch(e => console.error(e));
       }
     } catch (err) {
       setError('내역을 불러오는 중 오류가 발생했습니다.');

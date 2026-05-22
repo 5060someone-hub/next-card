@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar';
 import { Save, CheckCircle2, Loader2, Image, Type, DollarSign, List, Link, Plus, Trash2, Upload } from 'lucide-react';
 import './AdminLandingEditor.css'; // Reusing standard admin editor styles
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'http://127.0.0.1:5000';
 
 const DEFAULT_CONTENT = {
   purchaseLink: 'https://adq.kr/products/high-end-namecard?page=1',
