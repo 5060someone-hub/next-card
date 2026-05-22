@@ -80,8 +80,28 @@ const Settings = () => {
   useEffect(() => {
     if (requestedGrade === 'prod_1778899977850' || requestedGrade === 'event') {
       setRequestedDuration(2);
+      return;
     }
-  }, [requestedGrade]);
+    const prod = products.find(p => p.id === requestedGrade);
+    if (prod) {
+      if (prod.price?.annual > 0 && requestedDuration !== 12 && requestedDuration !== 3 && requestedDuration !== 2) {
+        setRequestedDuration(12);
+      } else if (prod.price?.annual > 0 && ![12, 3, 2].includes(requestedDuration)) {
+        setRequestedDuration(12);
+      }
+      // Set to the first available price tier if current requestedDuration is not valid for this product
+      const isValid = 
+        (requestedDuration === 12 && prod.price?.annual > 0) ||
+        (requestedDuration === 3 && prod.price?.threeMonths > 0) ||
+        (requestedDuration === 2 && prod.price?.twoMonths > 0);
+      
+      if (!isValid) {
+        if (prod.price?.annual > 0) setRequestedDuration(12);
+        else if (prod.price?.threeMonths > 0) setRequestedDuration(3);
+        else if (prod.price?.twoMonths > 0) setRequestedDuration(2);
+      }
+    }
+  }, [requestedGrade, products]);
 
   // 구독 탭 클릭 시 DB에서 카드 및 요금제 상품 로드
   useEffect(() => {
@@ -140,7 +160,15 @@ const Settings = () => {
         }
       }
       if (productsRes.ok) {
-        setProducts(await productsRes.json());
+        const prods = await productsRes.json();
+        setProducts(prods);
+        if (prods.length > 0) {
+          // Find if current requestedGrade exists, if not set to first product
+          const exists = prods.find(p => p.id === requestedGrade);
+          if (!exists) {
+            setRequestedGrade(prods[0].id);
+          }
+        }
       }
       if (payRes.ok) {
         const pays = await payRes.json();
@@ -659,11 +687,18 @@ const Settings = () => {
                                       {requestedGrade === 'prod_1778899977850' || requestedGrade === 'event' ? (
                                         <option value={2}>2개월 이용권 (무료 체험 고정)</option>
                                       ) : (
-                                        <>
-                                          <option value={12}>12개월(연간) 이용권</option>
-                                          <option value={3}>3개월 이용권</option>
-                                          <option value={2}>2개월 이용권</option>
-                                        </>
+                                        (() => {
+                                          const prod = products.find(p => p.id === requestedGrade);
+                                          if (!prod) return <option value={12}>12개월(연간) 이용권</option>;
+                                          return (
+                                            <>
+                                              {prod.price?.annual > 0 && <option value={12}>12개월(연간) 이용권</option>}
+                                              {prod.price?.threeMonths > 0 && <option value={3}>3개월 이용권</option>}
+                                              {prod.price?.twoMonths > 0 && <option value={2}>2개월 이용권</option>}
+                                              {(!prod.price?.annual && !prod.price?.threeMonths && !prod.price?.twoMonths) && <option value={12}>무료 (요금 미설정)</option>}
+                                            </>
+                                          );
+                                        })()
                                       )}
                                     </select>
                                   </div>
