@@ -6,6 +6,15 @@ require('dotenv').config();
 
 const app = express();
 
+// 미들웨어 설정
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 
 // ==========================================
 // 설정: 무통장 입금 정보 관리
@@ -36,14 +45,6 @@ app.put('/api/settings/bank-info', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-// 미들웨어 설정
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // [DB 연결 설정]
 const MONGODB_URI = process.env.MONGODB_URI;
 
