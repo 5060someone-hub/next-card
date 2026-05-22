@@ -519,19 +519,27 @@ const Settings = () => {
                                   아래 지정된 계좌로 신청 금액을 이체하시면, 관리자가 입금 확인 즉시 해당 명함의 등급을 개별 승인해 드립니다.
                                 </p>
                                 
-                                <div className="bank-info-box">
-                                  <div className="bank-row">
-                                    <span>입금 은행</span>
-                                    <strong>신한은행</strong>
-                                  </div>
-                                  <div className="bank-row">
-                                    <span>계좌 번호</span>
-                                    <strong>110-123-456789</strong>
-                                  </div>
-                                  <div className="bank-row">
-                                    <span>예금주</span>
-                                    <strong>주식회사 넥스트카드</strong>
-                                  </div>
+                                <div className="bank-info-box" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  {bankInfo.accounts && bankInfo.accounts.length > 0 ? (
+                                    bankInfo.accounts.map(acc => (
+                                      <div key={acc.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '12px', background: 'rgba(255,255,255,0.5)', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                        <div className="bank-row">
+                                          <span>입금 은행</span>
+                                          <strong>{acc.bank}</strong>
+                                        </div>
+                                        <div className="bank-row">
+                                          <span>계좌 번호</span>
+                                          <strong>{acc.account}</strong>
+                                        </div>
+                                        <div className="bank-row">
+                                          <span>예금주</span>
+                                          <strong>{acc.owner}</strong>
+                                        </div>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <div>등록된 계좌 정보가 없습니다.</div>
+                                  )}
                                 </div>
 
                                 <div className="request-details-box">
