@@ -729,6 +729,51 @@ app.get('/api/cards/:userId', async (req, res) => {
   }
 });
 
+// OG 썸네일용 Base64 이미지 렌더링 엔드포인트
+app.get('/api/card/image/:identifier', async (req, res) => {
+  try {
+    const { identifier } = req.params;
+    const { type } = req.query; // 'paper', 'profile', 'logo'
+
+    const cleanIdentifier = identifier.replace(/\.(png|jpg|jpeg)$/i, '');
+    let card = await Card.findOne({ 'cardData.customCardUrl': cleanIdentifier });
+    if (!card && mongoose.Types.ObjectId.isValid(cleanIdentifier)) {
+      card = await Card.findOne({
+        $or: [
+          { _id: new mongoose.Types.ObjectId(cleanIdentifier) },
+          { userId: new mongoose.Types.ObjectId(cleanIdentifier) }
+        ]
+      });
+    }
+
+    if (!card) return res.status(404).send('Not found');
+
+    let base64String = '';
+    if (type === 'paper') base64String = card.cardData?.paperCardUrl;
+    else if (type === 'profile') base64String = card.cardData?.profileUrl;
+    else if (type === 'logo') base64String = card.cardData?.logoUrl;
+
+    if (!base64String || !String(base64String).startsWith('data:image/')) {
+      return res.redirect('https://nextcard.kr/og_preview.png');
+    }
+
+    const matches = String(base64String).match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).send('Invalid image format');
+    }
+
+    const contentType = matches[1];
+    const imageBuffer = Buffer.from(matches[2], 'base64');
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(imageBuffer);
+  } catch (err) {
+    console.error('Image Render Error:', err);
+    res.status(500).send('Server Error');
+  }
+});
+
 // 명함 VCF 파일 직접 다운로드 (안드로이드 브라우저 버그 우회용)
 app.get('/api/card/vcf/:identifier', async (req, res) => {
   try {

@@ -27,8 +27,17 @@ export default async function handler(req, res) {
       
       const title = cardData.name ? `${cardData.name} | ${cardData.company || '디지털 명함'}` : 'NextCard.kr | 프리미엄 디지털 명함';
       const desc = cardData.intro || '모바일 환경에 최적화된 나만의 스마트한 디지털 프로필';
-      // Use paperCardUrl (if uploaded) or profileUrl or logoUrl or default
-      const img = cardData.paperCardUrl || cardData.profileUrl || cardData.logoUrl || 'https://nextcard.kr/og_preview.png';
+      
+      const getImgUrl = (base64OrUrl, type) => {
+        if (!base64OrUrl) return null;
+        if (String(base64OrUrl).startsWith('http')) return base64OrUrl;
+        return `${backendUrl}/api/card/image/${id}?type=${type}`;
+      };
+
+      const img = getImgUrl(cardData.paperCardUrl, 'paper') 
+               || getImgUrl(cardData.profileUrl, 'profile') 
+               || getImgUrl(cardData.logoUrl, 'logo') 
+               || 'https://nextcard.kr/og_preview.png';
 
       // Replace OG tags
       html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
