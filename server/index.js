@@ -1213,6 +1213,7 @@ app.put('/api/admin/card/:userId/publish', async (req, res) => {
     card.cardData.status = status || 'published';
     card.isEdited = true;
     card.updatedAt = new Date();
+    card.markModified('cardData');
     await card.save();
     
     res.json({ message: '발행 완료', customCardUrl });
