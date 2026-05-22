@@ -286,11 +286,16 @@ export default function AdminProductManagement() {
                   <input 
                     type="number" 
                     value={newProductPriceAnnual} 
-                    onChange={(e) => setNewProductPriceAnnual(e.target.value)} 
+                    onChange={(e) => {
+                      setNewProductPriceAnnual(e.target.value);
+                      if (e.target.value) {
+                        setNewProductPriceThreeMonths('');
+                        setNewProductPriceTwoMonths('');
+                      }
+                    }} 
                     placeholder="예: 55000"
                     style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
                     min="0"
-                    required
                   />
                 </div>
                 <div className="input-group">
@@ -298,11 +303,16 @@ export default function AdminProductManagement() {
                   <input 
                     type="number" 
                     value={newProductPriceThreeMonths} 
-                    onChange={(e) => setNewProductPriceThreeMonths(e.target.value)} 
+                    onChange={(e) => {
+                      setNewProductPriceThreeMonths(e.target.value);
+                      if (e.target.value) {
+                        setNewProductPriceAnnual('');
+                        setNewProductPriceTwoMonths('');
+                      }
+                    }} 
                     placeholder="예: 15000"
                     style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
                     min="0"
-                    required
                   />
                 </div>
                 <div className="input-group">
@@ -310,11 +320,16 @@ export default function AdminProductManagement() {
                   <input 
                     type="number" 
                     value={newProductPriceTwoMonths} 
-                    onChange={(e) => setNewProductPriceTwoMonths(e.target.value)} 
+                    onChange={(e) => {
+                      setNewProductPriceTwoMonths(e.target.value);
+                      if (e.target.value) {
+                        setNewProductPriceAnnual('');
+                        setNewProductPriceThreeMonths('');
+                      }
+                    }} 
                     placeholder="예: 10000"
                     style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
                     min="0"
-                    required
                   />
                 </div>
               </div>
