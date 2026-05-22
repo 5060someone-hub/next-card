@@ -737,28 +737,31 @@ app.get('/api/card/vcf/:id', async (req, res) => {
       return res.status(404).send('명함을 찾을 수 없습니다.');
     }
     
-    // vCard 생성 (가장 호환성 높은 순수 3.0 포맷)
-    let vcf = "BEGIN:VCARD\\r\\nVERSION:3.0\\r\\n";
-    vcf += `N:${card.name || ''};;;;\\r\\n`;
-    vcf += `FN:${card.name || ''}\\r\\n`;
-    if (card.company) vcf += `ORG:${card.company}\\r\\n`;
-    if (card.jobTitle) vcf += `TITLE:${card.jobTitle}\\r\\n`;
-    if (card.phoneWork) vcf += `TEL;TYPE=WORK:${card.phoneWork}\\r\\n`;
-    if (card.phonePersonal) vcf += `TEL;TYPE=CELL:${card.phonePersonal}\\r\\n`;
-    if (card.email) vcf += `EMAIL:${card.email}\\r\\n`;
-    if (card.website) vcf += `URL:${card.website}\\r\\n`;
-    if (card.intro) vcf += `NOTE:${(card.intro || '').replace(/\\n/g, '\\\\n')}\\r\\n`;
-    vcf += "END:VCARD\\r\\n";
+    // 실제 CRLF(\r\n) 줄바꿈으로 vCard 3.0 생성
+    const lines = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      `N:${card.name || ''};;;;`,
+      `FN:${card.name || ''}`
+    ];
+    if (card.company)      lines.push(`ORG:${card.company}`);
+    if (card.jobTitle)     lines.push(`TITLE:${card.jobTitle}`);
+    if (card.phoneWork)    lines.push(`TEL;TYPE=WORK:${card.phoneWork}`);
+    if (card.phonePersonal) lines.push(`TEL;TYPE=CELL:${card.phonePersonal}`);
+    if (card.email)        lines.push(`EMAIL:${card.email}`);
+    if (card.website)      lines.push(`URL:${card.website}`);
+    if (card.intro)        lines.push(`NOTE:${card.intro.replace(/\n/g, '\\n')}`);
+    lines.push('END:VCARD');
 
-    // 헤더 설정 (서버에서 강제로 파일로 다운로드 시키면 안드로이드 다운로드 매니저 버그가 발생하지 않음)
+    const vcf = lines.join('\r\n') + '\r\n';
+
     res.setHeader('Content-Type', 'text/vcard; charset=utf-8');
-    const encodedName = encodeURIComponent(card.name || 'contact');
-    res.setHeader('Content-Disposition', `attachment; filename="${encodedName}.vcf"`);
-    
-    // 버퍼로 변환하여 전송
+    const safeName = encodeURIComponent(card.name || 'contact');
+    res.setHeader('Content-Disposition', `attachment; filename="${safeName}.vcf"`);
     res.send(Buffer.from(vcf, 'utf-8'));
   } catch (err) {
-    res.status(500).send('서버 오류');
+    console.error('VCF 생성 오류:', err);
+    res.status(500).send('서버 오류: ' + err.message);
   }
 });
 
