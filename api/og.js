@@ -35,8 +35,8 @@ export default async function handler(req, res) {
       };
 
       const img = getImgUrl(cardData.paperCardUrl, 'paper') 
-               || getImgUrl(cardData.profileUrl, 'profile') 
                || getImgUrl(cardData.logoUrl, 'logo') 
+               || getImgUrl(cardData.profileUrl, 'profile') 
                || 'https://nextcard.kr/og_preview.png';
 
       // Replace OG tags
