@@ -167,17 +167,18 @@ export default function AdminProductManagement() {
     setNewProductPriceAnnual(prod.price?.annual !== undefined ? prod.price.annual : (typeof prod.price === 'number' ? prod.price : ''));
     setNewProductPriceThreeMonths(prod.price?.threeMonths !== undefined ? prod.price.threeMonths : '');
     setNewProductPriceTwoMonths(prod.price?.twoMonths !== undefined ? prod.price.twoMonths : '');
-    setFeatures(prod.features || { 
-      allowLogo: false, 
-      allowProfile: true,
-      allowPaperCard: false, 
-      allowCustomUrl: false, 
-      allowSinglePage: false,
-      showAds: true,
-      maxSnsCount: 1,
-      allowedThemes: ['modern']
+    setFeatures({
+      allowLogo: prod.features?.allowLogo || false,
+      allowProfile: prod.features?.allowProfile ?? true,
+      allowPaperCard: prod.features?.allowPaperCard || false,
+      allowCustomUrl: prod.features?.allowCustomUrl || false,
+      allowSinglePage: prod.features?.allowSinglePage || false,
+      showAds: prod.features?.showAds ?? true,
+      maxSnsCount: prod.features?.maxSnsCount ?? 1,
+      allowedThemes: prod.features?.allowedThemes || ['modern']
     });
-    setEditingId(prod.id);
+    setEditingId(prod.id || prod._id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const cancelEdit = () => {
