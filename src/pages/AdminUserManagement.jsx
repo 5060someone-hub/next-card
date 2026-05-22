@@ -187,7 +187,7 @@ export default function AdminUserManagement() {
   };
 
   const handleRejectPayment = async (cardId, label) => {
-    if (!window.confirm(`[${label}] 명함의 무통장 입금 신청을 정말로 반려하시겠습니까?\n신청 내역이 리셋되며 대기 목록에서 제외됩니다.`)) return;
+    if (!window.confirm(`[${label}] 명함의 결제 신청을 정말로 반려하시겠습니까?\n신청 내역이 리셋되며 대기 목록에서 제외됩니다.`)) return;
     try {
       const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/payment/reject/${cardId}`, {
         method: 'PUT'
@@ -418,7 +418,7 @@ export default function AdminUserManagement() {
           handleDownloadQR={handleDownloadQR}
         />
 
-               {isApprovalModalOpen && approvingUser && (() => {
+        {isApprovalModalOpen && approvingUser && (() => {
           const targetUser = users.find(u => u.id === approvingUser.userId) || {};
           const cardName = approvingUser.cardData?.name || '이름 없음';
           const gradeName = products.find(p => p.id === approvingUser.requestedGrade)?.name || approvingUser.requestedGrade || '프리미엄';
@@ -427,7 +427,7 @@ export default function AdminUserManagement() {
             <div className="modal-overlay" onClick={() => setIsApprovalModalOpen(false)}>
               <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px', padding: '2rem', borderRadius: '16px' }}>
                 <div className="modal-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#111827', fontWeight: 800 }}>💰 무통장 입금 수동 승인</h3>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#111827', fontWeight: 800 }}>💳 결제 수동 승인</h3>
                   <button className="btn-close" onClick={() => setIsApprovalModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                     <X size={20} />
                   </button>
@@ -447,11 +447,15 @@ export default function AdminUserManagement() {
                       <strong style={{ color: '#475569' }}>📇 {cardName}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span>결제 수단</span>
+                      <strong style={{ color: '#d97706' }}>{approvingUser.paymentMethod || '무통장 입금'}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                       <span>입금자명</span>
                       <strong style={{ color: '#d97706' }}>{approvingUser.depositorName}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span>입금 금액</span>
+                      <span>결제(이체)예정금액</span>
                       <strong style={{ color: '#d97706' }}>{approvingUser.paymentAmount?.toLocaleString()}원</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>

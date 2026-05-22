@@ -69,8 +69,9 @@ const Settings = () => {
   const [products, setProducts] = useState([]);
   const [subLoading, setSubLoading] = useState(false);
 
-  // 무통장 입금 신청용 상태값
-  const [bankInfo, setBankInfo] = useState({ description: '', accounts: [] });
+  // 결제 수단 및 신청 상태 관리
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState('');
   const [depositorName, setDepositorName] = useState('');
   const [requestedGrade, setRequestedGrade] = useState('premium_nfc');
   const [requestedDuration, setRequestedDuration] = useState(12); // 6 or 12
@@ -122,10 +123,10 @@ const Settings = () => {
   const loadSubscriptionData = async () => {
     setSubLoading(true);
     try {
-      const [cardsRes, productsRes, bankRes] = await Promise.all([
+      const [cardsRes, productsRes, payRes] = await Promise.all([
         fetch(`${API_BASE}/api/cards/${auth.id}`),
         fetch(`${API_BASE}/api/products`),
-        fetch(`${API_BASE}/api/settings/bank-info`)
+        fetch(`${API_BASE}/api/settings/payment-methods`)
       ]);
 
       if (cardsRes.ok) {
@@ -141,8 +142,12 @@ const Settings = () => {
       if (productsRes.ok) {
         setProducts(await productsRes.json());
       }
-      if (bankRes.ok) {
-        setBankInfo(await bankRes.json());
+      if (payRes.ok) {
+        const pays = await payRes.json();
+        setPaymentMethods(pays);
+        if (pays.length > 0) {
+          setSelectedPaymentMethodId(pays[0].id);
+        }
       }
     } catch (err) {
       console.error('구독 관련 로딩 실패:', err);
@@ -172,19 +177,21 @@ const Settings = () => {
     return 0;
   };
 
-  // 무통장 입금 신청 등록 (명함 ID 기준으로 신청)
+  // 결제 신청 등록 (명함 ID 기준으로 신청)
   const handleRequestPayment = async () => {
     if (!selectedCardId) {
       alert('구독을 신청할 명함을 선택해 주세요.');
       return;
     }
     if (!depositorName.trim()) {
-      alert('실제 입금자명을 입력해 주세요.');
+      alert('실제 입금자(결제자)명을 입력해 주세요.');
       return;
     }
     setLoading(true);
     try {
       const amount = getAmount(requestedGrade, requestedDuration);
+      const paymentMethodObj = paymentMethods.find(m => m.id === selectedPaymentMethodId);
+      
       const res = await fetch(`${API_BASE}/api/payment/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -194,10 +201,11 @@ const Settings = () => {
           paymentAmount: amount,
           requestedGrade,
           requestedDuration,
+          paymentMethod: paymentMethodObj ? paymentMethodObj.name : '무통장 입금'
         }),
       });
       if (!res.ok) throw new Error('신청 실패');
-      setSaveMsg('✅ 지정 명함에 대한 무통장 입금 신청이 완료되었습니다!');
+      setSaveMsg('✅ 지정 명함에 대한 결제 신청이 완료되었습니다!');
       setDepositorName('');
       await loadSubscriptionData();
     } catch (err) {
@@ -508,37 +516,31 @@ const Settings = () => {
                             </>
                           )}
 
-                          {selectedCard.paymentStatus === 'pending' && (
+                          {selectedCard.paymentStatus === 'pending' && (() => {
+                            const pendingMethod = paymentMethods.find(m => m.name === selectedCard.paymentMethod) || paymentMethods[0];
+                            return (
                             <>
                               <div className="payment-pending-card">
                                 <div className="pending-header">
                                   <Clock size={20} className="pending-icon" />
-                                  <h4>⏳ 무통장 입금 확인 대기 중</h4>
+                                  <h4>⏳ {selectedCard.paymentMethod || '결제'} 승인 대기 중</h4>
                                 </div>
                                 <p className="pending-desc">
-                                  아래 지정된 계좌로 신청 금액을 이체하시면, 관리자가 입금 확인 즉시 해당 명함의 등급을 개별 승인해 드립니다.
+                                  아래 안내된 결제 정보로 이체/결제하시면, 관리자가 확인 즉시 해당 명함의 등급을 개별 승인해 드립니다.
                                 </p>
                                 
                                 <div className="bank-info-box" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                  {bankInfo.accounts && bankInfo.accounts.length > 0 ? (
-                                    bankInfo.accounts.map(acc => (
-                                      <div key={acc.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '12px', background: 'rgba(255,255,255,0.5)', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                        <div className="bank-row">
-                                          <span>입금 은행</span>
-                                          <strong>{acc.bank}</strong>
+                                  {pendingMethod && pendingMethod.fields && pendingMethod.fields.length > 0 ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '12px', background: 'rgba(255,255,255,0.5)', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                      {pendingMethod.fields.map(f => (
+                                        <div key={f.id} className="bank-row">
+                                          <span>{f.label}</span>
+                                          <strong>{f.value}</strong>
                                         </div>
-                                        <div className="bank-row">
-                                          <span>계좌 번호</span>
-                                          <strong>{acc.account}</strong>
-                                        </div>
-                                        <div className="bank-row">
-                                          <span>예금주</span>
-                                          <strong>{acc.owner}</strong>
-                                        </div>
-                                      </div>
-                                    ))
+                                      ))}
+                                    </div>
                                   ) : (
-                                    <div>등록된 계좌 정보가 없습니다.</div>
+                                    <div>등록된 결제 정보가 없습니다.</div>
                                   )}
                                 </div>
 
@@ -560,11 +562,15 @@ const Settings = () => {
                                     <strong>{selectedCard.requestedDuration}개월 이용권</strong>
                                   </div>
                                   <div className="request-row">
-                                    <span>입금자명</span>
+                                    <span>결제 수단</span>
+                                    <strong>{selectedCard.paymentMethod || '무통장 입금'}</strong>
+                                  </div>
+                                  <div className="request-row">
+                                    <span>입금자(결제자)명</span>
                                     <strong className="text-highlight">{selectedCard.depositorName}</strong>
                                   </div>
                                   <div className="request-row">
-                                    <span>입금 금액</span>
+                                    <span>결제(이체)예정금액</span>
                                     <strong className="text-highlight">{selectedCard.paymentAmount?.toLocaleString()}원</strong>
                                   </div>
                                   <div className="request-row">
@@ -574,30 +580,45 @@ const Settings = () => {
                                 </div>
                               </div>
                             </>
-                          )}
+                            );
+                          })}
 
-                          {(selectedCard.paymentStatus === 'none' || !selectedCard.paymentStatus) && (
+                          {(selectedCard.paymentStatus === 'none' || !selectedCard.paymentStatus) && (() => {
+                            const selectedMethodInfo = paymentMethods.find(m => m.id === selectedPaymentMethodId);
+                            
+                            return (
                             <>
                               <div className="bank-transfer-form">
                                 <div className="bank-header-banner">
                                   <CreditCard size={18} />
                                   <div>
-                                    <h4>무통장 입금 구독 신청</h4>
-                                    <p>{bankInfo.description || '아래 공식 계좌로 입금 신청 후 이체해주시면 승인 처리됩니다.'}</p>
+                                    <h4>결제 구독 신청</h4>
+                                    <p>{selectedMethodInfo ? selectedMethodInfo.description : '결제 신청 후 관리자가 승인 처리합니다.'}</p>
                                   </div>
                                 </div>
 
-                                <div className="bank-info-box mini" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                  {bankInfo.accounts && bankInfo.accounts.length > 0 ? (
-                                    bankInfo.accounts.map(acc => (
-                                      <div key={acc.id}>
-                                        <strong>{acc.bank} {acc.account}</strong> (예금주: {acc.owner})
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <div>등록된 계좌 정보가 없습니다.</div>
-                                  )}
+                                <div className="input-group" style={{ marginBottom: '16px' }}>
+                                  <label style={{ fontWeight: 'bold' }}>결제 수단 선택</label>
+                                  <select 
+                                    value={selectedPaymentMethodId} 
+                                    onChange={e => setSelectedPaymentMethodId(e.target.value)}
+                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                                  >
+                                    {paymentMethods.map(m => (
+                                      <option key={m.id} value={m.id}>{m.name}</option>
+                                    ))}
+                                  </select>
                                 </div>
+
+                                {selectedMethodInfo && selectedMethodInfo.fields && selectedMethodInfo.fields.length > 0 && (
+                                  <div className="bank-info-box mini" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                                    {selectedMethodInfo.fields.map(f => (
+                                      <div key={f.id}>
+                                        <strong>{f.label}:</strong> {f.value}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
 
                                 <div className="payment-form-grid">
                                   <div className="input-group">
@@ -662,7 +683,8 @@ const Settings = () => {
                                 </button>
                               </div>
                             </>
-                          )}
+                            );
+                          })()}
                         </>
                       );
                     })()}

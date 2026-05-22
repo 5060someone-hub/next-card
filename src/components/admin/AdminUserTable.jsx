@@ -56,7 +56,7 @@ const AdminUserTable = ({
               <th onClick={() => handleSort('name')}>회원정보</th>
               <th>연락처</th>
               <th onClick={() => handleSort('createdAt')}>가입일</th>
-              <th>입금</th>
+              <th>결제(이체)</th>
               <th>구독/만료</th>
               <th>등급/권한</th>
               <th>QR</th>
@@ -123,8 +123,9 @@ const AdminUserTable = ({
                                       <Clock size={15} color="#d97706" /> 대기중
                                     </span>
                                     <div className="pending-sub-details" style={{ fontSize: '0.92rem', marginTop: '8px', lineHeight: '1.4', color: '#1e293b' }}>
-                                      <div>입금: <strong>{c.depositorName}</strong></div>
-                                      <div>액수: <strong>{c.paymentAmount?.toLocaleString()}원</strong></div>
+                                      <div>수단: <strong>{c.paymentMethod || '무통장 입금'}</strong></div>
+                                      <div>입금자명: <strong>{c.depositorName}</strong></div>
+                                      <div>예정금액: <strong>{c.paymentAmount?.toLocaleString()}원</strong></div>
                                       <div style={{ color: '#2563eb', fontWeight: '800', fontSize: '0.88rem', marginTop: '6px' }}>
                                         {products.find(p => p.id === c.requestedGrade)?.name || c.requestedGrade} ({c.requestedDuration}개월)
                                       </div>
@@ -133,7 +134,7 @@ const AdminUserTable = ({
                                       <button
                                         className="btn-quick-approve"
                                         onClick={() => handleApproveClick(c)}
-                                        title="무통장 입금 승인"
+                                        title="결제 수동 승인"
                                         style={{
                                           padding: '6px 12px',
                                           background: '#10b981',

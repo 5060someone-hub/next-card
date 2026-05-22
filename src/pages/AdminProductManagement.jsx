@@ -6,7 +6,7 @@ import './AdminDashboard.css';
 
 export default function AdminProductManagement() {
   const [products, setProducts] = useState([]);
-  const [bankInfo, setBankInfo] = useState({ description: '', accounts: [] });
+  const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newProductName, setNewProductName] = useState('');
@@ -45,12 +45,12 @@ export default function AdminProductManagement() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const [prodRes, bankRes] = await Promise.all([
+      const [prodRes, payRes] = await Promise.all([
         fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/products`),
-        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/bank-info`)
+        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/payment-methods`)
       ]);
       if (prodRes.ok) setProducts(await prodRes.json());
-      if (bankRes.ok) setBankInfo(await bankRes.json());
+      if (payRes.ok) setPaymentMethods(await payRes.json());
     } catch (err) {
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
     } finally {
@@ -58,38 +58,56 @@ export default function AdminProductManagement() {
     }
   };
 
-  const handleSaveBankInfo = async () => {
+  const handleSavePaymentMethods = async () => {
     try {
-      const res = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/bank-info`, {
+      const res = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/payment-methods`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bankInfo)
+        body: JSON.stringify(paymentMethods)
       });
-      if (res.ok) alert('무통장 입금 정보가 저장되었습니다.');
+      if (res.ok) alert('결제 수단 정보가 저장되었습니다.');
       else alert('저장 실패');
     } catch (e) {
       alert('오류 발생');
     }
   };
 
-  const handleAddBankAccount = () => {
-    setBankInfo(prev => ({
-      ...prev,
-      accounts: [...prev.accounts, { id: Date.now().toString(), bank: '', account: '', owner: '' }]
-    }));
+  const handleAddPaymentMethod = () => {
+    setPaymentMethods([...paymentMethods, {
+      id: Date.now().toString(),
+      name: '새 결제수단',
+      enabled: false,
+      description: '',
+      fields: []
+    }]);
   };
 
-  const handleRemoveBankAccount = (index) => {
-    setBankInfo(prev => ({
-      ...prev,
-      accounts: prev.accounts.filter((_, i) => i !== index)
-    }));
+  const handleRemovePaymentMethod = (index) => {
+    setPaymentMethods(paymentMethods.filter((_, i) => i !== index));
   };
 
-  const handleBankAccountChange = (index, field, value) => {
-    const newAccounts = [...bankInfo.accounts];
-    newAccounts[index][field] = value;
-    setBankInfo({ ...bankInfo, accounts: newAccounts });
+  const handleMethodChange = (index, field, value) => {
+    const newMethods = [...paymentMethods];
+    newMethods[index][field] = value;
+    setPaymentMethods(newMethods);
+  };
+
+  const handleAddField = (methodIndex) => {
+    const newMethods = [...paymentMethods];
+    newMethods[methodIndex].fields.push({ id: Date.now().toString(), label: '', value: '' });
+    setPaymentMethods(newMethods);
+  };
+
+  const handleRemoveField = (methodIndex, fieldIndex) => {
+    const newMethods = [...paymentMethods];
+    newMethods[methodIndex].fields = newMethods[methodIndex].fields.filter((_, i) => i !== fieldIndex);
+    setPaymentMethods(newMethods);
+  };
+
+  const handleFieldChange = (methodIndex, fieldIndex, key, val) => {
+    const newMethods = [...paymentMethods];
+    newMethods[methodIndex].fields[fieldIndex][key] = val;
+    setPaymentMethods(newMethods);
   };
 
   const handleAddProduct = async (e) => {
@@ -481,64 +499,108 @@ export default function AdminProductManagement() {
             </table>
           </section>
 
-          {/* 무통장 입금 정보 관리 */}
+          {/* 결제 수단 관리 */}
           <section className="form-section animate-in" style={{ marginTop: '2rem' }}>
-            <h2 className="section-title">
-              <span className="icon-wrap"><AlertCircle size={20} /></span>
-              무통장 입금 정보 관리
-            </h2>
-            <div className="input-group">
-              <label>안내 문구</label>
-              <textarea 
-                value={bankInfo.description}
-                onChange={e => setBankInfo({...bankInfo, description: e.target.value})}
-                placeholder="입금 시 유의사항 등을 입력하세요"
-                rows={3}
-                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-              />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h2 className="section-title" style={{ margin: 0 }}>
+                <span className="icon-wrap"><AlertCircle size={20} /></span>
+                결제 수단 설정
+              </h2>
+              <button type="button" onClick={handleAddPaymentMethod} className="btn-secondary" style={{ padding: '0.5rem 1rem' }}>
+                <Plus size={16} style={{ marginRight: '4px' }} /> 결제 수단 추가
+              </button>
             </div>
 
-            <div style={{ marginTop: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <label style={{ fontWeight: 'bold' }}>등록된 입금 계좌</label>
-                <button type="button" onClick={handleAddBankAccount} className="btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
-                  <Plus size={16} style={{ marginRight: '4px' }} /> 계좌 추가
-                </button>
-              </div>
-              
-              {bankInfo.accounts.map((acc, index) => (
-                <div key={acc.id} style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center', background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
-                  <input 
-                    type="text" 
-                    placeholder="은행명" 
-                    value={acc.bank} 
-                    onChange={e => handleBankAccountChange(index, 'bank', e.target.value)}
-                    style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
-                  />
-                  <input 
-                    type="text" 
-                    placeholder="계좌번호" 
-                    value={acc.account} 
-                    onChange={e => handleBankAccountChange(index, 'account', e.target.value)}
-                    style={{ flex: 2, padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
-                  />
-                  <input 
-                    type="text" 
-                    placeholder="예금주" 
-                    value={acc.owner} 
-                    onChange={e => handleBankAccountChange(index, 'owner', e.target.value)}
-                    style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
-                  />
-                  <button type="button" onClick={() => handleRemoveBankAccount(index)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {paymentMethods.map((method, mIndex) => (
+                <div key={method.id} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.5rem', position: 'relative' }}>
+                  <button 
+                    onClick={() => handleRemovePaymentMethod(mIndex)}
+                    style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                  >
                     <Trash2 size={20} />
                   </button>
+
+                  <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.4rem' }}>결제 수단명</label>
+                      <input 
+                        type="text" 
+                        value={method.name} 
+                        onChange={e => handleMethodChange(mIndex, 'name', e.target.value)}
+                        placeholder="예: 무통장 입금, 암호화폐, 네이버페이"
+                        style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
+                      <label className="switch">
+                        <input 
+                          type="checkbox" 
+                          checked={method.enabled} 
+                          onChange={e => handleMethodChange(mIndex, 'enabled', e.target.checked)} 
+                        />
+                        <span className="slider"></span>
+                      </label>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>활성화</span>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.4rem' }}>결제 안내 문구</label>
+                    <textarea 
+                      value={method.description}
+                      onChange={e => handleMethodChange(mIndex, 'description', e.target.value)}
+                      placeholder="결제 시 안내할 사항을 입력하세요."
+                      rows={2}
+                      style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+
+                  <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>세부 정보 입력 필드 (예: 은행명-계좌번호, 코인-지갑주소 등)</label>
+                      <button type="button" onClick={() => handleAddField(mIndex)} className="btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>
+                        <Plus size={14} style={{ marginRight: '4px' }} /> 정보 추가
+                      </button>
+                    </div>
+
+                    {method.fields && method.fields.map((field, fIndex) => (
+                      <div key={field.id} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
+                        <input 
+                          type="text" 
+                          placeholder="항목명 (예: 신한은행)" 
+                          value={field.label} 
+                          onChange={e => handleFieldChange(mIndex, fIndex, 'label', e.target.value)}
+                          style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="세부정보 (예: 110-123-1234 주식회사)" 
+                          value={field.value} 
+                          onChange={e => handleFieldChange(mIndex, fIndex, 'value', e.target.value)}
+                          style={{ flex: 2, padding: '0.5rem', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+                        />
+                        <button type="button" onClick={() => handleRemoveField(mIndex, fIndex)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))}
+                    {(!method.fields || method.fields.length === 0) && (
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8' }}>추가된 정보가 없습니다.</p>
+                    )}
+                  </div>
                 </div>
               ))}
+              {paymentMethods.length === 0 && (
+                <div className="empty-row" style={{ textAlign: 'center', padding: '2rem', background: '#f8fafc', borderRadius: '12px' }}>
+                  등록된 결제 수단이 없습니다.
+                </div>
+              )}
             </div>
 
             <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
-              <button onClick={handleSaveBankInfo} className="btn-primary" style={{ padding: '0.75rem 1.5rem' }}>
-                <CheckCircle2 size={18} style={{ marginRight: '6px' }} /> 무통장 입금 정보 저장
+              <button onClick={handleSavePaymentMethods} className="btn-primary" style={{ padding: '0.75rem 1.5rem' }}>
+                <CheckCircle2 size={18} style={{ marginRight: '6px' }} /> 결제 수단 정보 저장
               </button>
             </div>
           </section>

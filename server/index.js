@@ -17,7 +17,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 
 // ==========================================
-// 설정: 무통장 입금 정보 관리
+// 설정: 무통장 입금 정보 및 결제 수단 관리
 // ==========================================
 app.get('/api/settings/bank-info', async (req, res) => {
   try {
@@ -38,6 +38,44 @@ app.put('/api/settings/bank-info', async (req, res) => {
       { upsert: true }
     );
     res.json({ message: '무통장 입금 정보가 업데이트되었습니다.' });
+  } catch (err) {
+    res.status(500).json({ message: '업데이트 실패', error: err.message });
+  }
+});
+
+app.get('/api/settings/payment-methods', async (req, res) => {
+  try {
+    let info = await Setting.findOne({ key: 'payment_methods' });
+    if (!info) {
+      // 초기 기본값
+      const defaultMethods = [
+        {
+          id: 'bank',
+          name: '무통장 입금',
+          enabled: true,
+          description: '아래 공식 계좌로 입금 신청 후 이체해주시면 승인 처리됩니다.',
+          fields: [
+            { id: '1', label: '신한은행', value: '110-123-456789 주식회사 넥스트카드' }
+          ]
+        }
+      ];
+      info = await Setting.create({ key: 'payment_methods', value: defaultMethods });
+    }
+    res.json(info.value);
+  } catch (err) {
+    res.status(500).json({ message: '조회 실패', error: err.message });
+  }
+});
+
+app.put('/api/settings/payment-methods', async (req, res) => {
+  try {
+    const methods = req.body;
+    await Setting.findOneAndUpdate(
+      { key: 'payment_methods' },
+      { value: methods },
+      { upsert: true }
+    );
+    res.json({ message: '결제 수단 정보가 업데이트되었습니다.' });
   } catch (err) {
     res.status(500).json({ message: '업데이트 실패', error: err.message });
   }
@@ -79,6 +117,7 @@ const cardSchema = new mongoose.Schema({
   paymentStatus: { type: String, default: 'none' }, // 'none', 'pending', 'confirmed'
   depositorName: { type: String, default: '' },
   paymentAmount: { type: Number, default: 0 },
+  paymentMethod: { type: String, default: '무통장 입금' },
   requestedGrade: { type: String, default: '' },
   requestedDuration: { type: Number, default: 0 },
   paymentRequestDate: { type: Date, default: null },
@@ -1081,6 +1120,29 @@ app.delete('/api/logs/:id', async (req, res) => {
   }
 });
 
+// 무통장입금 반려
+app.put('/api/admin/payment/reject/:cardId', async (req, res) => {
+  try {
+    const card = await Card.findByIdAndUpdate(
+      req.params.cardId,
+      {
+        paymentStatus: 'none',
+        depositorName: '',
+        paymentAmount: 0,
+        paymentMethod: '무통장 입금',
+        requestedGrade: '',
+        requestedDuration: 0,
+        paymentRequestDate: null
+      },
+      { new: true }
+    );
+    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
+    res.json({ message: '반려 처리 완료', card });
+  } catch (err) {
+    res.status(500).json({ message: '반려 실패', error: err.message });
+  }
+});
+
 // ==========================================
 // [통계분석 (Analytics) API]
 // ==========================================
@@ -1154,7 +1216,7 @@ app.get('/api/analytics/stats/:userId', async (req, res) => {
 
 // [결제 API]
 app.post('/api/payment/request', async (req, res) => {
-  const { cardId, depositorName, paymentAmount, requestedGrade, requestedDuration } = req.body;
+  const { cardId, depositorName, paymentAmount, paymentMethod, requestedGrade, requestedDuration } = req.body;
   try {
     const card = await Card.findByIdAndUpdate(
       cardId,
@@ -1162,6 +1224,7 @@ app.post('/api/payment/request', async (req, res) => {
         paymentStatus: 'pending',
         depositorName,
         paymentAmount,
+        paymentMethod: paymentMethod || '무통장 입금',
         requestedGrade,
         requestedDuration,
         paymentRequestDate: new Date()
@@ -1270,7 +1333,7 @@ app.put('/api/admin/user/:userId/role', async (req, res) => {
 
 // 회원 정보 수정
 app.put('/api/admin/user/:userId', async (req, res) => {
-  const { name, email, phone, role, grade, expiryDate, paymentStatus, paymentDate } = req.body;
+  const { name, email, phone, role, grade, expiryDate, paymentStatus, paymentDate, paymentMethod } = req.body;
   try {
     // 1. 유저 정보 업데이트
     await User.findByIdAndUpdate(req.params.userId, { name, email, phone, role });
@@ -1281,6 +1344,7 @@ app.put('/api/admin/user/:userId', async (req, res) => {
     if (expiryDate !== undefined) cardUpdate.expiryDate = expiryDate ? new Date(expiryDate) : null;
     if (paymentStatus !== undefined) cardUpdate.paymentStatus = paymentStatus;
     if (paymentDate !== undefined) cardUpdate.paymentDate = paymentDate ? new Date(paymentDate) : null;
+    if (paymentMethod !== undefined) cardUpdate.paymentMethod = paymentMethod;
     
     if (Object.keys(cardUpdate).length > 0) {
       const cards = await Card.find({ userId: new mongoose.Types.ObjectId(req.params.userId) });
