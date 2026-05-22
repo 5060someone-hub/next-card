@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import { Clock, CheckCircle, Search, RefreshCw } from 'lucide-react';
+import { Clock, CheckCircle, Search, RefreshCw, Trash2 } from 'lucide-react';
 import './AdminDashboard.css';
 
 export default function AdminPlanChanges() {
@@ -39,6 +39,22 @@ export default function AdminPlanChanges() {
       setError('내역을 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('정말 이 요금 변경 내역을 삭제하시겠습니까?')) return;
+    try {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/plan-changes/${id}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        setChanges(changes.filter(c => c._id !== id));
+      } else {
+        alert('삭제에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('오류가 발생했습니다.');
     }
   };
 
@@ -82,6 +98,7 @@ export default function AdminPlanChanges() {
                 <th>명함 정보</th>
                 <th>이전 등급</th>
                 <th>변경된 등급</th>
+                <th>관리</th>
               </tr>
             </thead>
             <tbody>
@@ -113,6 +130,15 @@ export default function AdminPlanChanges() {
                       <span style={{ padding: '4px 8px', background: '#ecfdf5', borderRadius: '4px', fontSize: '0.8rem', color: '#059669', fontWeight: 'bold' }}>
                         {getGradeName(log.newGrade)}
                       </span>
+                    </td>
+                    <td>
+                      <button 
+                        onClick={() => handleDelete(log._id)} 
+                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                        title="삭제"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </td>
                   </tr>
                 ))

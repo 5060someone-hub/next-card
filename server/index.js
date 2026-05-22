@@ -1442,6 +1442,16 @@ app.put('/api/admin/plan-changes/read', async (req, res) => {
   }
 });
 
+// 요금 변경 내역 삭제
+app.delete('/api/admin/plan-changes/:id', async (req, res) => {
+  try {
+    await PlanChange.findByIdAndDelete(req.params.id);
+    res.json({ message: '삭제 완료' });
+  } catch (err) {
+    res.status(500).json({ message: '삭제 실패', error: err.message });
+  }
+});
+
 // 문의사항 삭제
 app.delete('/api/admin/inquiry/:id', async (req, res) => {
   try {
