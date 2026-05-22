@@ -730,33 +730,46 @@ app.get('/api/cards/:userId', async (req, res) => {
 });
 
 // 명함 VCF 파일 직접 다운로드 (안드로이드 브라우저 버그 우회용)
-app.get('/api/card/vcf/:id', async (req, res) => {
+app.get('/api/card/vcf/:identifier', async (req, res) => {
   try {
-    const card = await Card.findById(req.params.id);
+    const { identifier } = req.params;
+    let card = null;
+
+    // card view와 동일하게: 커스텀 URL 먼저, 그 다음 ObjectId로 검색
+    card = await Card.findOne({ 'cardData.customCardUrl': identifier });
+    if (!card && mongoose.Types.ObjectId.isValid(identifier)) {
+      card = await Card.findOne({
+        $or: [
+          { _id: new mongoose.Types.ObjectId(identifier) },
+          { userId: new mongoose.Types.ObjectId(identifier) }
+        ]
+      });
+    }
+
     if (!card) {
       return res.status(404).send('명함을 찾을 수 없습니다.');
     }
-    
-    // 실제 CRLF(\r\n) 줄바꿈으로 vCard 3.0 생성
+
+    const d = card.cardData || {};
     const lines = [
       'BEGIN:VCARD',
       'VERSION:3.0',
-      `N:${card.name || ''};;;;`,
-      `FN:${card.name || ''}`
+      `N:${d.name || ''};;;;`,
+      `FN:${d.name || ''}`
     ];
-    if (card.company)      lines.push(`ORG:${card.company}`);
-    if (card.jobTitle)     lines.push(`TITLE:${card.jobTitle}`);
-    if (card.phoneWork)    lines.push(`TEL;TYPE=WORK:${card.phoneWork}`);
-    if (card.phonePersonal) lines.push(`TEL;TYPE=CELL:${card.phonePersonal}`);
-    if (card.email)        lines.push(`EMAIL:${card.email}`);
-    if (card.website)      lines.push(`URL:${card.website}`);
-    if (card.intro)        lines.push(`NOTE:${card.intro.replace(/\n/g, '\\n')}`);
+    if (d.company)       lines.push(`ORG:${d.company}`);
+    if (d.jobTitle)      lines.push(`TITLE:${d.jobTitle}`);
+    if (d.phoneWork)     lines.push(`TEL;TYPE=WORK:${d.phoneWork}`);
+    if (d.phonePersonal) lines.push(`TEL;TYPE=CELL:${d.phonePersonal}`);
+    if (d.email)         lines.push(`EMAIL:${d.email}`);
+    if (d.website)       lines.push(`URL:${d.website}`);
+    if (d.intro)         lines.push(`NOTE:${d.intro.replace(/\n/g, '\\n')}`);
     lines.push('END:VCARD');
 
     const vcf = lines.join('\r\n') + '\r\n';
 
     res.setHeader('Content-Type', 'text/vcard; charset=utf-8');
-    const safeName = encodeURIComponent(card.name || 'contact');
+    const safeName = encodeURIComponent(d.name || 'contact');
     res.setHeader('Content-Disposition', `attachment; filename="${safeName}.vcf"`);
     res.send(Buffer.from(vcf, 'utf-8'));
   } catch (err) {

@@ -92,10 +92,9 @@ const PublicCard = () => {
   const handleSaveContact = () => {
     trackEvent('save_contact');
     
-    // 가장 확실하고 버그가 없는 방식: 서버에서 생성된 VCF 파일을 다이렉트로 다운로드 받습니다.
-    // 브라우저의 자체 Blob 생성 버그를 완벽하게 우회합니다.
+    // URL의 id 파라미터를 백엔드 VCF 엔드포인트로 바로 전달
     const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
-    window.location.href = `${apiUrl}/api/card/vcf/${cardData._id}`;
+    window.location.href = `${apiUrl}/api/card/vcf/${id}`;
   };
 
   const themeColor = cardData.themeColor || '#db2777';
