@@ -41,7 +41,7 @@ const SpaSectionRenderer = ({ sections, themeColor, textColor, blockBgColor }) =
             background: 'rgba(255,255,255,0.1)',
             borderRadius: '20px'
           }}>
-            {sec.title}
+            {sec.title === '텍스트 블록' ? '소개글' : sec.title}
           </a>
         ))}
       </div>
@@ -59,7 +59,7 @@ const SpaSectionRenderer = ({ sections, themeColor, textColor, blockBgColor }) =
             border: '1px solid rgba(255,255,255,0.1)',
             scrollMarginTop: '80px'
           }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: themeColor, fontSize: '1.1rem' }}>{sec.title}</h3>
+            <h3 style={{ margin: '0 0 1rem 0', color: themeColor, fontSize: '1.1rem' }}>{sec.title === '텍스트 블록' ? '소개글' : sec.title}</h3>
 
             {sec.type === 'text' && (
               <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', lineHeight: '1.6', color: textColor || '#fff' }}>
