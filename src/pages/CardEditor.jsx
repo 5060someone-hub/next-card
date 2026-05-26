@@ -80,7 +80,7 @@ const CardEditor = () => {
             setFormData(prev => ({
               ...prev,
               ...data,
-              productType: fullCard.grade || data.productType || 'general', // 카드의 실제 등급으로 에디터의 등급을 매핑
+              productType: (fullCard.paymentStatus === 'pending' ? fullCard.requestedGrade : fullCard.grade) || fullCard.grade || data.productType || 'general', // 결제 대기 중인 경우 요청 등급을 우선 표시
               intro: data.intro || data.bio || '',
               introAlign: data.introAlign || 'center',
               nameFontSizeKor: data.nameFontSizeKor || data.nameFontSize || 24,

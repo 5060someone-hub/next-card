@@ -313,3 +313,52 @@
     padding-bottom: 120px;
   }
 }
+
+/* Image Modal */
+.nc-image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.nc-image-modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.nc-image-modal-content img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.btn-close-modal {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 32px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.nc-main-image img, .nc-thumbnails img {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.nc-main-image img:hover, .nc-thumbnails img:hover {
+  transform: scale(1.02);
+}
+

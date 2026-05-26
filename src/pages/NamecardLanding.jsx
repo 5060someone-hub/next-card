@@ -9,6 +9,7 @@ const NamecardLanding = () => {
   const navigate = useNavigate();
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -68,11 +69,20 @@ const NamecardLanding = () => {
         {/* Product Images */}
         <div className="nc-gallery">
           <div className="nc-main-image">
-            <img src={content.mainImage} alt={content.title} />
+            <img 
+              src={content.mainImage} 
+              alt={content.title} 
+              onClick={() => setSelectedImage(content.mainImage)} 
+            />
           </div>
           <div className="nc-thumbnails">
             {content.thumbnails.map((thumb, idx) => thumb ? (
-              <img key={idx} src={thumb} alt={`Thumb ${idx+1}`} />
+              <img 
+                key={idx} 
+                src={thumb} 
+                alt={`Thumb ${idx+1}`} 
+                onClick={() => setSelectedImage(thumb)}
+              />
             ) : null)}
           </div>
         </div>
@@ -118,7 +128,12 @@ const NamecardLanding = () => {
               비즈니스의 격을 높이는 프리미엄 명함.<br />
               종이의 질감부터 섬세한 후가공까지, 당신만의 특별한 브랜드 가치를 명함 한 장에 담아냅니다.
             </p>
-            <img src={content.mainImage} alt="Detail" className="nc-detail-img" />
+            <img 
+              src={content.mainImage} 
+              alt="Detail" 
+              className="nc-detail-img" 
+              onClick={() => setSelectedImage(content.mainImage)} 
+            />
             <p>
               애드큐 전문 디자이너의 손길을 거쳐 가장 트렌디하고 세련된 레이아웃을 제공합니다.
             </p>
@@ -138,6 +153,16 @@ const NamecardLanding = () => {
           </button>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <div className="nc-image-modal" onClick={() => setSelectedImage(null)}>
+          <div className="nc-image-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="btn-close-modal" onClick={() => setSelectedImage(null)}>×</button>
+            <img src={selectedImage} alt="Enlarged view" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
