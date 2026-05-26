@@ -71,7 +71,44 @@ const PublicCard = () => {
     fetchData();
   }, [id]);
 
-  if (loading) return <div className="loading-screen">로딩 중...</div>;
+  if (loading) {
+    const splashIcon = localStorage.getItem('globalFavicon');
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh', 
+        background: '#0f172a', 
+        color: '#fff' 
+      }}>
+        {splashIcon ? (
+          <img 
+            src={splashIcon} 
+            alt="Loading..." 
+            style={{ 
+              width: '80px', 
+              height: '80px', 
+              objectFit: 'contain',
+              animation: 'pulse 1.5s infinite ease-in-out'
+            }} 
+          />
+        ) : (
+          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', animation: 'pulse 1.5s infinite ease-in-out' }}>
+            NextCard
+          </div>
+        )}
+        <style>{`
+          @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+          }
+        `}</style>
+      </div>
+    );
+  }
   if (!cardData) return <div className="error-screen">명함을 찾을 수 없습니다.</div>;
 
   const trackEvent = (actionType, linkUrl = '') => {

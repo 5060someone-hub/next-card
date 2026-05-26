@@ -38,6 +38,7 @@ function App() {
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data?.nav?.faviconUrl) {
+          // 브라우저 탭 아이콘 교체
           let link = document.querySelector("link[rel~='icon']");
           if (!link) {
             link = document.createElement('link');
@@ -45,6 +46,9 @@ function App() {
             document.head.appendChild(link);
           }
           link.href = data.nav.faviconUrl;
+          
+          // 로딩 스크린용으로 로컬스토리지에 저장
+          localStorage.setItem('globalFavicon', data.nav.faviconUrl);
         }
       })
       .catch(err => console.error('Failed to load global favicon:', err));
