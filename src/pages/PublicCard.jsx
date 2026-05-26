@@ -88,8 +88,8 @@ const PublicCard = () => {
             src={splashIcon} 
             alt="Loading..." 
             style={{ 
-              width: '80px', 
-              height: '80px', 
+              width: '200px', 
+              height: '200px', 
               objectFit: 'contain',
               animation: 'pulse 1.5s infinite ease-in-out'
             }} 
