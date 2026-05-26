@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import './PublicCard.css';
+import SpaSectionRenderer from '../components/SpaSectionRenderer';
 
 const PublicCard = () => {
   const { id } = useParams();
@@ -288,6 +289,16 @@ const PublicCard = () => {
             </a>
           ))}
         </div>
+
+        {/* SPA Sections Rendering */}
+        {cardData.isSpaEnabled && productFeatures?.allowSinglePage !== false && (
+          <SpaSectionRenderer 
+            sections={cardData.sections} 
+            themeColor={themeColor} 
+            textColor={cardData.textColor} 
+            blockBgColor={finalBlockBg}
+          />
+        )}
 
         {/* Save Contact Button */}
         <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>

@@ -29,6 +29,8 @@ import { QRCodeSVG } from 'qrcode.react';
 import './CardEditor.css';
 import CardPreview from '../components/CardPreview';
 
+import SpaBlocksEditor from '../components/SpaBlocksEditor';
+
 const CardEditor = () => {
   const cardRef = useRef(null);
   const navigate = useNavigate();
@@ -46,7 +48,9 @@ const CardEditor = () => {
     btnBgColor: '#c9d0d9', blockBgColor: '#f1f5f9', btnIconColor: '#ffffff',
     nameFontSizeKor: 24, nameFontSizeEng: 16, jobTitleFontSize: 16, companyFontSize: 14,
     paperCardUrl: '', customCardUrl: '', productType: 'general',
-    sns: { kakaotalk: '', instagram: '', facebook: '', tiktok: '', linkedin: '', x: '', threads: '' }
+    sns: { kakaotalk: '', instagram: '', facebook: '', tiktok: '', linkedin: '', x: '', threads: '' },
+    isSpaEnabled: true,
+    sections: []
   });
 
   // URL 쿼리 파라미터에서 cardId 추출
@@ -85,7 +89,9 @@ const CardEditor = () => {
               introAlign: data.introAlign || 'center',
               nameFontSizeKor: data.nameFontSizeKor || data.nameFontSize || 24,
               nameFontSizeEng: data.nameFontSizeEng || 16,
-              sns: { ...prev.sns, ...(data.sns || {}) }
+              sns: { ...prev.sns, ...(data.sns || {}) },
+              isSpaEnabled: data.isSpaEnabled ?? true,
+              sections: data.sections || []
             }));
           } else {
             alert('명함을 불러올 수 없습니다. 대시보드로 이동합니다.');
@@ -582,6 +588,38 @@ const CardEditor = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* SPA 설정 영역 */}
+              <div className="form-card" style={{ background: '#fff', padding: '1.25rem', borderRadius: '20px', marginBottom: '1.25rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}><Globe size={20} /> 상세 페이지 구성 (SPA)</h3>
+                  {canUseFeature('allowSinglePage') && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={formData.isSpaEnabled} 
+                        onChange={e => setFormData({ ...formData, isSpaEnabled: e.target.checked })}
+                      />
+                      SPA 레이아웃 사용
+                    </label>
+                  )}
+                </div>
+                {!canUseFeature('allowSinglePage') ? (
+                  <div style={{ textAlign: 'center', padding: '2rem', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+                    <Lock size={32} style={{ color: '#ef4444', marginBottom: '1rem' }} />
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#1e293b' }}>프리미엄 전용 기능</h4>
+                    <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>상위 요금제로 업그레이드하시면 나만의 미니 웹사이트(SPA)를 구성할 수 있습니다.</p>
+                    <button type="button" onClick={() => alert('결제/업그레이드 페이지로 이동합니다.')} style={{ marginTop: '1rem', padding: '8px 16px', background: '#1e293b', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>업그레이드 하기</button>
+                  </div>
+                ) : (
+                  formData.isSpaEnabled && (
+                    <SpaBlocksEditor 
+                      sections={formData.sections || []} 
+                      onChange={sections => setFormData({ ...formData, sections })} 
+                    />
+                  )
+                )}
               </div>
 
             </div>
