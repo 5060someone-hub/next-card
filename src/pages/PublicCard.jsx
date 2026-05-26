@@ -80,8 +80,8 @@ const PublicCard = () => {
         justifyContent: 'center', 
         alignItems: 'center', 
         height: '100vh', 
-        background: '#0f172a', 
-        color: '#fff' 
+        background: '#ffffff', 
+        color: '#000000' 
       }}>
         {splashIcon ? (
           <img 
