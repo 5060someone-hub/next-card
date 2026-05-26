@@ -6,6 +6,7 @@ import './AdminDashboard.css';
 
 export default function AdminPlanChanges() {
   const [changes, setChanges] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -28,10 +29,16 @@ export default function AdminPlanChanges() {
   const fetchChanges = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/plan-changes`);
-      if (response.ok) {
-        const data = await response.json();
-        setChanges(data);
+      const [resChanges, resProducts] = await Promise.all([
+        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/plan-changes`),
+        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/products`)
+      ]);
+      
+      if (resChanges.ok && resProducts.ok) {
+        const changesData = await resChanges.json();
+        const productsData = await resProducts.json();
+        setChanges(changesData);
+        setProducts(productsData);
         // 읽음 처리
         fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/plan-changes/read`, { method: 'PUT' }).catch(e => console.error(e));
       }
@@ -65,13 +72,17 @@ export default function AdminPlanChanges() {
   };
 
   const getGradeName = (grade) => {
+    const prod = products.find(p => p.id === grade);
+    if (prod) return prod.name;
+    
     if (grade === 'corporate') return '기업용';
     if (grade === 'premium_nfc' || grade === 'premium') return '프리미엄';
     if (grade === 'prod_1778899977850' || grade === 'event') return '체험용(2개월)';
     if (grade === 'prod_1778900193128' || grade === 'advanced') return '표준형(Standard-A)';
     if (grade === 'prod_1779363055944') return '표준형(Standard-B)';
     if (grade === 'prod_1779351721158') return '기본형(Basic-B)';
-    return '기본형(Basic-A)';
+    if (grade === 'general') return '기본형(Basic-A)';
+    return grade || '알 수 없음';
   };
 
   return (
