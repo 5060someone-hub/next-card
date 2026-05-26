@@ -68,9 +68,9 @@ const SpaSectionRenderer = ({ sections, themeColor, textColor, blockBgColor }) =
             )}
 
             {sec.type === 'gallery' && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
                 {(sec.images || []).map((img, i) => (
-                  <img key={i} src={img} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '8px' }} alt="gallery" />
+                  <img key={i} src={img} style={{ width: '100%', aspectRatio: '9 / 5', height: 'auto', objectFit: 'cover', borderRadius: '8px' }} alt="gallery" />
                 ))}
               </div>
             )}
