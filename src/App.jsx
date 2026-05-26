@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
@@ -23,14 +23,33 @@ import NamecardLanding from './pages/NamecardLanding';
 
 const MobileAppWrapper = ({ children }) => (
   <div className="mobile-mockup-wrapper">
-    <div className="app-container">
+    <div className="mobile-mockup">
       {children}
     </div>
   </div>
 );
 
 function App() {
-  console.log('📡 VITE_API_URL:', (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000'));
+  console.log('🔗 VITE_API_URL:', (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000'));
+
+  // 전역 파비콘 설정
+  useEffect(() => {
+    fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/landing-content`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.nav?.faviconUrl) {
+          let link = document.querySelector("link[rel~='icon']");
+          if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+          }
+          link.href = data.nav.faviconUrl;
+        }
+      })
+      .catch(err => console.error('Failed to load global favicon:', err));
+  }, []);
+
   return (
     <Router>
       <Routes>

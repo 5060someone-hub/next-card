@@ -173,10 +173,19 @@ const NavEditor = ({ data, onChange }) => {
 
   return (
     <div className="ale-block">
-      <SectionHeader icon={<Globe size={20}/>} title="네비게이션 바" subtitle="로고 텍스트와 메뉴 링크를 수정합니다." />
+      <SectionHeader icon={<Globe size={20}/>} title="네비게이션 바 및 파비콘" subtitle="로고 텍스트와 메뉴 링크, 사이트 파비콘(아이콘)을 수정합니다." />
       <div className="ale-fields-row">
         <Field label="로고 텍스트" value={data.logo} onChange={v => update('logo', v)} placeholder="NextCard" />
         <Field label="로고 서브텍스트" value={data.logoSub} onChange={v => update('logoSub', v)} placeholder=".me" />
+      </div>
+      <div className="ale-field-group" style={{ marginTop: '16px' }}>
+        <h3 className="field-group-title">파비콘 설정</h3>
+        <ImageField label="파비콘 이미지 (1:1 비율 권장, 투명 배경 PNG/ICO)" value={data.faviconUrl} onChange={v => update('faviconUrl', v)} />
+        {data.faviconUrl && (
+          <div className="ale-img-preview" style={{ width: '64px', height: '64px', marginTop: '10px', background: '#f8fafc', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <img src={data.faviconUrl} alt="파비콘 미리보기" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
+        )}
       </div>
     </div>
   );

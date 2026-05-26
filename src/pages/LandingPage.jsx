@@ -245,6 +245,17 @@ const LandingPage = () => {
           document.title = `${data.nav?.logo || 'NextCard'} | 프리미엄 디지털 명함`;
           const metaDesc = document.querySelector('meta[name="description"]');
           if (metaDesc) metaDesc.setAttribute('content', data.hero?.desc || '나만의 디지털 명함 서비스');
+          
+          // 파비콘 동적 업데이트
+          if (data.nav?.faviconUrl) {
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+              link = document.createElement('link');
+              link.rel = 'icon';
+              document.head.appendChild(link);
+            }
+            link.href = data.nav.faviconUrl;
+          }
         }
       })
       .catch(() => {})
