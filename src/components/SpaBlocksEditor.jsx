@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { ArrowUp, ArrowDown, Trash2, Plus, GripVertical, Image as ImageIcon, Youtube, MapPin, MessageSquare, AlignLeft } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Plus, GripVertical, Image as ImageIcon, Video, MapPin, MessageSquare, AlignLeft } from 'lucide-react';
 
 const SpaBlocksEditor = ({ sections = [], onChange }) => {
   const handleAdd = (type) => {
     const newBlock = {
       id: 'sec_' + Date.now(),
       type: type,
-      title: type === 'text' ? '³» ¼Ò°³' : type === 'gallery' ? 'Æ÷Æ®Æú¸®¿À' : type === 'video' ? '¿µ»ó ¼Ò°³' : type === 'qa' ? 'Q&A' : '¿À½Ã´Â ±æ',
+      title: type === 'text' ? 'ë‚´ ì†Œê°œ' : type === 'gallery' ? 'í¬íŠ¸í´ë¦¬ì˜¤' : type === 'video' ? 'ì˜ìƒ ì†Œê°œ' : type === 'qa' ? 'Q&A' : 'ì˜¤ì‹œëŠ” ê¸¸',
       content: '',
       images: [],
       videoUrl: '',
@@ -32,7 +32,7 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm('ÀÌ ºí·ÏÀ» »èÁ¦ÇÏ½Ã°Ú½À´Ï±î?')) {
+    if (window.confirm('ì´ ë¸”ë¡ì„ ì‚­ì œí•˜ì‹œê² ìŠµë‹ˆê¹Œ?')) {
       onChange(sections.filter(sec => sec.id !== id));
     }
   };
@@ -40,16 +40,16 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
   return (
     <div>
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-        <button type='button' onClick={() => handleAdd('text')} style={btnStyle}><AlignLeft size={16}/> ÅØ½ºÆ® ºí·Ï</button>
-        <button type='button' onClick={() => handleAdd('gallery')} style={btnStyle}><ImageIcon size={16}/> °¶·¯¸®</button>
-        <button type='button' onClick={() => handleAdd('video')} style={btnStyle}><Youtube size={16}/> µ¿¿µ»ó</button>
+        <button type='button' onClick={() => handleAdd('text')} style={btnStyle}><AlignLeft size={16}/> í…ìŠ¤íŠ¸ ë¸”ë¡</button>
+        <button type='button' onClick={() => handleAdd('gallery')} style={btnStyle}><ImageIcon size={16}/> ê°¤ëŸ¬ë¦¬</button>
+        <button type='button' onClick={() => handleAdd('video')} style={btnStyle}><Video size={16}/> ì˜ìƒ</button>
         <button type='button' onClick={() => handleAdd('qa')} style={btnStyle}><MessageSquare size={16}/> Q&A</button>
-        <button type='button' onClick={() => handleAdd('map')} style={btnStyle}><MapPin size={16}/> Áöµµ/ÁÖ¼Ò</button>
+        <button type='button' onClick={() => handleAdd('map')} style={btnStyle}><MapPin size={16}/> ì§€ë„/ì£¼ì†Œ</button>
       </div>
 
       {sections.length === 0 ? (
         <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1', color: '#64748b' }}>
-          »ó´Ü ¹öÆ°À» ´­·¯ SPA ¼½¼ÇÀ» Ãß°¡ÇØ º¸¼¼¿ä.
+          ìƒë‹¨ ë²„íŠ¼ì„ ëˆŒëŸ¬ SPA ì„¹ì…˜ì„ ì¶”ê°€í•´ ë³´ì„¸ìš”.
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -76,7 +76,7 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
                   <textarea 
                     value={sec.content} 
                     onChange={e => handleUpdate(sec.id, 'content', e.target.value)}
-                    placeholder='³»¿ëÀ» ÀÔ·ÂÇÏ¼¼¿ä'
+                    placeholder='ë‚´ìš©ì„ ìž…ë ¥í•˜ì„¸ìš”'
                     rows={4}
                     style={inputStyle}
                   />
@@ -84,7 +84,7 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
                 
                 {sec.type === 'gallery' && (
                   <div>
-                    <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '8px' }}>ÀÌ¹ÌÁö URLÀ» ½°Ç¥(,)·Î ±¸ºÐÇÏ¿© ¿©·¯ °³ ÀÔ·ÂÇÏ¼¼¿ä. (ÃßÈÄ ÀÌ¹ÌÁö ¾÷·Îµå UI·Î °íµµÈ­ °¡´É)</p>
+                    <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '8px' }}>ì´ë¯¸ì§€ URLì„ ì‰¼í‘œ(,)ë¡œ êµ¬ë¶„í•˜ì—¬ ì—¬ëŸ¬ ê°œ ìž…ë ¥í•˜ì„¸ìš”. (ì¶”í›„ ì´ë¯¸ì§€ ì—…ë¡œë“œ UIë¡œ ê³ ë„í™” ê°€ëŠ¥)</p>
                     <textarea 
                       value={(sec.images || []).join(', ')} 
                       onChange={e => handleUpdate(sec.id, 'images', e.target.value.split(',').map(s=>s.trim()).filter(Boolean))}
@@ -100,7 +100,7 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
                     <input 
                       value={sec.videoUrl} 
                       onChange={e => handleUpdate(sec.id, 'videoUrl', e.target.value)}
-                      placeholder='À¯Æ©ºê ¿µ»ó URL (¿¹: https://www.youtube.com/watch?v=...)'
+                      placeholder='ìœ íŠœë¸Œ ì˜ìƒ URL (ì˜ˆ: https://www.youtube.com/watch?v=...)'
                       style={inputStyle}
                     />
                   </div>
@@ -112,20 +112,20 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
                       <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px', background: '#f1f5f9', borderRadius: '8px' }}>
                         <input value={qa.q} onChange={e => {
                           const newList = [...sec.qaList]; newList[i].q = e.target.value; handleUpdate(sec.id, 'qaList', newList);
-                        }} placeholder='Áú¹® (Q)' style={inputStyle} />
+                        }} placeholder='ì§ˆë¬¸ (Q)' style={inputStyle} />
                         <textarea value={qa.a} onChange={e => {
                           const newList = [...sec.qaList]; newList[i].a = e.target.value; handleUpdate(sec.id, 'qaList', newList);
-                        }} placeholder='´äº¯ (A)' rows={2} style={inputStyle} />
+                        }} placeholder='ë‹µë³€ (A)' rows={2} style={inputStyle} />
                         <div style={{ textAlign: 'right' }}>
                           <button type='button' onClick={() => {
                             const newList = sec.qaList.filter((_, idx) => idx !== i);
                             handleUpdate(sec.id, 'qaList', newList);
-                          }} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.75rem', cursor: 'pointer' }}>Ç×¸ñ »èÁ¦</button>
+                          }} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.75rem', cursor: 'pointer' }}>í•­ëª© ì‚­ì œ</button>
                         </div>
                       </div>
                     ))}
                     <button type='button' onClick={() => handleUpdate(sec.id, 'qaList', [...(sec.qaList || []), {q:'', a:''}])} style={{ padding: '8px', background: '#e2e8f0', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>
-                      + Q&A Ãß°¡
+                      + Q&A ì¶”ê°€
                     </button>
                   </div>
                 )}
@@ -135,7 +135,7 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
                     <input 
                       value={sec.address} 
                       onChange={e => handleUpdate(sec.id, 'address', e.target.value)}
-                      placeholder='»ó¼¼ ÁÖ¼Ò ÀÔ·Â'
+                      placeholder='ìƒì„¸ ì£¼ì†Œ ìž…ë ¥'
                       style={inputStyle}
                     />
                   </div>
