@@ -6,8 +6,8 @@
 .ale-layout {
   display: flex;
   min-height: 100vh;
-  background: #0f172a;
-  color: #f8fafc;
+  background: #f8fafc;
+  color: #0f172a;
   font-family: 'Inter', 'Pretendard', sans-serif;
 }
 
@@ -24,9 +24,9 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(15, 23, 42, 0.95);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255,255,255,0.07);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
   padding: 20px 32px;
   display: flex;
   align-items: center;
@@ -66,9 +66,9 @@
   gap: 6px;
   padding: 9px 18px;
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.05);
-  color: #f8fafc;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: rgba(0,0,0,0.06);
+  color: #0f172a;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -76,7 +76,7 @@
 }
 
 .btn-preview:hover, .btn-reset:hover {
-  background: rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.1);
 }
 
 .btn-save {
@@ -116,7 +116,7 @@
 .ale-block-tabs {
   width: 200px;
   flex-shrink: 0;
-  border-right: 1px solid rgba(255,255,255,0.07);
+  border-right: 1px solid rgba(0,0,0,0.08);
   padding: 24px 12px;
   display: flex;
   flex-direction: column;
@@ -129,7 +129,7 @@
   border-radius: 10px;
   border: none;
   background: transparent;
-  color: #94a3b8;
+  color: #475569;
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
@@ -138,13 +138,13 @@
 }
 
 .ale-tab:hover {
-  background: rgba(255,255,255,0.05);
-  color: #f8fafc;
+  background: rgba(0,0,0,0.06);
+  color: #0f172a;
 }
 
 .ale-tab.active {
   background: rgba(219, 39, 119, 0.15);
-  color: #f472b6;
+  color: #db2777;
   box-shadow: inset 3px 0 0 #db2777;
 }
 
@@ -158,8 +158,8 @@
 
 /* ── 블록 카드 ── */
 .ale-block {
-  background: #1e293b;
-  border: 1px solid rgba(255,255,255,0.06);
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 20px;
   padding: 32px;
   margin-bottom: 24px;
@@ -172,7 +172,7 @@
   gap: 16px;
   margin-bottom: 28px;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
 }
 
 .ale-section-icon {
@@ -203,7 +203,7 @@
 .ale-field-group {
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  border-top: 1px dashed rgba(0, 0, 0, 0.08);
 }
 
 .ale-field-group:first-of-type {
@@ -215,7 +215,7 @@
 .field-group-title {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #f472b6;
+  color: #db2777;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
@@ -239,7 +239,7 @@
   display: block;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: #475569;
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -249,10 +249,10 @@
 .ale-field textarea {
   width: 100%;
   padding: 11px 14px;
-  background: #0f172a;
-  border: 1.5px solid rgba(255,255,255,0.07);
+  background: #f8fafc;
+  border: 1.5px solid rgba(0,0,0,0.08);
   border-radius: 10px;
-  color: #f8fafc;
+  color: #0f172a;
   font-size: 0.9rem;
   font-family: inherit;
   transition: border-color 0.2s;
@@ -286,8 +286,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #334155;
-  color: white;
+  background: #e2e8f0;
+  color: #0f172a;
   padding: 0 16px;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -306,7 +306,7 @@
   margin-top: 12px;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid rgba(0,0,0,0.08);
   max-height: 180px;
 }
 
@@ -326,9 +326,9 @@
   gap: 16px;
   padding: 20px;
   margin-bottom: 12px;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0,0,0,0.03);
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
 .ale-list-item-controls {
@@ -354,17 +354,17 @@
 
 .btn-move {
   padding: 4px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.1);
   border-radius: 6px;
-  color: #94a3b8;
+  color: #475569;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .btn-move:hover:not(:disabled) {
-  background: rgba(255,255,255,0.1);
-  color: #f8fafc;
+  background: rgba(0,0,0,0.1);
+  color: #0f172a;
 }
 
 .btn-move:disabled {
@@ -396,7 +396,7 @@
   border-radius: 10px;
   border: 2px dashed rgba(219, 39, 119, 0.3);
   background: rgba(219, 39, 119, 0.05);
-  color: #f472b6;
+  color: #db2777;
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
@@ -412,8 +412,8 @@
 
 /* ── 요금제 편집기 ── */
 .ale-pricing-item {
-  background: rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 14px;
   padding: 20px;
   margin-bottom: 16px;
@@ -443,7 +443,7 @@
   gap: 6px;
   cursor: pointer;
   font-size: 0.82rem;
-  color: #94a3b8;
+  color: #475569;
 }
 
 .ale-toggle input {
@@ -460,7 +460,7 @@
   display: block;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: #475569;
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -476,10 +476,10 @@
 .ale-feature-row input {
   flex: 1;
   padding: 8px 12px;
-  background: #0f172a;
-  border: 1.5px solid rgba(255,255,255,0.07);
+  background: #f8fafc;
+  border: 1.5px solid rgba(0,0,0,0.08);
   border-radius: 8px;
-  color: #f8fafc;
+  color: #0f172a;
   font-size: 0.88rem;
   font-family: inherit;
 }
@@ -506,24 +506,24 @@
   padding: 6px 12px;
   margin-top: 6px;
   border-radius: 8px;
-  border: 1px dashed rgba(255,255,255,0.15);
+  border: 1px dashed rgba(0,0,0,0.15);
   background: transparent;
-  color: #94a3b8;
+  color: #475569;
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-add-feature:hover {
-  border-color: rgba(255,255,255,0.3);
-  color: #f8fafc;
+  border-color: rgba(0,0,0,0.3);
+  color: #0f172a;
 }
 
 /* ── 저장 푸터 ── */
 .ale-save-footer {
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid rgba(0,0,0,0.08);
 }
 
 .btn-save-big {
@@ -558,7 +558,7 @@
 .ale-loading {
   display: flex;
   min-height: 100vh;
-  background: #0f172a;
+  background: #f8fafc;
 }
 
 .ale-loading-content {
