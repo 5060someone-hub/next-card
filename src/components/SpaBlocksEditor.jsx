@@ -7,7 +7,7 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
     const newBlock = {
       id: 'sec_' + Date.now(),
       type: type,
-      title: type === 'text' ? '텍스트 블록' : type === 'gallery' ? '갤러리' : type === 'video' ? '영상 소개' : type === 'qa' ? 'Q&A' : '오시는 길',
+      title: type === 'text' ? '소개글' : type === 'gallery' ? '갤러리' : type === 'video' ? '영상 소개' : type === 'qa' ? 'Q&A' : '오시는 길',
       content: '',
       images: [],
       videoUrl: '',
@@ -40,7 +40,7 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
   return (
     <div>
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-        <button type='button' onClick={() => handleAdd('text')} style={btnStyle}><AlignLeft size={16}/> 텍스트 블록</button>
+        <button type='button' onClick={() => handleAdd('text')} style={btnStyle}><AlignLeft size={16}/> 소개글</button>
         <button type='button' onClick={() => handleAdd('gallery')} style={btnStyle}><ImageIcon size={16}/> 갤러리</button>
         <button type='button' onClick={() => handleAdd('video')} style={btnStyle}><Video size={16}/> 영상</button>
         <button type='button' onClick={() => handleAdd('qa')} style={btnStyle}><MessageSquare size={16}/> Q&A</button>

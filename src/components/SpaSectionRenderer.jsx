@@ -2,15 +2,12 @@ import React from 'react';
 
 const getYouTubeEmbedUrl = (url) => {
   if (!url) return '';
-  let videoId = '';
-  if (url.includes('youtu.be/')) {
-    videoId = url.split('youtu.be/')[1]?.split('?')[0];
-  } else if (url.includes('watch?v=')) {
-    videoId = url.split('watch?v=')[1]?.split('&')[0];
-  } else if (url.includes('embed/')) {
-    videoId = url.split('embed/')[1]?.split('?')[0];
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+  const match = url.match(regExp);
+  if (match && match[2].length === 11) {
+    return `https://www.youtube.com/embed/${match[2]}`;
   }
-  return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  return url;
 };
 
 const SpaSectionRenderer = ({ sections, themeColor, textColor, blockBgColor }) => {
