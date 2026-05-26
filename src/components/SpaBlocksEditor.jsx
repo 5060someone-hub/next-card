@@ -84,14 +84,62 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
                 
                 {sec.type === 'gallery' && (
                   <div>
-                    <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '8px' }}>이미지 URL을 쉼표(,)로 구분하여 여러 개 입력하세요. (추후 이미지 업로드 UI로 고도화 가능)</p>
-                    <textarea 
-                      value={(sec.images || []).join(', ')} 
-                      onChange={e => handleUpdate(sec.id, 'images', e.target.value.split(',').map(s=>s.trim()).filter(Boolean))}
-                      placeholder='https://image1.jpg, https://image2.jpg'
-                      rows={3}
-                      style={inputStyle}
-                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>PC/모바일에서 사진을 직접 선택하여 업로드하세요.</p>
+                      <input 
+                        type="file" 
+                        id={`gallery-upload-${sec.id}`} 
+                        multiple 
+                        accept="image/*" 
+                        style={{ display: 'none' }}
+                        onChange={async (e) => {
+                          const files = Array.from(e.target.files);
+                          if (!files.length) return;
+                          
+                          const readAsDataURL = (file) => new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.readAsDataURL(file);
+                          });
+                          
+                          const base64Images = await Promise.all(files.map(file => readAsDataURL(file)));
+                          handleUpdate(sec.id, 'images', [...(sec.images || []), ...base64Images]);
+                          e.target.value = ''; // 🔄 초기화 (같은 파일 다시 선택 가능하도록)
+                        }}
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => document.getElementById(`gallery-upload-${sec.id}`).click()}
+                        style={{ padding: '6px 12px', background: '#1e293b', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <Plus size={14} /> 사진 추가
+                      </button>
+                    </div>
+                    
+                    {(!sec.images || sec.images.length === 0) ? (
+                      <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1', color: '#94a3b8', fontSize: '0.85rem' }}>
+                        등록된 사진이 없습니다.
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '10px' }}>
+                        {sec.images.map((img, idx) => (
+                          <div key={idx} style={{ position: 'relative', width: '100%', paddingTop: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                            <img src={img} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt={`gallery-${idx}`} />
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                const newImages = [...sec.images];
+                                newImages.splice(idx, 1);
+                                handleUpdate(sec.id, 'images', newImages);
+                              }}
+                              style={{ position: 'absolute', top: '4px', right: '4px', width: '20px', height: '20px', padding: 0, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >
+                              <Trash2 size={10} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
