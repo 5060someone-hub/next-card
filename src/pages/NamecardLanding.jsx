@@ -10,6 +10,7 @@ const NamecardLanding = () => {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [activeMainImage, setActiveMainImage] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -19,6 +20,7 @@ const NamecardLanding = () => {
         if (res.ok) {
           const data = await res.json();
           setContent(data);
+          setActiveMainImage(data.mainImage);
         } else {
           console.error('Failed to load content');
         }
@@ -70,9 +72,9 @@ const NamecardLanding = () => {
         <div className="nc-gallery">
           <div className="nc-main-image">
             <img 
-              src={content.mainImage} 
+              src={activeMainImage || content.mainImage} 
               alt={content.title} 
-              onClick={() => setSelectedImage(content.mainImage)} 
+              onClick={() => setSelectedImage(activeMainImage || content.mainImage)} 
             />
           </div>
           <div className="nc-thumbnails">
@@ -81,7 +83,8 @@ const NamecardLanding = () => {
                 key={idx} 
                 src={thumb} 
                 alt={`Thumb ${idx+1}`} 
-                onClick={() => setSelectedImage(thumb)}
+                onClick={() => setActiveMainImage(thumb)}
+                className={activeMainImage === thumb ? 'active-thumb' : ''}
               />
             ) : null)}
           </div>

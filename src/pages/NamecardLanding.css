@@ -362,3 +362,17 @@
   transform: scale(1.02);
 }
 
+
+.nc-thumbnails img.active-thumb {
+  border: 2px solid #0f172a;
+  opacity: 1;
+}
+
+.nc-thumbnails img {
+  opacity: 0.6;
+}
+
+.nc-thumbnails img:hover {
+  opacity: 1;
+}
+
