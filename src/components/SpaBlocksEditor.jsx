@@ -7,7 +7,7 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
     const newBlock = {
       id: 'sec_' + Date.now(),
       type: type,
-      title: type === 'text' ? '내 소개' : type === 'gallery' ? '포트폴리오' : type === 'video' ? '영상 소개' : type === 'qa' ? 'Q&A' : '오시는 길',
+      title: type === 'text' ? '내 소개' : type === 'gallery' ? '갤러리' : type === 'video' ? '영상 소개' : type === 'qa' ? 'Q&A' : '오시는 길',
       content: '',
       images: [],
       videoUrl: '',

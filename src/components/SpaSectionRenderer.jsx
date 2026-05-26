@@ -1,5 +1,18 @@
 import React from 'react';
 
+const getYouTubeEmbedUrl = (url) => {
+  if (!url) return '';
+  let videoId = '';
+  if (url.includes('youtu.be/')) {
+    videoId = url.split('youtu.be/')[1]?.split('?')[0];
+  } else if (url.includes('watch?v=')) {
+    videoId = url.split('watch?v=')[1]?.split('&')[0];
+  } else if (url.includes('embed/')) {
+    videoId = url.split('embed/')[1]?.split('?')[0];
+  }
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+};
+
 const SpaSectionRenderer = ({ sections, themeColor, textColor, blockBgColor }) => {
   if (!sections || sections.length === 0) return null;
 
@@ -68,7 +81,7 @@ const SpaSectionRenderer = ({ sections, themeColor, textColor, blockBgColor }) =
             {sec.type === 'video' && sec.videoUrl && (
               <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>
                 <iframe 
-                  src={sec.videoUrl.replace('watch?v=', 'embed/').split('&')[0]} 
+                  src={getYouTubeEmbedUrl(sec.videoUrl)} 
                   style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
                   allowFullScreen
                 />
