@@ -516,7 +516,7 @@ export default function AdminProductManagement() {
           </section>
 
           {/* 결제 수단 관리 */}
-          <section className="form-section animate-in" style={{ marginTop: '2rem' }}>
+          <section className="form-section animate-in" style={{ marginTop: '2rem', gridColumn: '1 / -1' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h2 className="section-title" style={{ margin: 0 }}>
                 <span className="icon-wrap"><AlertCircle size={20} /></span>
@@ -527,7 +527,7 @@ export default function AdminProductManagement() {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
               {paymentMethods.map((method, mIndex) => (
                 <div key={method.id} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.5rem', position: 'relative' }}>
                   <button 
