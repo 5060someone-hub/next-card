@@ -15,37 +15,7 @@ const SpaSectionRenderer = ({ sections, themeColor, textColor, blockBgColor }) =
 
   return (
     <div style={{ marginTop: '2rem' }}>
-      {/* Sticky Navigation */}
-      <div style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        background: 'rgba(0,0,0,0.8)',
-        backdropFilter: 'blur(10px)',
-        padding: '10px 0',
-        display: 'flex',
-        gap: '12px',
-        overflowX: 'auto',
-        whiteSpace: 'nowrap',
-        marginBottom: '20px',
-        borderRadius: '12px',
-        border: '1px solid rgba(255,255,255,0.1)'
-      }}>
-        {sections.map(sec => sec.isVisible && (
-          <a key={'nav_'+sec.id} href={'#'+sec.id} style={{
-            color: '#fff',
-            textDecoration: 'none',
-            fontSize: '0.8rem',
-            fontWeight: 'bold',
-            padding: '4px 12px',
-            background: 'rgba(255,255,255,0.1)',
-            borderRadius: '20px'
-          }}>
-            {sec.title === '텍스트 블록' ? '소개글' : sec.title}
-          </a>
-        ))}
-      </div>
-
+      {/* Sticky Navigation (Removed by user request) */}
       {/* Render Sections */}
       {sections.map(sec => {
         if (!sec.isVisible) return null;
