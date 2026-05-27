@@ -390,10 +390,10 @@ const PublicCard = () => {
             style={{ 
               flex: 1,
               padding: '1rem', 
-              background: 'rgba(255,255,255,0.1)', 
-              color: '#fff', 
+              background: '#111827', 
+              color: '#ffffff', 
               borderRadius: '15px', 
-              border: '1px solid rgba(255,255,255,0.2)',
+              border: '1px solid rgba(255,255,255,0.1)',
               fontSize: '0.95rem',
               fontWeight: 700,
               cursor: 'pointer',
@@ -401,7 +401,7 @@ const PublicCard = () => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              backdropFilter: 'blur(10px)'
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
             }}
           >
             <Home size={18} /> 홈화면에 추가
@@ -411,10 +411,10 @@ const PublicCard = () => {
             style={{ 
               flex: 1,
               padding: '1rem', 
-              background: 'rgba(255,255,255,0.1)', 
-              color: '#fff', 
+              background: '#111827', 
+              color: '#ffffff', 
               borderRadius: '15px', 
-              border: '1px solid rgba(255,255,255,0.2)',
+              border: '1px solid rgba(255,255,255,0.1)',
               fontSize: '0.95rem',
               fontWeight: 700,
               cursor: 'pointer',
@@ -422,7 +422,7 @@ const PublicCard = () => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              backdropFilter: 'blur(10px)'
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
             }}
           >
             <Share2 size={18} /> 공유하기
