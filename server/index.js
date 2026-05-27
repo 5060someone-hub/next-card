@@ -146,6 +146,8 @@ const productSchema = new mongoose.Schema({
     allowSinglePage: { type: Boolean, default: false },
     showAds: { type: Boolean, default: true },
     maxSnsCount: { type: Number, default: 1 },
+    maxGallery: { type: Number, default: 1 },
+    maxVideo: { type: Number, default: 1 },
     allowedThemes: { type: [String], default: ['modern'] }
   }
 });
