@@ -175,6 +175,8 @@ export default function AdminProductManagement() {
       allowSinglePage: prod.features?.allowSinglePage || false,
       showAds: prod.features?.showAds ?? true,
       maxSnsCount: prod.features?.maxSnsCount ?? 1,
+      maxGallery: prod.features?.maxGallery ?? 1,
+      maxVideo: prod.features?.maxVideo ?? 1,
       allowedThemes: prod.features?.allowedThemes || ['modern']
     });
     setEditingId(prod.id || prod._id);
@@ -195,6 +197,8 @@ export default function AdminProductManagement() {
       allowSinglePage: false,
       showAds: true,
       maxSnsCount: 1,
+      maxGallery: 1,
+      maxVideo: 1,
       allowedThemes: ['modern']
     });
     setEditingId(null);
@@ -392,7 +396,7 @@ export default function AdminProductManagement() {
                     SPA(싱글페이지) 기능 허용
                   </label>
                   
-                  <div style={{ marginTop: '0.5rem' }}>
+                  <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem 0' }}>
                     <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>최대 SNS 링크 개수</label>
                     <input 
                       type="number" 
@@ -400,6 +404,30 @@ export default function AdminProductManagement() {
                       max="20" 
                       value={features.maxSnsCount} 
                       onChange={(e) => setFeatures({...features, maxSnsCount: parseInt(e.target.value) || 0})}
+                      style={{ width: '60px', padding: '0.4rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}
+                    />
+                  </div>
+                  
+                  <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem 0' }}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>최대 갤러리 섹션 개수</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max="999" 
+                      value={features.maxGallery ?? 1} 
+                      onChange={(e) => setFeatures({...features, maxGallery: parseInt(e.target.value) || 0})}
+                      style={{ width: '60px', padding: '0.4rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}
+                    />
+                  </div>
+                  
+                  <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem 0' }}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>최대 영상 섹션 개수</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max="999" 
+                      value={features.maxVideo ?? 1} 
+                      onChange={(e) => setFeatures({...features, maxVideo: parseInt(e.target.value) || 0})}
                       style={{ width: '60px', padding: '0.4rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}
                     />
                   </div>
