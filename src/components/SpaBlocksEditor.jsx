@@ -2,12 +2,33 @@
 import React from 'react';
 import { ArrowUp, ArrowDown, Trash2, Plus, GripVertical, Image as ImageIcon, Video, MapPin, MessageSquare, AlignLeft } from 'lucide-react';
 
-const SpaBlocksEditor = ({ sections = [], onChange }) => {
+const SpaBlocksEditor = ({ sections = [], onChange, maxGallery = 1, maxVideo = 1 }) => {
   const handleAdd = (type) => {
     if (type === 'gallery') {
       const galleryCount = sections.filter(s => s.type === 'gallery').length;
-      if (galleryCount >= 1) {
-        alert('갤러리 섹션은 1개까지만 추가할 수 있습니다.');
+      if (galleryCount >= maxGallery) {
+        alert(`이 상품 등급에서는 갤러리 섹션을 최대 ${maxGallery}개까지만 추가할 수 있습니다.`);
+        return;
+      }
+    }
+    if (type === 'video') {
+      const videoCount = sections.filter(s => s.type === 'video').length;
+      if (videoCount >= maxVideo) {
+        alert(`이 상품 등급에서는 영상 섹션을 최대 ${maxVideo}개까지만 추가할 수 있습니다.`);
+        return;
+      }
+    }
+    if (type === 'qa') {
+      const qaCount = sections.filter(s => s.type === 'qa').length;
+      if (qaCount >= 1) {
+        alert('Q&A 섹션은 1개까지만 추가할 수 있습니다.');
+        return;
+      }
+    }
+    if (type === 'map') {
+      const mapCount = sections.filter(s => s.type === 'map').length;
+      if (mapCount >= 1) {
+        alert('지도/주소 섹션은 1개까지만 추가할 수 있습니다.');
         return;
       }
     }
