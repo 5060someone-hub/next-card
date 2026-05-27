@@ -204,7 +204,9 @@ const PublicCard = () => {
         color: cardData.textColor || '#fff',
         padding: '3rem 1.5rem',
         minHeight: '100vh',
-        position: 'relative'
+        position: 'relative',
+        boxSizing: 'border-box',
+        overflowX: 'hidden'
       }}>
         {/* Top Logo Section */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem', width: '100%' }}>
