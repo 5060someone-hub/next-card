@@ -66,6 +66,7 @@
   justify-content: center;
   gap: 6px;
   height: 40px;
+  margin: 0;
   padding: 0 18px;
   border-radius: 10px;
   border: 1px solid rgba(0,0,0,0.1);
@@ -88,6 +89,7 @@
   justify-content: center;
   gap: 6px;
   height: 40px;
+  margin: 0;
   padding: 0 24px;
   border-radius: 10px;
   border: none;
