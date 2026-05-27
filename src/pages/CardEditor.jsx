@@ -241,18 +241,20 @@ const CardEditor = () => {
   };
 
   const productTierId = currentProduct?.id || '';
-  let maxGalleryCount = 1;
-  let maxVideoCount = 1;
+  let maxGalleryCount = currentProduct?.features?.maxGallery;
+  let maxVideoCount = currentProduct?.features?.maxVideo;
   
-  if (productTierId === 'premium_nfc' || productTierId === 'premium' || productTierId === 'corporate') {
-    maxGalleryCount = 999;
-    maxVideoCount = 999;
-  } else if (productTierId === 'prod_1778900193128' || productTierId === 'advanced' || productTierId === 'prod_1779363055944') {
-    maxGalleryCount = 3;
-    maxVideoCount = 3;
-  } else if (productTierId === 'general' || productTierId === 'prod_1779351721158' || productTierId === 'event' || productTierId === 'prod_1778899977850') {
-    maxGalleryCount = 1;
-    maxVideoCount = 1;
+  if (maxGalleryCount === undefined || maxVideoCount === undefined) {
+    if (productTierId === 'premium_nfc' || productTierId === 'premium' || productTierId === 'corporate') {
+      maxGalleryCount = 999;
+      maxVideoCount = 999;
+    } else if (productTierId === 'prod_1778900193128' || productTierId === 'advanced' || productTierId === 'prod_1779363055944') {
+      maxGalleryCount = 3;
+      maxVideoCount = 3;
+    } else {
+      maxGalleryCount = 1;
+      maxVideoCount = 1;
+    }
   }
 
   return (
