@@ -11,7 +11,9 @@ import {
   Smartphone,
   Share2,
   UserCircle,
-  Download
+  Download,
+  Home,
+  X
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import './PublicCard.css';
@@ -24,6 +26,17 @@ const PublicCard = () => {
   const [showPaperCard, setShowPaperCard] = useState(false);
   const [adConfig, setAdConfig] = useState(null);
   const [productFeatures, setProductFeatures] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showIosGuide, setShowIosGuide] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,6 +83,37 @@ const PublicCard = () => {
     };
     fetchData();
   }, [id]);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: cardData?.name ? `${cardData.name}님의 명함` : '모바일 명함',
+          url: url
+        });
+      } catch (err) {
+        console.log('Share canceled or failed', err);
+      }
+    } else {
+      navigator.clipboard.writeText(url);
+      alert('명함 주소가 복사되었습니다.');
+    }
+  };
+
+  const handleAddToHome = () => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+      setShowIosGuide(true);
+    } else if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        setDeferredPrompt(null);
+      });
+    } else {
+      alert('브라우저 설정 메뉴에서 "앱 설치" 또는 "홈 화면에 추가"를 선택해주세요.');
+    }
+  };
 
   if (loading) {
     const splashIcon = localStorage.getItem('globalFavicon');
@@ -339,6 +383,52 @@ const PublicCard = () => {
           />
         )}
 
+        {/* Share and Add to Home Screen Buttons */}
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
+          <button 
+            onClick={handleAddToHome}
+            style={{ 
+              flex: 1,
+              padding: '1rem', 
+              background: 'rgba(255,255,255,0.1)', 
+              color: '#fff', 
+              borderRadius: '15px', 
+              border: '1px solid rgba(255,255,255,0.2)',
+              fontSize: '0.95rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <Home size={18} /> 홈화면에 추가
+          </button>
+          <button 
+            onClick={handleShare}
+            style={{ 
+              flex: 1,
+              padding: '1rem', 
+              background: 'rgba(255,255,255,0.1)', 
+              color: '#fff', 
+              borderRadius: '15px', 
+              border: '1px solid rgba(255,255,255,0.2)',
+              fontSize: '0.95rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <Share2 size={18} /> 공유하기
+          </button>
+        </div>
+
         {/* Save Contact Button */}
         <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
           <button 
@@ -428,6 +518,38 @@ const PublicCard = () => {
                 </span>
               </div>
             </a>
+          </div>
+        )}
+
+        {/* iOS Install Guide Modal */}
+        {showIosGuide && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.8)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+          }} onClick={() => setShowIosGuide(false)}>
+            <div style={{
+              background: '#fff', color: '#000', padding: '2rem 1.5rem',
+              borderRadius: '20px', textAlign: 'center', maxWidth: '320px', position: 'relative'
+            }} onClick={e => e.stopPropagation()}>
+              <button 
+                onClick={() => setShowIosGuide(false)}
+                style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}
+              >
+                <X size={20} />
+              </button>
+              <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.2rem', fontWeight: 800 }}>홈 화면에 추가</h3>
+              <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.95rem', lineHeight: '1.5', color: '#444' }}>
+                Safari 하단의 <strong>공유(<Share2 size={14} style={{display:'inline', verticalAlign:'middle'}}/>)</strong> 버튼을 누르고<br/>
+                <strong>'홈 화면에 추가'</strong>를 선택해 주세요.
+              </p>
+              <button 
+                onClick={() => setShowIosGuide(false)}
+                style={{ background: '#000', color: '#fff', padding: '12px 24px', borderRadius: '10px', border: 'none', fontWeight: 700, cursor: 'pointer', width: '100%' }}
+              >
+                확인
+              </button>
+            </div>
           </div>
         )}
       </div>
