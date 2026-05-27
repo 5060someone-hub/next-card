@@ -83,12 +83,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 24px;
+  padding: 9px 24px;
   border-radius: 10px;
-  border: none;
+  border: 1px solid transparent;
   background: linear-gradient(135deg, #db2777, #7c3aed);
   color: white;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
   transition: opacity 0.2s, transform 0.2s;
