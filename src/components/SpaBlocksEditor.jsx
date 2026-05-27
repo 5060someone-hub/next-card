@@ -58,11 +58,9 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <GripVertical size={16} color='#94a3b8' />
-                  <input 
-                    value={sec.title} 
-                    onChange={e => handleUpdate(sec.id, 'title', e.target.value)}
-                    style={{ border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '0.9rem', outline: 'none' }}
-                  />
+                  <span style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#0f172a' }}>
+                    {sec.title}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <button type='button' onClick={() => handleMove(index, -1)} disabled={index === 0} style={iconBtnStyle}><ArrowUp size={14}/></button>
@@ -72,6 +70,16 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
               </div>
 
               <div style={{ padding: '16px' }}>
+                {/* 명시적인 제목 수정 입력란 */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', color: '#475569', marginBottom: '6px' }}>섹션 제목 (메뉴 및 본문에 표시됨)</label>
+                  <input 
+                    value={sec.title} 
+                    onChange={e => handleUpdate(sec.id, 'title', e.target.value)}
+                    placeholder="제목을 입력하세요 (예: 브랜드 스토리)"
+                    style={{ ...inputStyle, background: '#f8fafc', fontWeight: 'bold' }}
+                  />
+                </div>
                 {sec.type === 'text' && (
                   <textarea 
                     value={sec.content} 
