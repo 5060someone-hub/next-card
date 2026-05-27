@@ -63,8 +63,10 @@
 .btn-preview, .btn-reset {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 9px 18px;
+  height: 40px;
+  padding: 0 18px;
   border-radius: 10px;
   border: 1px solid rgba(0,0,0,0.1);
   background: rgba(0,0,0,0.06);
@@ -73,6 +75,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
+  box-sizing: border-box;
 }
 
 .btn-preview:hover, .btn-reset:hover {
@@ -82,10 +85,12 @@
 .btn-save {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 9px 24px;
+  height: 40px;
+  padding: 0 24px;
   border-radius: 10px;
-  border: 1px solid transparent;
+  border: none;
   background: linear-gradient(135deg, #db2777, #7c3aed);
   color: white;
   font-size: 0.85rem;
@@ -93,6 +98,7 @@
   cursor: pointer;
   transition: opacity 0.2s, transform 0.2s;
   box-shadow: 0 4px 15px rgba(219, 39, 119, 0.3);
+  box-sizing: border-box;
 }
 
 .btn-save:hover {
