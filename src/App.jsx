@@ -23,7 +23,7 @@ import NamecardLanding from './pages/NamecardLanding';
 
 const MobileAppWrapper = ({ children }) => (
   <div className="mobile-mockup-wrapper">
-    <div className="mobile-mockup">
+    <div className="app-container">
       {children}
     </div>
   </div>
