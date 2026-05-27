@@ -4,6 +4,14 @@ import { ArrowUp, ArrowDown, Trash2, Plus, GripVertical, Image as ImageIcon, Vid
 
 const SpaBlocksEditor = ({ sections = [], onChange }) => {
   const handleAdd = (type) => {
+    if (type === 'gallery') {
+      const galleryCount = sections.filter(s => s.type === 'gallery').length;
+      if (galleryCount >= 1) {
+        alert('갤러리 섹션은 1개까지만 추가할 수 있습니다.');
+        return;
+      }
+    }
+
     const newBlock = {
       id: 'sec_' + Date.now(),
       type: type,
@@ -93,16 +101,37 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
                 {sec.type === 'gallery' && (
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>PC/모바일에서 사진을 직접 선택하여 업로드하세요.</p>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>PC/모바일에서 사진을 업로드하세요. (최대 4장, 300KB 이하)</p>
                       <input 
                         type="file" 
                         id={`gallery-upload-${sec.id}`} 
                         multiple 
-                        accept="image/*" 
+                        accept="image/jpeg, image/png" 
                         style={{ display: 'none' }}
                         onChange={async (e) => {
                           const files = Array.from(e.target.files);
                           if (!files.length) return;
+                          
+                          const currentImagesCount = (sec.images || []).length;
+                          if (currentImagesCount + files.length > 4) {
+                            alert('사진은 최대 4장까지만 등록 가능합니다.');
+                            e.target.value = '';
+                            return;
+                          }
+
+                          let validFiles = [];
+                          for (const file of files) {
+                            if (file.size > 300 * 1024) {
+                              alert(`'${file.name}' 파일이 300KB를 초과합니다.`);
+                              continue;
+                            }
+                            validFiles.push(file);
+                          }
+
+                          if (validFiles.length === 0) {
+                            e.target.value = '';
+                            return;
+                          }
                           
                           const readAsDataURL = (file) => new Promise((resolve) => {
                             const reader = new FileReader();
@@ -110,7 +139,7 @@ const SpaBlocksEditor = ({ sections = [], onChange }) => {
                             reader.readAsDataURL(file);
                           });
                           
-                          const base64Images = await Promise.all(files.map(file => readAsDataURL(file)));
+                          const base64Images = await Promise.all(validFiles.map(file => readAsDataURL(file)));
                           handleUpdate(sec.id, 'images', [...(sec.images || []), ...base64Images]);
                           e.target.value = ''; // 🔄 초기화 (같은 파일 다시 선택 가능하도록)
                         }}
