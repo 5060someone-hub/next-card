@@ -164,6 +164,14 @@ const CardEditor = () => {
     }
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 250 * 1024) {
+        alert('파일 크기는 250KB 이하여야 합니다.');
+        return;
+      }
+      if (!['image/jpeg', 'image/png'].includes(file.type)) {
+        alert('JPG, PNG 파일만 업로드 가능합니다.');
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData(prev => ({ ...prev, [field]: reader.result }));
@@ -440,11 +448,12 @@ const CardEditor = () => {
                         {formData.logoUrl ? <img src={formData.logoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <ImageIcon color="#cbd5e1" />}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <input type="file" id="logo-upload" hidden onChange={(e) => handleImageChange(e, 'logoUrl')} accept="image/*" disabled={!canUseFeature('allowLogo')} />
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input type="file" id="logo-upload" hidden onChange={(e) => handleImageChange(e, 'logoUrl')} accept="image/jpeg, image/png" disabled={!canUseFeature('allowLogo')} />
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                           <button type="button" onClick={() => canUseFeature('allowLogo') && document.getElementById('logo-upload').click()} style={{ padding: '0.5rem 1rem', background: canUseFeature('allowLogo') ? '#1e293b' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: canUseFeature('allowLogo') ? 'pointer' : 'not-allowed' }}>이미지 교체</button>
                           {formData.logoUrl && <button type="button" onClick={() => handleRemoveImage('logoUrl')} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>삭제</button>}
                         </div>
+                        <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.5rem', marginBottom: 0 }}>250KB 이하의 JPG, PNG 권장</p>
                       </div>
                     </div>
                   </div>
@@ -463,11 +472,12 @@ const CardEditor = () => {
                         {formData.profileUrl ? <img src={formData.profileUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <UserCircle color="#cbd5e1" />}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <input type="file" id="profile-upload" hidden onChange={(e) => handleImageChange(e, 'profileUrl')} accept="image/*" disabled={!canUseFeature('allowProfile')} />
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input type="file" id="profile-upload" hidden onChange={(e) => handleImageChange(e, 'profileUrl')} accept="image/jpeg, image/png" disabled={!canUseFeature('allowProfile')} />
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                           <button type="button" onClick={() => canUseFeature('allowProfile') && document.getElementById('profile-upload').click()} style={{ padding: '0.5rem 1rem', background: canUseFeature('allowProfile') ? '#1e293b' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: canUseFeature('allowProfile') ? 'pointer' : 'not-allowed' }}>이미지 교체</button>
                           {formData.profileUrl && <button type="button" onClick={() => handleRemoveImage('profileUrl')} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>삭제</button>}
                         </div>
+                        <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.5rem', marginBottom: 0 }}>250KB 이하의 JPG, PNG 권장</p>
                       </div>
                     </div>
                   </div>
@@ -578,12 +588,12 @@ const CardEditor = () => {
                         {formData.paperCardUrl ? <img src={formData.paperCardUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>이미지 없음</span>}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <input type="file" id="paper-upload" hidden onChange={(e) => handleImageChange(e, 'paperCardUrl')} accept="image/*" disabled={!canUseFeature('allowPaperCard')} />
-                        <div style={{ display: 'flex', gap: '1rem' }}>
+                        <input type="file" id="paper-upload" hidden onChange={(e) => handleImageChange(e, 'paperCardUrl')} accept="image/jpeg, image/png" disabled={!canUseFeature('allowPaperCard')} />
+                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                           <button type="button" onClick={() => canUseFeature('allowPaperCard') && document.getElementById('paper-upload').click()} style={{ padding: '0.75rem 1.5rem', background: canUseFeature('allowPaperCard') ? '#1e293b' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 600, cursor: canUseFeature('allowPaperCard') ? 'pointer' : 'not-allowed' }}>종이명함 이미지 교체</button>
                           {formData.paperCardUrl && <button type="button" onClick={() => handleRemoveImage('paperCardUrl')} style={{ padding: '0.75rem 1.5rem', background: '#fff', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>이미지 삭제</button>}
                         </div>
-                        <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '1rem' }}>※ 실물 명함이나 QR코드 이미지를 직접 업로드하여 교체할 수 있습니다.</p>
+                        <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '1rem' }}>※ 실물 명함이나 QR코드 이미지를 직접 업로드하여 교체할 수 있습니다. (250KB 이하 JPG, PNG 권장)</p>
                       </div>
                     </div>
                   </div>
