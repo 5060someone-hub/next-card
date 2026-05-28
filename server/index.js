@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const app = express();
 
-// 誘몃뱾?⑥뼱 ?ㅼ젙
+// 미들웨어 설정
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -17,15 +17,15 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 
 // ==========================================
-// ?ㅼ젙: 臾댄넻???낃툑 ?뺣낫 諛?寃곗젣 ?섎떒 愿由?
+// 설정: 무통장 입금 정보 및 결제 수단 관리
 // ==========================================
 app.get('/api/settings/bank-info', async (req, res) => {
   try {
     const info = await Setting.findOne({ key: 'bank_transfer_info' });
-    if (!info) return res.status(404).json({ message: '?ㅼ젙???놁뒿?덈떎.' });
+    if (!info) return res.status(404).json({ message: '설정이 없습니다.' });
     res.json(info.value);
   } catch (err) {
-    res.status(500).json({ message: '議고쉶 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '조회 실패', error: err.message });
   }
 });
 
@@ -37,9 +37,9 @@ app.put('/api/settings/bank-info', async (req, res) => {
       { value: { description, accounts } },
       { upsert: true }
     );
-    res.json({ message: '臾댄넻???낃툑 ?뺣낫媛 ?낅뜲?댄듃?섏뿀?듬땲??' });
+    res.json({ message: '무통장 입금 정보가 업데이트되었습니다.' });
   } catch (err) {
-    res.status(500).json({ message: '?낅뜲?댄듃 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '업데이트 실패', error: err.message });
   }
 });
 
@@ -47,15 +47,15 @@ app.get('/api/settings/payment-methods', async (req, res) => {
   try {
     let info = await Setting.findOne({ key: 'payment_methods' });
     if (!info) {
-      // 珥덇린 湲곕낯媛?
+      // 초기 기본값
       const defaultMethods = [
         {
           id: 'bank',
-          name: '臾댄넻???낃툑',
+          name: '무통장 입금',
           enabled: true,
-          description: '?꾨옒 怨듭떇 怨꾩쥖濡??낃툑 ?좎껌 ???댁껜?댁＜?쒕㈃ ?뱀씤 泥섎━?⑸땲??',
+          description: '아래 공식 계좌로 입금 신청 후 이체해주시면 승인 처리됩니다.',
           fields: [
-            { id: '1', label: '?좏븳???, value: '110-123-456789 二쇱떇?뚯궗 ?μ뒪?몄뭅?? }
+            { id: '1', label: '신한은행', value: '110-123-456789 주식회사 넥스트카드' }
           ]
         }
       ];
@@ -63,7 +63,7 @@ app.get('/api/settings/payment-methods', async (req, res) => {
     }
     res.json(info.value);
   } catch (err) {
-    res.status(500).json({ message: '議고쉶 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '조회 실패', error: err.message });
   }
 });
 
@@ -75,19 +75,19 @@ app.put('/api/settings/payment-methods', async (req, res) => {
       { value: methods },
       { upsert: true }
     );
-    res.json({ message: '寃곗젣 ?섎떒 ?뺣낫媛 ?낅뜲?댄듃?섏뿀?듬땲??' });
+    res.json({ message: '결제 수단 정보가 업데이트되었습니다.' });
   } catch (err) {
-    res.status(500).json({ message: '?낅뜲?댄듃 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '업데이트 실패', error: err.message });
   }
 });
 
 const PORT = process.env.PORT || 5000;
 
-// [DB ?곌껐 ?ㅼ젙]
+// [DB 연결 설정]
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  console.warn('?좑툘 WARNING: MONGODB_URI is not set. Using temporary local database.');
+  console.warn('⚠️ WARNING: MONGODB_URI is not set. Using temporary local database.');
 }
 
 const connectionUri = MONGODB_URI || 'mongodb://127.0.0.1:27017/nextcard';
@@ -95,13 +95,13 @@ const connectionUri = MONGODB_URI || 'mongodb://127.0.0.1:27017/nextcard';
 mongoose.connect(connectionUri)
   .then(() => {
     const isCloud = connectionUri.includes('mongodb+srv');
-    console.log(`??MongoDB Connected: ${isCloud ? 'Cloud Atlas' : 'Local Host'}`);
+    console.log(`✅ MongoDB Connected: ${isCloud ? 'Cloud Atlas' : 'Local Host'}`);
   })
   .catch(err => {
-    console.error('??MongoDB Connection Error:', err.message);
+    console.error('❌ MongoDB Connection Error:', err.message);
   });
 
-// [?ㅽ궎留??뺤쓽]
+// [스키마 정의]
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -117,7 +117,7 @@ const cardSchema = new mongoose.Schema({
   paymentStatus: { type: String, default: 'none' }, // 'none', 'pending', 'confirmed'
   depositorName: { type: String, default: '' },
   paymentAmount: { type: Number, default: 0 },
-  paymentMethod: { type: String, default: '臾댄넻???낃툑' },
+  paymentMethod: { type: String, default: '무통장 입금' },
   requestedGrade: { type: String, default: '' },
   requestedDuration: { type: Number, default: 0 },
   paymentRequestDate: { type: Date, default: null },
@@ -132,6 +132,7 @@ const productSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   description: { type: String, default: '' },
+  sampleUrl: { type: String, default: '' },
   price: {
     annual: { type: Number, default: 0 },
     threeMonths: { type: Number, default: 0 },
@@ -207,39 +208,39 @@ const NetworkLog = mongoose.model('NetworkLog', networkLogSchema);
 const CardAnalytics = mongoose.model('CardAnalytics', cardAnalyticsSchema);
 const PlanChange = mongoose.model('PlanChange', planChangeSchema);
 
-// [珥덇린 ?곗씠???쒕뵫]
+// [초기 데이터 시딩]
 async function seedData() {
   try {
-    // ?? ?ㅼ쨷 紐낇븿 留덉씠洹몃젅?댁뀡 諛??몃뜳???댁젣 ??
+    // ── 다중 명함 마이그레이션 및 인덱스 해제 ──
     try {
       await Card.collection.dropIndex('userId_1');
-      console.log('??Dropped userId_1 unique index successfully.');
+      console.log('✅ Dropped userId_1 unique index successfully.');
     } catch (err) {
-      console.log('?뱄툘 unique index not found or already dropped.');
+      console.log('ℹ️ unique index not found or already dropped.');
     }
 
-    // 留덉뒪??愿由ъ옄 ?앹꽦
+    // 마스터 관리자 생성
     const masterEmail = 'vikitour.boss@gmail.com';
     const masterExists = await User.findOne({ email: masterEmail });
     if (!masterExists) {
       await User.create({
-        name: '留덉뒪?곗슫?곸옄',
+        name: '마스터운영자',
         email: masterEmail,
-        password: '99nice99!!Q', // ?ㅼ젣 ?댁쁺 ??蹂寃?沅뚯옣
+        password: '99nice99!!Q', // 실제 운영 시 변경 권장
         role: 'admin',
         phone: '010-0000-0000'
       });
       console.log('Master Admin seeded.');
     }
 
-    // 湲곕낯 ?곹뭹 ?앹꽦
+    // 기본 상품 생성
     const productsCount = await Product.countDocuments();
     if (productsCount === 0) {
       await Product.insertMany([
         { 
           id: 'general', 
-          name: '?쇰컲??(Digital Only)', 
-          description: '湲곕낯 ?붿???紐낇븿 湲곕뒫',
+          name: '일반형 (Digital Only)', 
+          description: '기본 디지털 명함 기능',
           price: { annual: 55000, threeMonths: 15000, twoMonths: 10000 },
           features: { 
             allowLogo: false, 
@@ -254,8 +255,8 @@ async function seedData() {
         },
         { 
           id: 'premium_nfc', 
-          name: '?꾨━誘몄뾼 (NFC Card ?ы븿)', 
-          description: 'NFC 移대뱶 諛곗넚 ?ы븿',
+          name: '프리미엄 (NFC Card 포함)', 
+          description: 'NFC 카드 배송 포함',
           price: { annual: 22000, threeMonths: 6000, twoMonths: 4000 },
           features: { 
             allowLogo: true, 
@@ -270,8 +271,8 @@ async function seedData() {
         },
         { 
           id: 'corporate', 
-          name: '湲곗뾽??(而ㅼ뒪? ?붿옄??', 
-          description: '湲곗뾽 留욎땄??????꾩엯',
+          name: '기업용 (커스텀 디자인)', 
+          description: '기업 맞춤형 대량 도입',
           price: { annual: 99000, threeMonths: 28000, twoMonths: 18000 },
           features: { 
             allowLogo: true, 
@@ -288,7 +289,7 @@ async function seedData() {
       console.log('Default products seeded.');
     }
 
-    // 湲곗〈 ?곹뭹??price ?꾨뱶媛 Number??寃쎌슦 媛앹껜濡??먮룞 留덉씠洹몃젅?댁뀡
+    // 기존 상품에 price 필드가 Number일 경우 객체로 자동 마이그레이션
     const existingProds = await Product.find({});
     for (const p of existingProds) {
       if (typeof p.price === 'number') {
@@ -307,13 +308,13 @@ async function seedData() {
       }
     }
 
-    // 湲곕낯 ?ㅼ젙 ?쒕뵫
+    // 기본 설정 시딩
     const adSetting = await Setting.findOne({ key: 'global_ad' });
     if (!adSetting) {
       await Setting.create({
         key: 'global_ad',
         value: {
-          text: '?붿???紐낇븿???덈줈??湲곗?, NextCard.kr?먯꽌 臾대즺濡??쒖옉?섏꽭??',
+          text: '디지털 명함의 새로운 기준, NextCard.kr에서 무료로 시작하세요!',
           link: 'https://nextcard.kr',
           bgColor: '#eff6ff',
           textColor: '#2563eb'
@@ -322,126 +323,126 @@ async function seedData() {
       console.log('Default ad settings seeded.');
     }
 
-    // 臾댄넻???낃툑 ?ㅼ젙 ?쒕뵫
+    // 무통장 입금 설정 시딩
     const existingBankInfo = await Setting.findOne({ key: 'bank_transfer_info' });
     if (!existingBankInfo) {
       await Setting.create({
         key: 'bank_transfer_info',
         value: {
-          description: '?꾨옒 ?μ뒪?몄뭅??怨듭떇 怨꾩쥖濡??낃툑 ?좎껌 ???댁껜?댁＜?쒕㈃ ?ㅼ떆媛꾩쑝濡??뱀씤 泥섎━?⑸땲??',
+          description: '아래 넥스트카드 공식 계좌로 입금 신청 후 이체해주시면 실시간으로 승인 처리됩니다.',
           accounts: [
-            { id: Date.now().toString(), bank: '?좏븳???, account: '110-388-757045', owner: '理쒖쁺?? }
+            { id: Date.now().toString(), bank: '신한은행', account: '110-388-757045', owner: '최영열' }
           ]
         }
       });
       console.log('Default bank transfer info seeded.');
     }
 
-    // ?쒕뵫 ?섏씠吏 湲곕낯 肄섑뀗痢??쒕뵫
+    // 랜딩 페이지 기본 콘텐츠 시딩
     const existing = await Setting.findOne({ key: 'landing_content' });
     if (!existing) {
       await Setting.create({
         key: 'landing_content',
         value: {
-          nav: { logo: 'NextCard', logoSub: '.me', links: ['湲곕뒫?뚭컻', '?붽툑??] },
+          nav: { logo: 'NextCard', logoSub: '.me', links: ['기능소개', '요금제'] },
           hero: {
-            badge: '吏??媛?ν븳 ?곌껐???쒖옉',
-            title: '醫낆씠 紐낇븿 ???\n?ㅻ쭏?명븳 ?붿????꾨줈??,
-            desc: '紐⑤컮???섍꼍??理쒖쟻?붾맂 ?꾨줈?꾨줈 ?섎쭔??釉뚮옖?⑹쓣 ?꾩꽦?섏꽭??\nSNS ?곕룞遺???ы듃?대━??怨듭쑀源뚯? ??踰덉뿉 媛?ν빀?덈떎.',
-            primaryBtn: '吏湲??쒖옉?섍린',
+            badge: '지속 가능한 연결의 시작',
+            title: '종이 명함 대신,\n스마트한 디지털 프로필',
+            desc: '모바일 환경에 최적화된 프로필로 나만의 브랜딩을 완성하세요.\nSNS 연동부터 포트폴리오 공유까지 한 번에 가능합니다.',
+            primaryBtn: '지금 시작하기',
             primaryBtnUrl: '/signup',
-            secondaryBtn: '?쒕퉬???섎윭蹂닿린',
+            secondaryBtn: '서비스 둘러보기',
             secondaryBtnUrl: '#contact',
             mockupImg: 'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop'
           },
           features: [
-            { icon: '?벑', title: '紐⑤컮??理쒖쟻??, desc: '紐⑤뱺 ?ㅻ쭏?명룿 湲곌린?먯꽌 ?꾨꼍?섍쾶 ?쒗쁽?섎뒗 諛섏쓳???붿옄?몄쓣 ?쒓났?⑸땲??' },
-            { icon: '?뵕', title: '鍮좊Ⅸ 怨듭쑀', desc: 'QR 肄붾뱶, 留곹겕 ?섎굹濡??μ냼???곴??놁씠 紐낇븿???꾨떖?????덉뒿?덈떎.' },
-            { icon: '?륅툘', title: '?먯쑀濡쒖슫 ?몄쭛', desc: '?몄젣 ?대뵒?쒕뱺 ?ㅼ떆媛꾩쑝濡?紐낇븿 ?댁슜???섏젙?섍퀬 愿由ы븷 ???덉뒿?덈떎.' },
-            { icon: '?뱤', title: '?ㅼ떆媛??듦퀎', desc: '??紐낇븿???쇰쭏??議고쉶?섏뿀?붿?, ?대뼡 留곹겕媛 ?대┃?섏뿀?붿? ?뺤씤?섏꽭??' }
+            { icon: '📱', title: '모바일 최적화', desc: '모든 스마트폰 기기에서 완벽하게 표현되는 반응형 디자인을 제공합니다.' },
+            { icon: '🔗', title: '빠른 공유', desc: 'QR 코드, 링크 하나로 장소에 상관없이 명함을 전달할 수 있습니다.' },
+            { icon: '✏️', title: '자유로운 편집', desc: '언제 어디서든 실시간으로 명함 내용을 수정하고 관리할 수 있습니다.' },
+            { icon: '📊', title: '실시간 통계', desc: '내 명함이 얼마나 조회되었는지, 어떤 링크가 클릭되었는지 확인하세요.' }
           ],
           samplesSection: {
-            title: '?ㅼ뼇??紐낇븿 ?섑뵆',
-            desc: '?섎쭔??媛쒖꽦???댁? ?ㅼ뼇???ㅽ??쇱쓽 紐낇븿???뺤씤??蹂댁꽭??'
+            title: '다양한 명함 샘플',
+            desc: '나만의 개성을 담은 다양한 스타일의 명함을 확인해 보세요.'
           },
           samples: [
-            { title: '鍮꾩쫰?덉뒪 ?ㅽ???, imgUrl: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop', linkUrl: '' },
-            { title: '?꾨━?쒖꽌 ?ㅽ???, imgUrl: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop', linkUrl: '' },
-            { title: '?쇱뒪??釉뚮옖??, imgUrl: 'https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?q=80&w=2070&auto=format&fit=crop', linkUrl: '' }
+            { title: '비즈니스 스타일', imgUrl: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop', linkUrl: '' },
+            { title: '프리랜서 스타일', imgUrl: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop', linkUrl: '' },
+            { title: '퍼스널 브랜딩', imgUrl: 'https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?q=80&w=2070&auto=format&fit=crop', linkUrl: '' }
           ],
           partnersSection: {
-            title: '二쇱슂 湲곗뾽 嫄곕옒泥?
+            title: '주요 기업 거래처'
           },
           partnersLogos: [
             { name: 'Careis', imgUrl: 'https://placehold.co/200x60/transparent/9d4edd?text=Careis' },
-            { name: '?곕━泥숇퀝??, imgUrl: 'https://placehold.co/200x60/transparent/38bdf8?text=WOORI+SPINE' },
+            { name: '우리척병원', imgUrl: 'https://placehold.co/200x60/transparent/38bdf8?text=WOORI+SPINE' },
             { name: 'novita', imgUrl: 'https://placehold.co/200x60/transparent/c1121f?text=novita' },
             { name: 'EUGENE', imgUrl: 'https://placehold.co/200x60/transparent/1d3557?text=EUGENE' },
             { name: 'BAUSCH + LOMB', imgUrl: 'https://placehold.co/200x60/transparent/00b4d8?text=BAUSCH+%2B+LOMB' },
             { name: 'KSPO', imgUrl: 'https://placehold.co/200x60/transparent/f77f00?text=KSPO' }
           ],
           pricing: [
-            { name: '?쇰컲??(Free)', price: '0', period: '??, features: ['湲곕낯 ?꾨줈???섏씠吏', 'QR 肄붾뱶 ?앹꽦', '留곹겕 怨듭쑀', '湲곕낯 ?뚮쭏 ?곸슜'], btn: '臾대즺濡??쒖옉', linkUrl: '/signup', popular: false },
-            { name: '?꾨━誘몄뾼 (Pro)', price: '9,900', period: '??, features: ['紐⑤뱺 湲곕낯 湲곕뒫', '而ㅼ뒪? URL ?ㅼ젙', '濡쒓퀬 諛?諛곌꼍 而ㅼ뒪?', '諛⑸Ц ?듦퀎 遺꾩꽍'], btn: '吏湲?媛??, linkUrl: '/signup', popular: true },
-            { name: '湲곗뾽??(Corp)', price: '臾몄쓽', period: '', features: ['?꾩궗 ?듯빀 愿由?, '湲곗뾽 ?꾩슜 ?쒗뵆由?, 'API ?곕룞 吏??, '?꾨떞 湲곗닠 吏??], btn: '?곷떞 ?좎껌', linkUrl: '#contact', popular: false }
+            { name: '일반형 (Free)', price: '0', period: '월', features: ['기본 프로필 페이지', 'QR 코드 생성', '링크 공유', '기본 테마 적용'], btn: '무료로 시작', linkUrl: '/signup', popular: false },
+            { name: '프리미엄 (Pro)', price: '9,900', period: '월', features: ['모든 기본 기능', '커스텀 URL 설정', '로고 및 배경 커스텀', '방문 통계 분석'], btn: '지금 가입', linkUrl: '/signup', popular: true },
+            { name: '기업용 (Corp)', price: '문의', period: '', features: ['전사 통합 관리', '기업 전용 템플릿', 'API 연동 지원', '전담 기술 지원'], btn: '상담 신청', linkUrl: '#contact', popular: false }
           ],
           cta: {
-            title: '吏湲?諛붾줈 ?섎쭔???붿???紐낇븿??留뚮뱾?대낫?몄슂',
-            desc: '30珥덈㈃ 異⑸텇?⑸땲?? ?욎꽌媛??鍮꾩쫰?덉뒪 ?뚰듃?덇? ?섏뼱蹂댁꽭??',
-            btn: '臾대즺濡??쒖옉?섍린',
+            title: '지금 바로 나만의 디지털 명함을 만들어보세요',
+            desc: '30초면 충분합니다. 앞서가는 비즈니스 파트너가 되어보세요.',
+            btn: '무료로 시작하기',
             btnUrl: '/signup'
           },
           faq: {
             badge: 'FAQ',
-            title: '?먯＜ 臾삳뒗 吏덈Ц',
-            desc: '?붿??몃챸?⑥쓣 留뚮뱾湲??꾩뿉 ?뚯븘????紐⑤뱺 寃?',
+            title: '자주 묻는 질문',
+            desc: '디지털명함을 만들기 전에 알아야 할 모든 것.',
             items: [
-              { q: '?붿???紐낇븿?대? 臾댁뾿?멸???', a: '湲곗〈 醫낆씠 紐낇븿???쒓퀎瑜??섏뼱 ?ㅻ쭏?명룿?대굹 ??釉뚮씪?곗??먯꽌 諛붾줈 ?뺤씤?????덈뒗 紐⑤컮??理쒖쟻??紐낇븿?낅땲?? ?곕씫泥???? SNS ?곕룞, ?숈쁺???쎌엯 ???ㅼ뼇??湲곕뒫???쒓났?⑸땲??' },
-              { q: '?붿???紐낇븿? ?대뼸寃?怨듭쑀?섎굹??', a: 'QR 肄붾뱶瑜??ㅼ틪?섍굅??怨좎쑀??留곹겕(URL)瑜?移댄넚, 臾몄옄 ?깆쑝濡??꾨떖?섏뿬 利됱떆 怨듭쑀?????덉뒿?덈떎.' },
-              { q: '?뚯궗 釉뚮옖?⑹쑝濡?留욎땄 ?ㅼ젙?????덈굹??', a: '?? 濡쒓퀬 ?낅줈?? ?뚮쭏 ?됱긽 蹂寃? 諛곌꼍 ?대?吏 ?ㅼ젙 ?깆쓣 ?듯빐 湲곗뾽???뺤껜?깆쓣 ?꾨꼍?섍쾶 ?쒗쁽?????덉뒿?덈떎.' },
-              { q: 'NFC 紐낇븿怨?臾댁뾿???ㅻⅨ媛??', a: '?붿???紐낇븿? ?⑤씪??湲곕컲?대ŉ, NFC 紐낇븿? 臾쇰━?곸씤 移대뱶瑜??ㅻ쭏?명룿???쒓렇?섏뿬 ?뺣낫瑜??꾨떖?섎뒗 諛⑹떇?낅땲?? ????쒕퉬?ㅻ뒗 ??諛⑹떇??紐⑤몢 吏?먰빀?덈떎.' }
+              { q: '디지털 명함이란 무엇인가요?', a: '기존 종이 명함의 한계를 넘어 스마트폰이나 웹 브라우저에서 바로 확인할 수 있는 모바일 최적화 명함입니다. 연락처 저장, SNS 연동, 동영상 삽입 등 다양한 기능을 제공합니다.' },
+              { q: '디지털 명함은 어떻게 공유하나요?', a: 'QR 코드를 스캔하거나 고유한 링크(URL)를 카톡, 문자 등으로 전달하여 즉시 공유할 수 있습니다.' },
+              { q: '회사 브랜딩으로 맞춤 설정할 수 있나요?', a: '네, 로고 업로드, 테마 색상 변경, 배경 이미지 설정 등을 통해 기업의 정체성을 완벽하게 표현할 수 있습니다.' },
+              { q: 'NFC 명함과 무엇이 다른가요?', a: '디지털 명함은 온라인 기반이며, NFC 명함은 물리적인 카드를 스마트폰에 태그하여 정보를 전달하는 방식입니다. 저희 서비스는 두 방식을 모두 지원합니다.' }
             ]
           },
           reviews: {
-            title: '怨좉컼?ㅼ씠 ?꾪븯??吏꾩쭨 ?댁빞湲?,
+            title: '고객들이 전하는 진짜 이야기',
             items: [
-              { rating: 5, content: '湲곗뾽??釉뚮옖??而щ윭瑜?洹몃?濡??뱀뿬?????덈뒗 而ㅼ뒪? ?먯쑀?꾧? 留뚯”?ㅻ읇?듬땲?? ?꾨줈???ъ쭊, SNS 留곹겕, ?뚯궗 ?뚭컻 ?깆쓣 源붾걫???덉씠?꾩썐?쇰줈 諛곗튂?????덉뼱 鍮꾩쫰?덉뒪 ?좊ː?꾨? ?믪씠?????꾩????⑸땲??', author: '?뺤씪??, role: '?붿??몃챸???뚯궗?? },
-              { rating: 5, content: '理쒓렐 誘명똿????븘吏硫댁꽌 醫낆씠紐낇븿怨?蹂묓뻾?섏뿬 ?ъ슜?섍퀬??援щℓ?덉뒿?덈떎. QR 肄붾뱶 ?몄떇瑜좎씠 留ㅼ슦 ?곗뼱?섍퀬, ?곷?諛⑹씠 蹂꾨룄???깆쓣 ?ㅼ튂?섏? ?딆븘?????곕씫泥섏? ?ы듃?대━??留곹겕瑜?吏곴??곸쑝濡??뺤씤?????덈떎???먯씠 ??媛뺤젏?낅땲??', author: '諛뺤듅??, role: '?붿??몃챸???뚯궗?? },
-              { rating: 5, content: 'ESG 寃쎌쁺怨?移쒗솚寃?鍮꾩쫰?덉뒪 ?ㅼ쿇???쇳솚?쇰줈 ?붿???紐낇븿???꾩엯?덉뒿?덈떎. 留ㅻ쾲 ?몄뇙 鍮꾩슜??吏異쒗븯吏 ?딆븘???섍퀬, 留곹겕 ?섎굹濡??섎쭖? ?좎옱 怨좉컼?먭쾶 紐낇븿???꾨떖?????덉뼱 ?κ린?곸씤 鍮꾩슜 ?덇컧 ?④낵媛 湲곕??⑸땲??', author: '?댁???, role: '醫낆씠紐낇븿/?뚯궗?? },
-              { rating: 5, content: '留곹겕 ?댁뿉 ?띿뒪?몃퓧留??꾨땲??鍮꾩쫰?덉뒪 ?곸긽源뚯? ?꾨쿋?⑺븷 ???덉뼱 ?ㅺ컖?꾨줈 ????뚯궗瑜??댄븘?섍린???좎슜?⑸땲?? ?뺤쨷?섍퀬 源붾걫??鍮꾩쫰?덉뒪 ?뚰듃?덈? 留뚮궃 寃?媛숈븘 湲곗겑?덈떎.', author: '理쒖?泥?, role: '以묎퀎/?댁감?꾩??곸뾽/?뚯궗?? }
+              { rating: 5, content: '기업의 브랜드 컬러를 그대로 녹여낼 수 있는 커스텀 자유도가 만족스럽습니다. 프로필 사진, SNS 링크, 회사 소개 등을 깔끔한 레이아웃으로 배치할 수 있어 비즈니스 신뢰도를 높이는 데 도움이 됩니다.', author: '정일영', role: '디지털명함/회사원' },
+              { rating: 5, content: '최근 미팅이 잦아지면서 종이명함과 병행하여 사용하고자 구매했습니다. QR 코드 인식률이 매우 뛰어나고, 상대방이 별도의 앱을 설치하지 않아도 제 연락처와 포트폴리오 링크를 직관적으로 확인할 수 있다는 점이 큰 강점입니다.', author: '박승호', role: '디지털명함/회사원' },
+              { rating: 5, content: 'ESG 경영과 친환경 비즈니스 실천의 일환으로 디지털 명함을 도입했습니다. 매번 인쇄 비용을 지출하지 않아도 되고, 링크 하나로 수많은 잠재 고객에게 명함을 전달할 수 있어 장기적인 비용 절감 효과가 기대됩니다.', author: '이지선', role: '종이명함/회사원' },
+              { rating: 5, content: '링크 내에 텍스트뿐만 아니라 비즈니스 영상까지 임베딩할 수 있어 다각도로 저희 회사를 어필하기에 유용합니다. 정중하고 깔끔한 비즈니스 파트너를 만난 것 같아 기쁩니다.', author: '최은철', role: '중계/이차전지영업/회사원' }
             ]
           },
           footer: {
             logo: 'NextCard',
-            copyright: '짤 2026 NextCard. All rights reserved.',
-            companyName: '(二??덊떚洹몃옒?쇳떚',
-            ceoName: '?띻만??,
+            copyright: '© 2026 NextCard. All rights reserved.',
+            companyName: '(주)안티그래피티',
+            ceoName: '홍길동',
             businessNumber: '123-45-67890',
-            mailOrderNumber: '2026-?쒖슱媛뺣궓-1234',
-            address: '?쒖슱?밸퀎??媛뺣궓援??뚰뿤?濡?123, 4痢?,
+            mailOrderNumber: '2026-서울강남-1234',
+            address: '서울특별시 강남구 테헤란로 123, 4층',
             contact: 'support@nextcard.kr | 02-1234-5678',
             footerLinks: [
-              { label: '?댁슜?쎄?', url: '/terms' },
-              { label: '媛쒖씤?뺣낫泥섎━諛⑹묠', url: '/privacy' },
-              { label: '?대찓?쇰Т?⑥닔吏묎굅遺', url: '/no-email' },
-              { label: '怨좉컼?쇳꽣', url: '/custom-center' },
-              { label: '?쒗쑕臾몄쓽', url: '/coalition' },
-              { label: '?쒗쑕留덉???, url: '/marketing' },
-              { label: '愿묎퀬臾몄쓽', url: '/ad-contact' }
+              { label: '이용약관', url: '/terms' },
+              { label: '개인정보처리방침', url: '/privacy' },
+              { label: '이메일무단수집거부', url: '/no-email' },
+              { label: '고객센터', url: '/custom-center' },
+              { label: '제휴문의', url: '/coalition' },
+              { label: '제휴마케팅', url: '/marketing' },
+              { label: '광고문의', url: '/ad-contact' }
             ],
-            termsContent: `??1 議?(紐⑹쟻)\n蹂??쎄?? NextCard(?댄븯 "?뚯궗")媛 ?쒓났?섎뒗 ?붿???紐낇븿 諛?愿???쒕퉬???댄븯 "?쒕퉬??)???댁슜議곌굔 諛??덉감, ?뚯궗? ?뚯썝 媛꾩쓽 沅뚮━, ?섎Т 諛?梨낆엫?ы빆 ?깆쓣 洹쒖젙?⑥쓣 紐⑹쟻?쇰줈 ?⑸땲??\n\n??2 議?(?⑹뼱???뺤쓽)\n1. "?쒕퉬?????⑥? ?뚯궗媛 ?쒓났?섎뒗 紐⑤컮??理쒖쟻???붿???紐낇븿 ?앹꽦, 愿由?諛?怨듭쑀 ?뚮옯?쇱쓣 ?섎??⑸땲??\n2. "?뚯썝"?대씪 ?⑥? ?쒕퉬?ㅼ뿉 ?묒냽?섏뿬 蹂??쎄????숈쓽?섍퀬 怨꾩젙???앹꽦?섏뿬 ?쒕퉬?ㅻ? ?댁슜?섎뒗 怨좉컼???섎??⑸땲??\n3. "?꾨━誘몄뾼 ?쒕퉬?????⑥? ?뚯썝???좊즺濡?寃곗젣?섏뿬 ?댁슜?섎뒗 異붽??곸씤 湲곕뒫(而ㅼ뒪? URL, ?뚮쭏, 濡쒓퀬 ?쎌엯 ?????섎??⑸땲??\n\n??3 議?(?쎄????⑤젰 諛?蹂寃?\n1. 蹂??쎄?? ?쒕퉬???붾㈃??寃뚯떆?섍굅??湲고???諛⑸쾿?쇰줈 ?뚯썝?먭쾶 怨듭??⑥쑝濡쒖뜥 ?⑤젰??諛쒖깮?⑸땲??\n2. ?뚯궗??愿怨?踰뺣졊???꾨같?섏? ?딅뒗 踰붿쐞?먯꽌 蹂??쎄???媛쒖젙?????덉뒿?덈떎.\n\n??4 議?(?쒕퉬?ㅼ쓽 ?쒓났 諛?蹂寃?\n1. ?뚯궗???뚯썝?먭쾶 ?붿???紐낇븿 ?쒖옉 諛??몄뒪???쒕퉬?ㅻ? ?쒓났?⑸땲??\n2. ?쒕퉬?ㅻ뒗 ?곗쨷臾댄쑕, 1??24?쒓컙 ?쒓났?⑥쓣 ?먯튃?쇰줈 ?섎굹, ?ㅻ퉬 ?먭??대굹 ?쒖뒪???μ븷 ???쇱떆 以묐떒?????덉뒿?덈떎.`,
-            privacyContent: `NextCard(?댄븯 "?뚯궗")???뺣낫?듭떊留??댁슜珥됱쭊 諛??뺣낫蹂댄샇 ?깆뿉 愿??踰뺣쪧 諛?媛쒖씤?뺣낫蹂댄샇踰???愿??踰뺣졊???곕씪 ?뚯썝??媛쒖씤?뺣낫瑜?蹂댄샇?섍퀬 ?댁? 愿?⑦븳 怨좎땐???좎냽?섍퀬 ?먰솢?섍쾶 泥섎━?????덈룄濡??ㅼ쓬怨?媛숈? 泥섎━諛⑹묠???먭퀬 ?덉뒿?덈떎.\n\n1. ?섏쭛?섎뒗 媛쒖씤?뺣낫 ??ぉ\n- ?꾩닔 ??ぉ: ?대쫫, ?대찓??二쇱냼, 鍮꾨?踰덊샇, ?대??꾪솕 踰덊샇\n- ?좏깮 ??ぉ: ?뚯궗紐? 吏곸콉, 遺?? ?뱀궗?댄듃 URL, ?꾨줈???대?吏, SNS 怨꾩젙 ?뺣낫\n- ?쒕퉬???댁슜 怨쇱젙?먯꽌 ?먮룞?쇰줈 ?앹꽦?섏뼱 ?섏쭛?섎뒗 ?뺣낫: IP 二쇱냼, 荑좏궎, 諛⑸Ц ?쇱떆, ?쒕퉬???댁슜 湲곕줉, 湲곌린 ?뺣낫\n\n2. 媛쒖씤?뺣낫???섏쭛 諛??댁슜 紐⑹쟻\n- ?뚯썝 媛??諛?愿由? ?뚯썝 ?앸퀎, 媛???섏궗 ?뺤씤, 蹂몄씤 ?뺤씤, ?쒕퉬??遺?뺤씠??諛⑹?\n- ?쒕퉬???쒓났 諛?怨꾩빟 ?댄뻾: ?붿???紐낇븿 ?앹꽦 諛??몄뒪?? ?좊즺 寃곗젣 ?뱀씤 諛??쒕퉬??愿由?n- 留덉???諛?愿묎퀬?먯쓽 ?쒖슜: ?좉퇋 ?쒕퉬??媛쒕컻 諛?留욎땄???쒕퉬???쒓났, ?대깽??諛?愿묎퀬???뺣낫 ?쒓났\n\n3. 媛쒖씤?뺣낫??蹂댁쑀 諛??댁슜 湲곌컙\n- ?뚯썝??媛쒖씤?뺣낫???먯튃?곸쑝濡?媛쒖씤?뺣낫???섏쭛 諛??댁슜 紐⑹쟻???ъ꽦?섎㈃ 吏泥??놁씠 ?뚭린?⑸땲??\n- ?? 愿怨?踰뺣졊??洹쒖젙???섑븯??蹂댁〈???꾩슂媛 ?덈뒗 寃쎌슦 ?대떦 踰뺣졊?먯꽌 ?뺥븳 湲곌컙 ?숈븞 蹂닿??⑸땲??`,
-            noEmailContent: `NextCard??蹂??뱀궗?댄듃??寃뚯떆???대찓??二쇱냼媛 ?꾩옄?고렪 ?섏쭛 ?꾨줈洹몃옩?대굹 洹?諛뽰쓽 湲곗닠???μ튂瑜??댁슜?섏뿬 臾대떒?쇰줈 ?섏쭛?섎뒗 寃껋쓣 嫄곕??⑸땲??\n\n1. 蹂??쒕퉬???댁뿉??紐낇븿 ?뚯쑀?먯쓽 ?숈쓽 ?놁씠 ?대찓??二쇱냼瑜??섏쭛?섎뒗 ?됱쐞???뺣낫?듭떊留앸쾿???섑빐 泥섎쾶諛쏆쓣 ???덉뒿?덈떎.\n2. ?대? ?꾨컲??寃쎌슦 ?뺣낫?듭떊留??댁슜珥됱쭊 諛??뺣낫蹂댄샇 ?깆뿉 愿??踰뺣쪧 ??0議곗쓽2???섑븯??1泥쒕쭔 ???댄븯??踰뚭툑?뺤뿉 泥섑빐吏????덉쓬???좊뀗?섏떆湲?諛붾엻?덈떎.\n\n寃뚯떆?? 2026??5??17??,
-            customerCenterContent: `NextCard 怨좉컼?쇳꽣 ?덈궡\n\n1. ?댁쁺 ?쒓컙\n- ?됱씪: ?ㅼ쟾 9??~ ?ㅽ썑 6??(?먯떖?쒓컙: 12:00 ~ 13:00)\n- 二쇰쭚 諛?怨듯쑕?? ?대Т (1:1 臾몄쓽 ?묒닔 媛??\n\n2. 臾몄쓽 諛⑸쾿\n- ?대찓?? support@nextcard.kr\n- ?꾪솕踰덊샇: 02-1234-5678\n- 移댁뭅?ㅽ넚 ?뚮윭?ㅼ튇援? @NextCard\n\n??긽 怨좉컼???낆옣?먯꽌 癒쇱? ?앷컖?섎뒗 NextCard媛 ?섍쿋?듬땲??`,
-            partnershipContent: `NextCard ?쒗쑕 諛??묐젰 臾몄쓽\n\nNextCard? ?④퍡 ?덈줈??鍮꾩쫰?덉뒪 媛移섎? 留뚮뱾?닿컝 ?곸떊?곸씤 鍮꾩쫰?덉뒪 ?뚰듃?덈? 李얠뒿?덈떎.\n\n1. ?쒗쑕 遺꾩빞\n- 湲곗뾽 ?꾩쭅???⑥껜 ?꾩엯 諛??꾩궗 ?붿???紐낇븿 ?곕룞\n- ?ㅻ쭏??NFC 移대뱶 ?섎뱶?⑥뼱 ?쒖“ 諛?湲곗닠 ?쒗쑕\n- API ?곕룞 諛??몃? ?곌퀎 ?꾨줈???쒕퉬???묒뾽\n- 怨듬룞 釉뚮옖??留덉???諛??꾨줈紐⑥뀡 ?쒗쑕\n\n2. 臾몄쓽 諛??묒닔\n- ?대찓?? biz@nextcard.kr\n- ?꾪솕踰덊샇: 02-1234-5678\n\n臾몄쓽?ы빆???묒닔??二쇱떆硫??대떦 遺?쒖뿉??寃?????좎냽???곕씫?쒕━寃좎뒿?덈떎.`,
-            affiliateMarketingContent: `NextCard ?쒗쑕 留덉???諛??명뵆猷⑥뼵???뚰듃??紐⑥쭛\n\nNextCard??媛移섎? ?먮━ ?뚮━怨??④퍡 ?깆옣???쒗쑕 留덉???諛??щ━?먯씠??遺꾨뱾??留롮? 愿??諛붾엻?덈떎.\n\n1. 李몄뿬 ???n- 釉붾줈洹? ?몄뒪?洹몃옩, ?좏뒠釉??깆쓣 ?댁쁺 以묒씤 ?щ━?먯씠??n- 鍮꾩쫰?덉뒪/?뚰겕/?앹궛??愿??肄섑뀗痢좊? 諛쒗뻾?섏떆??遺?n- ?먯껜 ?뚯썝?대굹 ?좎옱 怨좉컼痢듭쓣 蹂댁쑀??鍮꾩쫰?덉뒪 而ㅻ??덊떚\n\n2. ?쒕룞 ?쒗깮\n- 異붿쿇 留곹겕瑜??듯븳 ?좉퇋 媛??諛??좊즺 ?꾪솚 ??怨좎쑉??由ъ썙???쒓났\n- ?좎젣??NFC 移대뱶 ?곗꽑 泥댄뿕沅?諛?釉뚮옖??援우쫰 利앹젙\n- ?곗닔 ?뚰듃??????밸퀎 ?꾨줈紐⑥뀡 吏??n\n3. 吏??諛⑸쾿\n- ?대찓?? affiliate@nextcard.kr`,
-            adInquiryContent: `NextCard 愿묎퀬 諛?諛곕꼫 寃뚯옱 臾몄쓽\n\nNextCard???몃젋?뷀븯怨??꾨Ц???덈뒗 ?ъ슜?먯링???寃잛쑝濡??섎뒗 ?ㅼ뼇??愿묎퀬 留ㅼ껜 ?붾（?섏쓣 ?쒓났?⑸땲??\n\n1. 愿묎퀬 留ㅼ껜 援ъ꽦\n- NextCard 臾대즺??紐낇븿 ?섎떒 諛곕꼫 愿묎퀬\n- ?쒕퉬?????ㅽ룿?쒖떗 ?곸뿭 諛??대깽???섏씠吏 ?곌퀎\n- ?寃잜똿 ?몄떆 ?뚮┝ 諛??대찓??留덉???吏??n\n2. ?寃??ㅻ뵒?몄뒪\n- 鍮꾩쫰?덉뒪 ?ㅽ듃?뚰궧??愿?ъ씠 留롮? 吏곸옣?? ?꾨━?쒖꽌, 1??李쎌뾽媛, ?꾨Ц吏?醫낆궗??n\n3. 愿묎퀬 ?좎껌 諛??쒖븞???붿껌\n- ?대찓?? ad@nextcard.kr\n- ?쒖븞???붿껌 ???뚯궗紐? ?대떦?먮챸, ?곕씫泥? ?щ쭩 愿묎퀬 湲곌컙 諛??덉궛??湲곗옱??二쇱떆湲?諛붾엻?덈떎.`
+            termsContent: `제 1 조 (목적)\n본 약관은 NextCard(이하 "회사")가 제공하는 디지털 명함 및 관련 서비스(이하 "서비스")의 이용조건 및 절차, 회사와 회원 간의 권리, 의무 및 책임사항 등을 규정함을 목적으로 합니다.\n\n제 2 조 (용어의 정의)\n1. "서비스"라 함은 회사가 제공하는 모바일 최적화 디지털 명함 생성, 관리 및 공유 플랫폼을 의미합니다.\n2. "회원"이라 함은 서비스에 접속하여 본 약관에 동의하고 계정을 생성하여 서비스를 이용하는 고객을 의미합니다.\n3. "프리미엄 서비스"라 함은 회원이 유료로 결제하여 이용하는 추가적인 기능(커스텀 URL, 테마, 로고 삽입 등)을 의미합니다.\n\n제 3 조 (약관의 효력 및 변경)\n1. 본 약관은 서비스 화면에 게시하거나 기타의 방법으로 회원에게 공지함으로써 효력이 발생합니다.\n2. 회사는 관계 법령을 위배하지 않는 범위에서 본 약관을 개정할 수 있습니다.\n\n제 4 조 (서비스의 제공 및 변경)\n1. 회사는 회원에게 디지털 명함 제작 및 호스팅 서비스를 제공합니다.\n2. 서비스는 연중무휴, 1일 24시간 제공함을 원칙으로 하나, 설비 점검이나 시스템 장애 시 일시 중단될 수 있습니다.`,
+            privacyContent: `NextCard(이하 "회사")는 정보통신망 이용촉진 및 정보보호 등에 관한 법률 및 개인정보보호법 등 관련 법령에 따라 회원의 개인정보를 보호하고 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 다음과 같은 처리방침을 두고 있습니다.\n\n1. 수집하는 개인정보 항목\n- 필수 항목: 이름, 이메일 주소, 비밀번호, 휴대전화 번호\n- 선택 항목: 회사명, 직책, 부서, 웹사이트 URL, 프로필 이미지, SNS 계정 정보\n- 서비스 이용 과정에서 자동으로 생성되어 수집되는 정보: IP 주소, 쿠키, 방문 일시, 서비스 이용 기록, 기기 정보\n\n2. 개인정보의 수집 및 이용 목적\n- 회원 가입 및 관리: 회원 식별, 가입 의사 확인, 본인 확인, 서비스 부정이용 방지\n- 서비스 제공 및 계약 이행: 디지털 명함 생성 및 호스팅, 유료 결제 승인 및 서비스 관리\n- 마케팅 및 광고에의 활용: 신규 서비스 개발 및 맞춤형 서비스 제공, 이벤트 및 광고성 정보 제공\n\n3. 개인정보의 보유 및 이용 기간\n- 회원의 개인정보는 원칙적으로 개인정보의 수집 및 이용 목적이 달성되면 지체 없이 파기합니다.\n- 단, 관계 법령의 규정에 의하여 보존할 필요가 있는 경우 해당 법령에서 정한 기간 동안 보관합니다.`,
+            noEmailContent: `NextCard는 본 웹사이트에 게시된 이메일 주소가 전자우편 수집 프로그램이나 그 밖의 기술적 장치를 이용하여 무단으로 수집되는 것을 거부합니다.\n\n1. 본 서비스 내에서 명함 소유자의 동의 없이 이메일 주소를 수집하는 행위는 정보통신망법에 의해 처벌받을 수 있습니다.\n2. 이를 위반할 경우 정보통신망 이용촉진 및 정보보호 등에 관한 법률 제50조의2에 의하여 1천만 원 이하의 벌금형에 처해질 수 있음을 유념하시기 바랍니다.\n\n게시일: 2026년 5월 17일`,
+            customerCenterContent: `NextCard 고객센터 안내\n\n1. 운영 시간\n- 평일: 오전 9시 ~ 오후 6시 (점심시간: 12:00 ~ 13:00)\n- 주말 및 공휴일: 휴무 (1:1 문의 접수 가능)\n\n2. 문의 방법\n- 이메일: support@nextcard.kr\n- 전화번호: 02-1234-5678\n- 카카오톡 플러스친구: @NextCard\n\n항상 고객의 입장에서 먼저 생각하는 NextCard가 되겠습니다.`,
+            partnershipContent: `NextCard 제휴 및 협력 문의\n\nNextCard와 함께 새로운 비즈니스 가치를 만들어갈 혁신적인 비즈니스 파트너를 찾습니다.\n\n1. 제휴 분야\n- 기업 임직원 단체 도입 및 전사 디지털 명함 연동\n- 스마트 NFC 카드 하드웨어 제조 및 기술 제휴\n- API 연동 및 외부 연계 프로필 서비스 협업\n- 공동 브랜드 마케팅 및 프로모션 제휴\n\n2. 문의 및 접수\n- 이메일: biz@nextcard.kr\n- 전화번호: 02-1234-5678\n\n문의사항을 접수해 주시면 담당 부서에서 검토 후 신속히 연락드리겠습니다.`,
+            affiliateMarketingContent: `NextCard 제휴 마케팅 및 인플루언서 파트너 모집\n\nNextCard의 가치를 널리 알리고 함께 성장할 제휴 마케터 및 크리에이터 분들의 많은 관심 바랍니다.\n\n1. 참여 대상\n- 블로그, 인스타그램, 유튜브 등을 운영 중인 크리에이터\n- 비즈니스/테크/생산성 관련 콘텐츠를 발행하시는 분\n- 자체 회원이나 잠재 고객층을 보유한 비즈니스 커뮤니티\n\n2. 활동 혜택\n- 추천 링크를 통한 신규 가입 및 유료 전환 시 고율의 리워드 제공\n- 신제품/NFC 카드 우선 체험권 및 브랜드 굿즈 증정\n- 우수 파트너 대상 특별 프로모션 지원\n\n3. 지원 방법\n- 이메일: affiliate@nextcard.kr`,
+            adInquiryContent: `NextCard 광고 및 배너 게재 문의\n\nNextCard의 트렌디하고 전문성 있는 사용자층을 타겟으로 하는 다양한 광고 매체 솔루션을 제공합니다.\n\n1. 광고 매체 구성\n- NextCard 무료형 명함 하단 배너 광고\n- 서비스 내 스폰서십 영역 및 이벤트 페이지 연계\n- 타겟팅 푸시 알림 및 이메일 마케팅 지원\n\n2. 타겟 오디언스\n- 비즈니스 네트워킹에 관심이 많은 직장인, 프리랜서, 1인 창업가, 전문직 종사자\n\n3. 광고 신청 및 제안서 요청\n- 이메일: ad@nextcard.kr\n- 제안서 요청 시 회사명, 담당자명, 연락처, 희망 광고 기간 및 예산을 기재해 주시기 바랍니다.`
           }
         }
       });
       console.log('Landing content seeded.');
     } else {
-      // 湲곗〈 ?곗씠?곗뿉 ?꾨뱶媛 ?놁쑝硫?異붽?
+      // 기존 데이터에 필드가 없으면 추가
       let updated = false;
       const val = existing.value;
       if (!val.colors) {
@@ -465,8 +466,8 @@ async function seedData() {
       }
       if (!val.samplesSection) {
         val.samplesSection = {
-          title: '?ㅼ뼇??紐낇븿 ?섑뵆',
-          desc: '?섎쭔??媛쒖꽦???댁? ?ㅼ뼇???ㅽ??쇱쓽 紐낇븿???뺤씤??蹂댁꽭??'
+          title: '다양한 명함 샘플',
+          desc: '나만의 개성을 담은 다양한 스타일의 명함을 확인해 보세요.'
         };
         updated = true;
       }
@@ -508,14 +509,14 @@ async function seedData() {
       }
       if (!val.partnersSection) {
         val.partnersSection = {
-          title: '二쇱슂 湲곗뾽 嫄곕옒泥?
+          title: '주요 기업 거래처'
         };
         updated = true;
       }
       if (!val.partnersLogos) {
         val.partnersLogos = [
           { name: 'Careis', imgUrl: 'https://placehold.co/200x60/transparent/9d4edd?text=Careis' },
-          { name: '?곕━泥숇퀝??, imgUrl: 'https://placehold.co/200x60/transparent/38bdf8?text=WOORI+SPINE' },
+          { name: '우리척병원', imgUrl: 'https://placehold.co/200x60/transparent/38bdf8?text=WOORI+SPINE' },
           { name: 'novita', imgUrl: 'https://placehold.co/200x60/transparent/c1121f?text=novita' },
           { name: 'EUGENE', imgUrl: 'https://placehold.co/200x60/transparent/1d3557?text=EUGENE' },
           { name: 'BAUSCH + LOMB', imgUrl: 'https://placehold.co/200x60/transparent/00b4d8?text=BAUSCH+%2B+LOMB' },
@@ -524,35 +525,35 @@ async function seedData() {
         updated = true;
       }
       if (!val.faq) {
-        val.faq = { badge: 'FAQ', title: '?먯＜ 臾삳뒗 吏덈Ц', desc: '紐⑤뱺 寃?', items: [] };
+        val.faq = { badge: 'FAQ', title: '자주 묻는 질문', desc: '모든 것.', items: [] };
         updated = true;
       }
       if (!val.reviews) {
-        val.reviews = { title: '?꾧린', items: [] };
+        val.reviews = { title: '후기', items: [] };
         updated = true;
       }
       if (!val.footer.companyName) {
         val.footer = {
           ...val.footer,
-          companyName: '(二??덊떚洹몃옒?쇳떚',
-          ceoName: '??쒖옄紐?,
-          businessNumber: '?ъ뾽?먮쾲??,
-          address: '?뚯궗 二쇱냼',
-          contact: '?곕씫泥??뺣낫'
+          companyName: '(주)안티그래피티',
+          ceoName: '대표자명',
+          businessNumber: '사업자번호',
+          address: '회사 주소',
+          contact: '연락처 정보'
         };
         updated = true;
       }
       if (!val.footer.mailOrderNumber) {
-        val.footer.mailOrderNumber = '?듭떊?먮ℓ?낆떊怨좊쾲??;
+        val.footer.mailOrderNumber = '통신판매업신고번호';
         updated = true;
       }
       if (!val.footer.footerLinks) {
         val.footer.footerLinks = [
-          { label: '?댁슜?쎄?', url: '#' },
-          { label: '媛쒖씤?뺣낫泥섎━諛⑹묠', url: '#' },
-          { label: '?대찓?쇰Т?⑥닔吏묎굅遺', url: '#' },
-          { label: '怨좉컼?쇳꽣', url: '#' },
-          { label: '?쒗쑕臾몄쓽', url: '#' }
+          { label: '이용약관', url: '#' },
+          { label: '개인정보처리방침', url: '#' },
+          { label: '이메일무단수집거부', url: '#' },
+          { label: '고객센터', url: '#' },
+          { label: '제휴문의', url: '#' }
         ];
         updated = true;
       }
@@ -561,7 +562,7 @@ async function seedData() {
         console.log('Landing content updated with new fields.');
       }
     }
-    // 紐낇븿 ?쒕뵫 ?섏씠吏 湲곕낯 肄섑뀗痢??쒕뵫
+    // 명함 랜딩 페이지 기본 콘텐츠 시딩
     const existingNamecard = await Setting.findOne({ key: 'namecard_landing_content' });
     if (!existingNamecard) {
       await Setting.create({
@@ -574,14 +575,14 @@ async function seedData() {
             'https://images.unsplash.com/photo-1616628188550-808682f32255?q=80&w=200&auto=format&fit=crop',
             'https://images.unsplash.com/photo-1544391696-1c4943717540?q=80&w=200&auto=format&fit=crop'
           ],
-          title: '?섏엯吏 ?섏씠?붾뱶 紐낇븿',
-          subtitle: '泥レ씤?곸쓣 寃곗젙吏볥뒗 ?꾨꼍???뷀뀒?? 理쒓퀬湲??섏엯吏濡??쒖옉?섎뒗 ?꾨━誘몄뾼 紐낇븿?낅땲??',
+          title: '수입지 하이엔드 명함',
+          subtitle: '첫인상을 결정짓는 완벽한 디테일, 최고급 수입지로 제작되는 프리미엄 명함입니다.',
           price: '22,000',
           specs: [
-            { icon: 'Check', label: '吏吏?, desc: '?묒뒪?몃씪 ?꾨툕, ?ㅻ삉?덈삉, ?묐뜲酉???理쒓퀬湲??섏엯吏 ?좏깮 媛?? },
-            { icon: 'Check', label: '?먭퍡', desc: '350g ?댁긽??臾듭쭅?섍퀬 怨좉툒?ㅻ윭???먭퍡媛? },
-            { icon: 'Check', label: '?꾧?怨?, desc: '諛?湲덈컯/?諛?癒밸컯), ?뺤븬, ?먰룺????而ㅼ뒪? 媛怨?吏?? },
-            { icon: 'Check', label: '?쒖옉湲곌컙', desc: '?쒖븞 ?뺤젙 ???곸뾽??湲곗? 2~3???뚯슂' }
+            { icon: 'Check', label: '지질', desc: '엑스트라 누브, 띤또레또, 랑데뷰 등 최고급 수입지 선택 가능' },
+            { icon: 'Check', label: '두께', desc: '350g 이상의 묵직하고 고급스러운 두께감' },
+            { icon: 'Check', label: '후가공', desc: '박(금박/은박/먹박), 형압, 에폭시 등 커스텀 가공 지원' },
+            { icon: 'Check', label: '제작기간', desc: '시안 확정 후 영업일 기준 2~3일 소요' }
           ]
         }
       });
@@ -593,55 +594,55 @@ async function seedData() {
 }
 seedData();
 
-// [API ?쇱슦??
+// [API 라우트]
 
-// ?뚯썝媛??
+// 회원가입
 app.post('/api/signup', async (req, res) => {
   const { name, email, password, phone } = req.body;
   try {
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: '?대? 媛?낅맂 ?대찓?쇱엯?덈떎.' });
+    if (exists) return res.status(400).json({ message: '이미 가입된 이메일입니다.' });
     
     const user = await User.create({ name, email, password, phone });
-    res.json({ message: '?뚯썝媛???깃났', user: { id: user._id, name: user.name, email: user.email } });
+    res.json({ message: '회원가입 성공', user: { id: user._id, name: user.name, email: user.email } });
   } catch (err) {
-    res.status(500).json({ message: '?뚯썝媛??以??ㅻ쪟 諛쒖깮' });
+    res.status(500).json({ message: '회원가입 중 오류 발생' });
   }
 });
 
-// 濡쒓렇??
+// 로그인
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email, password });
-    if (!user) return res.status(401).json({ message: '?대찓???먮뒗 鍮꾨?踰덊샇媛 ??몄뒿?덈떎.' });
+    if (!user) return res.status(401).json({ message: '이메일 또는 비밀번호가 틀렸습니다.' });
     
     res.json({
-      message: '濡쒓렇???깃났',
+      message: '로그인 성공',
       user: { id: user._id, name: user.name, email: user.email, role: user.role, phone: user.phone || '' }
     });
   } catch (err) {
-    res.status(500).json({ message: '濡쒓렇??以??ㅻ쪟 諛쒖깮' });
+    res.status(500).json({ message: '로그인 중 오류 발생' });
   }
 });
 
-// 鍮꾨?踰덊샇 李얘린 (?꾩떆)
+// 비밀번호 찾기 (임시)
 app.post('/api/forgot-password', async (req, res) => {
   const { email } = req.body;
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: '?대떦 ?대찓?쇰줈 媛?낅맂 ?뚯썝???놁뒿?덈떎.' });
-    res.json({ message: '鍮꾨?踰덊샇 李얘린 硫붿씪??諛쒖넚?섏뿀?듬땲?? (?쒕??덉씠??', password: user.password });
+    if (!user) return res.status(404).json({ message: '해당 이메일로 가입된 회원이 없습니다.' });
+    res.json({ message: '비밀번호 찾기 메일이 발송되었습니다. (시뮬레이션)', password: user.password });
   } catch (err) {
-    res.status(500).json({ message: '?ㅻ쪟 諛쒖깮' });
+    res.status(500).json({ message: '오류 발생' });
   }
 });
 
-// ?ъ슜???꾨줈??議고쉶
+// 사용자 프로필 조회
 app.get('/api/user/profile/:userId', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
-    if (!user) return res.status(404).json({ message: '?ъ슜?먮? 李얠쓣 ???놁뒿?덈떎.' });
+    if (!user) return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
     res.json({
       id: user._id,
       name: user.name,
@@ -651,11 +652,11 @@ app.get('/api/user/profile/:userId', async (req, res) => {
       createdAt: user.createdAt
     });
   } catch (err) {
-    res.status(500).json({ message: '議고쉶 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '조회 실패', error: err.message });
   }
 });
 
-// ?ъ슜???꾨줈???섏젙 (?대쫫, ?곕씫泥?
+// 사용자 프로필 수정 (이름, 연락처)
 app.put('/api/user/:userId', async (req, res) => {
   const { name, phone } = req.body;
   try {
@@ -664,9 +665,9 @@ app.put('/api/user/:userId', async (req, res) => {
       { name, phone },
       { new: true }
     );
-    if (!user) return res.status(404).json({ message: '?ъ슜?먮? 李얠쓣 ???놁뒿?덈떎.' });
+    if (!user) return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
     
-    // ?ъ슜?먯쓽 紐낇븿 ?곗씠????媛쒖씤 ?뺣낫???먮룞 ?숆린??
+    // 사용자의 명함 데이터 내 개인 정보도 자동 동기화
     await Card.updateMany(
       { userId: req.params.userId },
       { 
@@ -678,7 +679,7 @@ app.put('/api/user/:userId', async (req, res) => {
     );
 
     res.json({
-      message: '?섏젙 ?꾨즺',
+      message: '수정 완료',
       user: {
         id: user._id,
         name: user.name,
@@ -688,42 +689,42 @@ app.put('/api/user/:userId', async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ message: '?섏젙 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '수정 실패', error: err.message });
   }
 });
 
-// ?ъ슜??鍮꾨?踰덊샇 蹂寃?
+// 사용자 비밀번호 변경
 app.put('/api/user/:userId/password', async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   try {
     const user = await User.findById(req.params.userId);
-    if (!user) return res.status(404).json({ message: '?ъ슜?먮? 李얠쓣 ???놁뒿?덈떎.' });
+    if (!user) return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
     
     if (user.password !== currentPassword) {
-      return res.status(400).json({ message: '?꾩옱 鍮꾨?踰덊샇媛 ?쇱튂?섏? ?딆뒿?덈떎.' });
+      return res.status(400).json({ message: '현재 비밀번호가 일치하지 않습니다.' });
     }
     
     user.password = newPassword;
     await user.save();
-    res.json({ message: '鍮꾨?踰덊샇 蹂寃??꾨즺' });
+    res.json({ message: '비밀번호 변경 완료' });
   } catch (err) {
-    res.status(500).json({ message: '鍮꾨?踰덊샇 蹂寃??ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '비밀번호 변경 실패', error: err.message });
   }
 });
 
-// ?쒖꽦 紐낇븿 ?먮퀎 ?ы띁 ?⑥닔 (?댁슜??議댁옱?섍굅???붽툑??寃곗젣?대젰???덉쑝硫??쒖꽦)
+// 활성 명함 판별 헬퍼 함수 (내용이 존재하거나 요금제/결제이력이 있으면 활성)
 function isCardActive(card) {
   if (!card) return false;
   
-  // 1. ?깃툒???쇰컲???꾨땲嫄곕굹, 寃곗젣/?낃툑 ?湲???寃곗젣 愿???≪뀡???덈뒗 寃쎌슦 ?쒖꽦 ?곹깭濡?媛꾩＜
+  // 1. 등급이 일반이 아니거나, 결제/입금 대기 등 결제 관련 액션이 있는 경우 활성 상태로 간주
   if (card.grade && card.grade !== 'general') return true;
   if (card.paymentStatus && card.paymentStatus !== 'none') return true;
   
-  // 2. isEdited ?꾨뱶媛 紐낆떆?곸쑝濡?議댁옱?섎뒗 寃쎌슦 理쒖슦?좎쑝濡??쒖꽦 ?곹깭 ?щ? 寃곗젙
+  // 2. isEdited 필드가 명시적으로 존재하는 경우 최우선으로 활성 상태 여부 결정
   if (card.isEdited === true) return true;
   if (card.isEdited === false) return false;
   
-  // 3. isEdited媛 undefined???덇굅??移대뱶??寃쎌슦 fallback 寃??(?대쫫 蹂寃??숆린?붾줈 ?명븳 以묐났 ?먮떒 諛⑹?瑜??꾪빐 d.name? ?쒖쇅)
+  // 3. isEdited가 undefined인 레거시 카드의 경우 fallback 검사 (이름 변경 동기화로 인한 중복 판단 방지를 위해 d.name은 제외)
   const d = card.cardData;
   if (!d) return false;
   
@@ -736,7 +737,7 @@ function isCardActive(card) {
   const hasText = textFields.some(val => val && String(val).trim() !== '');
   if (hasText) return true;
   
-  // SNS 梨꾨꼸???섎굹?쇰룄 ?낅젰?섏뼱 ?덈뒗吏 寃??
+  // SNS 채널이 하나라도 입력되어 있는지 검사
   if (d.sns) {
     const hasSns = Object.values(d.sns).some(val => val && String(val).trim() !== '');
     if (hasSns) return true;
@@ -745,33 +746,33 @@ function isCardActive(card) {
   return false;
 }
 
-// 以묐났 ?앹꽦 諛⑹?瑜??꾪븳 ?숈떆???쒖뼱 ??媛앹껜
+// 중복 생성 방지를 위한 동시성 제어 락 객체
 const creationLocks = new Map();
 
-// 紐낇븿 ?곗씠??議고쉶 (Legacy - ?⑥씪 移대뱶 ?곗씠??諛섑솚)
+// 명함 데이터 조회 (Legacy - 단일 카드 데이터 반환)
 app.get('/api/card/:userId', async (req, res) => {
   try {
     const cards = await Card.find({ userId: req.params.userId });
     const activeCard = cards.find(isCardActive);
     if (activeCard) res.json(activeCard.cardData);
-    else res.status(404).json({ message: '紐낇븿 ?뺣낫媛 ?놁뒿?덈떎.' });
+    else res.status(404).json({ message: '명함 정보가 없습니다.' });
   } catch (err) {
-    res.status(500).json({ message: '議고쉶 ?ㅽ뙣' });
+    res.status(500).json({ message: '조회 실패' });
   }
 });
 
-// ?꾩껜 紐낇븿 紐⑸줉 議고쉶 (諛곗뿴 諛섑솚)
+// 전체 명함 목록 조회 (배열 반환)
 app.get('/api/cards/:userId', async (req, res) => {
   try {
     const cards = await Card.find({ userId: req.params.userId });
     const activeCards = cards.filter(isCardActive);
     res.json(activeCards);
   } catch (err) {
-    res.status(500).json({ message: '議고쉶 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '조회 실패', error: err.message });
   }
 });
 
-// OG ?몃꽕?쇱슜 Base64 ?대?吏 ?뚮뜑留??붾뱶?ъ씤??
+// OG 썸네일용 Base64 이미지 렌더링 엔드포인트
 app.get('/api/card/image/:identifier', async (req, res) => {
   try {
     const { identifier } = req.params;
@@ -816,14 +817,14 @@ app.get('/api/card/image/:identifier', async (req, res) => {
   }
 });
 
-// 紐낇븿 VCF ?뚯씪 吏곸젒 ?ㅼ슫濡쒕뱶 (?덈뱶濡쒖씠??釉뚮씪?곗? 踰꾧렇 ?고쉶??
+// 명함 VCF 파일 직접 다운로드 (안드로이드 브라우저 버그 우회용)
 app.get('/api/card/vcf/:identifier', async (req, res) => {
   try {
     const { identifier } = req.params;
     const cleanIdentifier = identifier.replace(/\.vcf$/i, '');
     let card = null;
 
-    // card view? ?숈씪?섍쾶: 而ㅼ뒪? URL 癒쇱?, 洹??ㅼ쓬 ObjectId濡?寃??
+    // card view와 동일하게: 커스텀 URL 먼저, 그 다음 ObjectId로 검색
     card = await Card.findOne({ 'cardData.customCardUrl': cleanIdentifier });
     if (!card && mongoose.Types.ObjectId.isValid(cleanIdentifier)) {
       card = await Card.findOne({
@@ -835,7 +836,7 @@ app.get('/api/card/vcf/:identifier', async (req, res) => {
     }
 
     if (!card) {
-      return res.status(404).send('紐낇븿??李얠쓣 ???놁뒿?덈떎.');
+      return res.status(404).send('명함을 찾을 수 없습니다.');
     }
 
     const d = card.cardData || {};
@@ -858,7 +859,7 @@ app.get('/api/card/vcf/:identifier', async (req, res) => {
     if (d.address)       lines.push(`ADR;TYPE=WORK:;;${String(d.address).replace(/;/g, ' ').replace(/\r?\n/g, ' ')};;;;`);
     if (d.intro)         lines.push(`NOTE:${String(d.intro).replace(/\r?\n/g, '\\n')}`);
     
-    // SNS 異붽?
+    // SNS 추가
     if (d.sns) {
       Object.entries(d.sns).forEach(([platform, value]) => {
         if (value) {
@@ -877,20 +878,20 @@ app.get('/api/card/vcf/:identifier', async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="contact.vcf"; filename*=UTF-8''${safeName}.vcf`);
     res.send(Buffer.from(vcf, 'utf-8'));
   } catch (err) {
-    console.error('VCF ?앹꽦 ?ㅻ쪟:', err);
-    res.status(500).send('?쒕쾭 ?ㅻ쪟: ' + err.message);
+    console.error('VCF 생성 오류:', err);
+    res.status(500).send('서버 오류: ' + err.message);
   }
 });
 
-// ?좉퇋 紐낇븿 媛쒖꽕
+// 신규 명함 개설
 app.post('/api/card/create', async (req, res) => {
   const { userId } = req.body;
   try {
     if (!userId) {
-      return res.status(400).json({ message: '?ъ슜??ID媛 ?꾩슂?⑸땲??' });
+      return res.status(400).json({ message: '사용자 ID가 필요합니다.' });
     }
 
-    // ?숈떆 ?붿껌 ???띾뱷 ?湲?(理쒕? 10珥??湲?
+    // 동시 요청 락 획득 대기 (최대 10초 대기)
     const lockKey = String(userId);
     let attempts = 0;
     while (creationLocks.has(lockKey) && attempts < 200) {
@@ -900,15 +901,15 @@ app.post('/api/card/create', async (req, res) => {
     creationLocks.set(lockKey, true);
 
     try {
-      // 1. 湲곗〈 鍮꾪솢???몄쭛?섏? ?딆? 鍮? 紐낇븿 紐⑸줉 議고쉶
+      // 1. 기존 비활성(편집되지 않은 빈) 명함 목록 조회
       const existingCards = await Card.find({ userId: new mongoose.Types.ObjectId(userId) });
       const inactiveCards = existingCards.filter(c => !isCardActive(c));
 
-      // 2. 鍮꾪솢??紐낇븿???섎굹?쇰룄 議댁옱?쒕떎硫?洹멸쾬???ъ궗??
+      // 2. 비활성 명함이 하나라도 존재한다면 그것을 재사용
       if (inactiveCards.length > 0) {
         const keepCard = inactiveCards[0];
         
-        // 3. 留뚯빟 鍮꾪솢??鍮? 紐낇븿??2媛??댁긽?대씪硫? 以묐났 ?앹꽦??寃껋씠誘濡?泥?踰덉㎏留??④린怨??섎㉧吏???붾퉬?먯꽌 ?곴뎄 ??젣
+        // 3. 만약 비활성(빈) 명함이 2개 이상이라면, 중복 생성된 것이므로 첫 번째만 남기고 나머지는 디비에서 영구 삭제
         if (inactiveCards.length > 1) {
           const idsToDelete = inactiveCards.slice(1).map(c => c._id);
           await Card.deleteMany({ _id: { $in: idsToDelete } });
@@ -918,7 +919,7 @@ app.post('/api/card/create', async (req, res) => {
         return res.json(keepCard);
       }
 
-      // 4. 鍮꾪솢??紐낇븿???꾪? ?녿떎硫??좉퇋 ?앹꽦
+      // 4. 비활성 명함이 전혀 없다면 신규 생성
       const newCard = await Card.create({
         userId: new mongoose.Types.ObjectId(userId),
         grade: 'general',
@@ -943,51 +944,51 @@ app.post('/api/card/create', async (req, res) => {
       });
       res.json(newCard);
     } finally {
-      // ???댁젣
+      // 락 해제
       creationLocks.delete(lockKey);
     }
   } catch (err) {
-    res.status(500).json({ message: '紐낇븿 ?앹꽦 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '명함 생성 실패', error: err.message });
   }
 });
 
-// 紐낇븿 ??젣
+// 명함 삭제
 app.delete('/api/card/:cardId', async (req, res) => {
   try {
     const card = await Card.findByIdAndDelete(req.params.cardId);
-    if (!card) return res.status(404).json({ message: '紐낇븿??李얠쓣 ???놁뒿?덈떎.' });
-    // 愿?⑤맂 ?듦퀎 湲곕줉???④퍡 ??젣
+    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
+    // 관련된 통계 기록도 함께 삭제
     if (mongoose.models.CardAnalytics) {
       await mongoose.models.CardAnalytics.deleteMany({ cardId: req.params.cardId });
     }
-    res.json({ message: '紐낇븿????젣?섏뿀?듬땲??' });
+    res.json({ message: '명함이 삭제되었습니다.' });
   } catch (err) {
-    res.status(500).json({ message: '紐낇븿 ??젣 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '명함 삭제 실패', error: err.message });
   }
 });
 
-// 紐낇븿 ?곸꽭 ?뺣낫 議고쉶
+// 명함 상세 정보 조회
 app.get('/api/card-detail/:cardId', async (req, res) => {
   try {
     const card = await Card.findById(req.params.cardId);
-    if (!card) return res.status(404).json({ message: '紐낇븿??李얠쓣 ???놁뒿?덈떎.' });
+    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
     res.json(card);
   } catch (err) {
-    res.status(500).json({ message: '議고쉶 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '조회 실패', error: err.message });
   }
 });
 
-// 紐낇븿 ?곸꽭 ?뺣낫 ????섏젙
+// 명함 상세 정보 저장/수정
 app.post('/api/card/save/:cardId', async (req, res) => {
   const { cardData } = req.body;
   try {
     const existingCard = await Card.findById(req.params.cardId);
-    if (!existingCard) return res.status(404).json({ message: '紐낇븿??李얠쓣 ???놁뒿?덈떎.' });
+    if (!existingCard) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
 
     let newGrade = existingCard.grade;
     let gradeChanged = false;
     
-    // 利됱떆 ?곕룞: ?ъ슜?먭? ?몄쭛湲곗뿉???붽툑?쒕? 諛붽엥?ㅻ㈃ DB grade??利됱떆 蹂寃?
+    // 즉시 연동: 사용자가 편집기에서 요금제를 바꿨다면 DB grade도 즉시 변경
     if (cardData && cardData.productType && cardData.productType !== existingCard.grade) {
       newGrade = cardData.productType;
       gradeChanged = true;
@@ -1008,40 +1009,13 @@ app.post('/api/card/save/:cardId', async (req, res) => {
       });
     }
 
-    res.json({ message: '紐낇븿 ?뺣낫媛 ?덉쟾?섍쾶 ??λ릺?덉뒿?덈떎.', cardData: card.cardData });
+    res.json({ message: '명함 정보가 안전하게 저장되었습니다.', cardData: card.cardData });
   } catch (err) {
-    res.status(500).json({ message: '????ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '저장 실패', error: err.message });
   }
 });
 
-// 紐낇븿 諛쒗뻾 (URL ?좊떦) - 紐낇븿 媛쒕퀎 諛쒗뻾
-app.put('/api/admin/cards/:cardId/publish', async (req, res) => {
-  const { customCardUrl, status } = req.body;
-  try {
-    if (customCardUrl) {
-      const existingCard = await Card.findOne({ 
-        "cardData.customCardUrl": customCardUrl, 
-        _id: { $ne: req.params.cardId } 
-      });
-      if (existingCard) {
-        return res.status(400).json({ message: '?대? ?ъ슜 以묒씤 URL?낅땲?? ?ㅻⅨ URL???낅젰?댁＜?몄슂.' });
-      }
-    }
-
-    const card = await Card.findById(req.params.cardId);
-    if (!card) return res.status(404).json({ message: '紐낇븿??李얠쓣 ???놁뒿?덈떎.' });
-    
-    card.cardData = card.cardData || {};
-    card.cardData.customCardUrl = customCardUrl;
-    card.cardData.status = status || 'published';
-    await card.save();
-    res.json({ message: '紐낇븿??諛쒗뻾?섏뿀?듬땲??', card });
-  } catch (err) {
-    res.status(500).json({ message: '諛쒗뻾 ?ㅽ뙣', error: err.message });
-  }
-});
-
-// 紐낇븿 ?곗씠??????섏젙 (Legacy)
+// 명함 데이터 저장/수정 (Legacy)
 app.post('/api/card', async (req, res) => {
   const { userId, cardData } = req.body;
   const timestamp = new Date().toISOString();
@@ -1050,7 +1024,7 @@ app.post('/api/card', async (req, res) => {
     console.log(`[${timestamp}] Card Save Request - UserID: ${userId}`);
     
     if (!userId) {
-      return res.status(400).json({ message: '?ъ슜??ID媛 ?놁뒿?덈떎.' });
+      return res.status(400).json({ message: '사용자 ID가 없습니다.' });
     }
 
     const updatedCard = await Card.findOneAndUpdate(
@@ -1064,23 +1038,23 @@ app.post('/api/card', async (req, res) => {
     );
     
     console.log(`[${timestamp}] Card Save Success - UserID: ${userId}`);
-    res.json({ message: '紐낇븿 ?뺣낫媛 ?덉쟾?섍쾶 ??λ릺?덉뒿?덈떎.', cardData: updatedCard.cardData });
+    res.json({ message: '명함 정보가 안전하게 저장되었습니다.', cardData: updatedCard.cardData });
   } catch (err) {
     console.error(`[${timestamp}] Card Save Error:`, err.message);
-    res.status(500).json({ message: '????ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '저장 실패', error: err.message });
   }
 });
 
-// 而ㅼ뒪? URL ?먮뒗 ?ъ슜??ID濡?紐낇븿 議고쉶 (怨듦컻??
+// 커스텀 URL 또는 사용자 ID로 명함 조회 (공개용)
 app.get('/api/card/view/:identifier', async (req, res) => {
   const { identifier } = req.params;
   try {
     let card = null;
     
-    // 1. 而ㅼ뒪? URL濡?癒쇱? 寃??
+    // 1. 커스텀 URL로 먼저 검색
     card = await Card.findOne({ "cardData.customCardUrl": identifier });
     
-    // 2. 寃??寃곌낵媛 ?녾퀬 identifier媛 ?좏슚??ObjectId ?뺤떇?대㈃ ID濡?寃??(誘몃━蹂닿린??
+    // 2. 검색 결과가 없고 identifier가 유효한 ObjectId 형식이면 ID로 검색 (미리보기용)
     if (!card && mongoose.Types.ObjectId.isValid(identifier)) {
       card = await Card.findOne({
         $or: [
@@ -1091,65 +1065,65 @@ app.get('/api/card/view/:identifier', async (req, res) => {
     }
 
     if (card) {
-      // PublicCard ?먯꽌 ?깃툒(grade)蹂?愿묎퀬 ?몄텧 ?щ? ?깆쓣 ?먮떒?????덈룄濡?productType 二쇱엯
+      // PublicCard 에서 등급(grade)별 광고 노출 여부 등을 판단할 수 있도록 productType 주입
       const responseData = Object.assign({}, card.cardData, { productType: card.grade || 'general' });
       res.json(responseData);
     } else {
-      res.status(404).json({ message: '紐낇븿??李얠쓣 ???놁뒿?덈떎.' });
+      res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
     }
   } catch (err) {
-    res.status(500).json({ message: '議고쉶 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '조회 실패', error: err.message });
   }
 });
 
-// 臾댄넻???낃툑// ==========================================
-// [?몃㎘濡쒓렇 (Network Log) API]
+// 무통장 입금// ==========================================
+// [인맥로그 (Network Log) API]
 // ==========================================
 
-// ?몃㎘ 議고쉶
+// 인맥 조회
 app.get('/api/logs/:userId', async (req, res) => {
   try {
     const logs = await NetworkLog.find({ userId: req.params.userId }).sort({ metAt: -1, createdAt: -1 });
     res.json(logs);
   } catch (err) {
-    res.status(500).json({ message: '?몃㎘ 議고쉶 ?ㅽ뙣' });
+    res.status(500).json({ message: '인맥 조회 실패' });
   }
 });
 
-// ?몃㎘ 異붽?
+// 인맥 추가
 app.post('/api/logs', async (req, res) => {
   try {
     const { userId, name, company, position, phone, email, tags, memo, metAt } = req.body;
     const log = await NetworkLog.create({
       userId, name, company, position, phone, email, tags, memo, metAt
     });
-    res.json({ message: '?몃㎘??異붽??섏뿀?듬땲??', log });
+    res.json({ message: '인맥이 추가되었습니다.', log });
   } catch (err) {
-    res.status(500).json({ message: '?몃㎘ 異붽? ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '인맥 추가 실패', error: err.message });
   }
 });
 
-// ?몃㎘ ?섏젙
+// 인맥 수정
 app.put('/api/logs/:id', async (req, res) => {
   try {
     const log = await NetworkLog.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json({ message: '?섏젙 ?꾨즺', log });
+    res.json({ message: '수정 완료', log });
   } catch (err) {
-    res.status(500).json({ message: '?섏젙 ?ㅽ뙣' });
+    res.status(500).json({ message: '수정 실패' });
   }
 });
 
-// ?몃㎘ ??젣
+// 인맥 삭제
 app.delete('/api/logs/:id', async (req, res) => {
   try {
     await NetworkLog.findByIdAndDelete(req.params.id);
-    res.json({ message: '??젣 ?꾨즺' });
+    res.json({ message: '삭제 완료' });
   } catch (err) {
-    res.status(500).json({ message: '??젣 ?ㅽ뙣' });
+    res.status(500).json({ message: '삭제 실패' });
   }
 });
 
-// 臾댄넻?μ엯湲?諛섎젮
+// 무통장입금 반려
 app.put('/api/admin/payment/reject/:cardId', async (req, res) => {
   try {
     const card = await Card.findByIdAndUpdate(
@@ -1158,25 +1132,25 @@ app.put('/api/admin/payment/reject/:cardId', async (req, res) => {
         paymentStatus: 'none',
         depositorName: '',
         paymentAmount: 0,
-        paymentMethod: '臾댄넻???낃툑',
+        paymentMethod: '무통장 입금',
         requestedGrade: '',
         requestedDuration: 0,
         paymentRequestDate: null
       },
       { new: true }
     );
-    if (!card) return res.status(404).json({ message: '紐낇븿??李얠쓣 ???놁뒿?덈떎.' });
-    res.json({ message: '諛섎젮 泥섎━ ?꾨즺', card });
+    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
+    res.json({ message: '반려 처리 완료', card });
   } catch (err) {
-    res.status(500).json({ message: '諛섎젮 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '반려 실패', error: err.message });
   }
 });
 
 // ==========================================
-// [?듦퀎遺꾩꽍 (Analytics) API]
+// [통계분석 (Analytics) API]
 // ==========================================
 
-// ?대깽??異붿쟻 湲곕줉 (PublicCard?먯꽌 ?몄텧)
+// 이벤트 추적 기록 (PublicCard에서 호출)
 app.post('/api/analytics/track', async (req, res) => {
   try {
     const { cardId, userId, actionType, linkUrl, source } = req.body;
@@ -1189,21 +1163,21 @@ app.post('/api/analytics/track', async (req, res) => {
     });
     res.json({ success: true });
   } catch (err) {
-    // ?몃옒???먮윭???대씪?댁뼵?몄뿉 500??二쇱? ?딄퀬 議곗슜???섏뼱媛??寃껋씠 醫뗭쓬
+    // 트래킹 에러는 클라이언트에 500을 주지 않고 조용히 넘어가는 것이 좋음
     console.error('Analytics tracking error:', err);
     res.status(200).json({ success: false });
   }
 });
 
-// ?듦퀎 ?곗씠??吏묎퀎 議고쉶 (Analytics ??쒕낫?쒖슜)
+// 통계 데이터 집계 조회 (Analytics 대시보드용)
 app.get('/api/analytics/stats/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
-    // 1. ?꾩껜 ?붿빟 吏??
+    // 1. 전체 요약 지표
     const totalViews = await CardAnalytics.countDocuments({ userId, actionType: 'view' });
     const totalSaves = await CardAnalytics.countDocuments({ userId, actionType: 'save_contact' });
     
-    // 2. ?좎쭨蹂?議고쉶??(理쒓렐 30??
+    // 2. 날짜별 조회수 (최근 30일)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
@@ -1218,13 +1192,13 @@ app.get('/api/analytics/stats/:userId', async (req, res) => {
       { $sort: { _id: 1 } }
     ]);
 
-    // 3. ?좎엯 寃쎈줈 (Source) 鍮꾩쑉
+    // 3. 유입 경로 (Source) 비율
     const sourceStats = await CardAnalytics.aggregate([
       { $match: { userId: String(userId), actionType: 'view' } },
       { $group: { _id: "$source", count: { $sum: 1 } } }
     ]);
 
-    // 4. 留곹겕 ?대┃ ?쒖쐞
+    // 4. 링크 클릭 순위
     const linkStats = await CardAnalytics.aggregate([
       { $match: { userId: String(userId), actionType: 'click_link' } },
       { $group: { _id: "$linkUrl", count: { $sum: 1 } } },
@@ -1239,11 +1213,11 @@ app.get('/api/analytics/stats/:userId', async (req, res) => {
       linkStats
     });
   } catch (err) {
-    res.status(500).json({ message: '?듦퀎 議고쉶 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '통계 조회 실패', error: err.message });
   }
 });
 
-// [寃곗젣 API]
+// [결제 API]
 app.post('/api/payment/request', async (req, res) => {
   const { cardId, depositorName, paymentAmount, paymentMethod, requestedGrade, requestedDuration } = req.body;
   try {
@@ -1253,21 +1227,21 @@ app.post('/api/payment/request', async (req, res) => {
         paymentStatus: 'pending',
         depositorName,
         paymentAmount,
-        paymentMethod: paymentMethod || '臾댄넻???낃툑',
+        paymentMethod: paymentMethod || '무통장 입금',
         requestedGrade,
         requestedDuration,
         paymentRequestDate: new Date()
       },
       { new: true }
     );
-    if (!card) return res.status(404).json({ message: '紐낇븿??李얠쓣 ???놁뒿?덈떎.' });
-    res.json({ message: '臾댄넻???낃툑 ?좎껌 ?꾨즺', card });
+    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
+    res.json({ message: '무통장 입금 신청 완료', card });
   } catch (err) {
-    res.status(500).json({ message: '?좎껌 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '신청 실패', error: err.message });
   }
 });
 
-// [?곹뭹 API]
+// [상품 API]
 app.get('/api/products', async (req, res) => {
   const products = await Product.find();
   res.json(products);
@@ -1275,7 +1249,7 @@ app.get('/api/products', async (req, res) => {
 
 // [Admin API]
 
-// ?꾩껜 紐낇븿 紐⑸줉 (?ъ슜???뺣낫 ?ы븿)
+// 전체 명함 목록 (사용자 정보 포함)
 app.get('/api/admin/cards', async (req, res) => {
   try {
     const cards = await Card.find().populate('userId', 'name email');
@@ -1283,17 +1257,39 @@ app.get('/api/admin/cards', async (req, res) => {
     const result = activeCards.map(c => ({
       _id: c._id,
       userId: c.userId?._id,
-      userName: c.userId?.name || (c.cardData?.name || '?뚯닔?놁쓬'),
-      userEmail: c.userId?.email || (c.cardData?.email || '?대찓???놁쓬'),
+      userName: c.userId?.name || (c.cardData?.name || '알수없음'),
+      userEmail: c.userId?.email || (c.cardData?.email || '이메일 없음'),
       cardData: c.cardData,
       updatedAt: c.updatedAt
     }));
     res.json(result);
   } catch (err) {
-    res.status(500).json({ message: '議고쉶 ?ㅽ뙣' });
+    res.status(500).json({ message: '조회 실패' });
   }
 });
 
+// 명함 발행 (URL 할당)
+app.put('/api/admin/card/:userId/publish', async (req, res) => {
+  const { customCardUrl, status } = req.body;
+  try {
+    const cards = await Card.find({ userId: req.params.userId });
+    const card = cards.find(isCardActive) || cards[0];
+    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
+    
+    card.cardData.customCardUrl = customCardUrl;
+    card.cardData.status = status || 'published';
+    card.isEdited = true;
+    card.updatedAt = new Date();
+    card.markModified('cardData');
+    await card.save();
+    
+    res.json({ message: '발행 완료', customCardUrl });
+  } catch (err) {
+    res.status(500).json({ message: '발행 실패' });
+  }
+});
+
+// 전체 회원 목록
 app.get('/api/admin/users', async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
@@ -1319,33 +1315,33 @@ app.get('/api/admin/users', async (req, res) => {
     });
     res.json(safeUsers);
   } catch (err) {
-    res.status(500).json({ message: '議고쉶 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '조회 실패', error: err.message });
   }
 });
 
-// ?뚯썝 沅뚰븳 ?섏젙
+// 회원 권한 수정
 app.put('/api/admin/user/:userId/role', async (req, res) => {
   const { role } = req.body;
   try {
     const user = await User.findById(req.params.userId);
-    if (user.email === 'vikitour.boss@gmail.com') return res.status(403).json({ message: '留덉뒪??怨꾩젙 ?섏젙 遺덇?' });
+    if (user.email === 'vikitour.boss@gmail.com') return res.status(403).json({ message: '마스터 계정 수정 불가' });
     
     user.role = role;
     await user.save();
-    res.json({ message: '沅뚰븳 ?섏젙 ?꾨즺', role });
+    res.json({ message: '권한 수정 완료', role });
   } catch (err) {
-    res.status(500).json({ message: '?섏젙 ?ㅽ뙣' });
+    res.status(500).json({ message: '수정 실패' });
   }
 });
 
-// ?뚯썝 ?뺣낫 ?섏젙
+// 회원 정보 수정
 app.put('/api/admin/user/:userId', async (req, res) => {
   const { name, email, phone, role, grade, expiryDate, paymentStatus, paymentDate, paymentMethod } = req.body;
   try {
-    // 1. ?좎? ?뺣낫 ?낅뜲?댄듃
+    // 1. 유저 정보 업데이트
     await User.findByIdAndUpdate(req.params.userId, { name, email, phone, role });
     
-    // 2. 移대뱶 ?뺣낫 ?낅뜲?댄듃
+    // 2. 카드 정보 업데이트
     const cardUpdate = {};
     if (grade !== undefined) cardUpdate.grade = grade;
     if (expiryDate !== undefined) cardUpdate.expiryDate = expiryDate ? new Date(expiryDate) : null;
@@ -1376,18 +1372,18 @@ app.put('/api/admin/user/:userId', async (req, res) => {
       }
     }
     
-    res.json({ message: '?섏젙 ?꾨즺' });
+    res.json({ message: '수정 완료' });
   } catch (err) {
-    res.status(500).json({ message: '?섏젙 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '수정 실패', error: err.message });
   }
 });
 
-// 臾댄넻???낃툑 ?뱀씤
+// 무통장 입금 승인
 app.put('/api/admin/payment/approve/:cardId', async (req, res) => {
   const { duration } = req.body;
   try {
     const card = await Card.findById(req.params.cardId);
-    if (!card) return res.status(404).json({ message: '紐낇븿??李얠쓣 ???놁뒿?덈떎.' });
+    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
     
     const months = duration || card.requestedDuration || 12;
     const expiryDate = new Date();
@@ -1399,13 +1395,13 @@ app.put('/api/admin/payment/approve/:cardId', async (req, res) => {
     card.expiryDate = expiryDate;
     
     await card.save();
-    res.json({ message: '?뱀씤 ?꾨즺', card });
+    res.json({ message: '승인 완료', card });
   } catch (err) {
-    res.status(500).json({ message: '?뱀씤 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '승인 실패', error: err.message });
   }
 });
 
-// 臾댄넻???낃툑 諛섎젮
+// 무통장 입금 반려
 app.put('/api/admin/payment/reject/:cardId', async (req, res) => {
   try {
     const card = await Card.findByIdAndUpdate(
@@ -1420,14 +1416,14 @@ app.put('/api/admin/payment/reject/:cardId', async (req, res) => {
       },
       { new: true }
     );
-    if (!card) return res.status(404).json({ message: '紐낇븿??李얠쓣 ???놁뒿?덈떎.' });
-    res.json({ message: '諛섎젮 ?꾨즺', card });
+    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
+    res.json({ message: '반려 완료', card });
   } catch (err) {
-    res.status(500).json({ message: '諛섎젮 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '반려 실패', error: err.message });
   }
 });
 
-// ?대뱶誘??뚮┝ ??議고쉶 (?湲?紐낇븿, ?좉퇋 臾몄쓽)
+// 어드민 알림 수 조회 (대기 명함, 신규 문의)
 app.get('/api/admin/notifications', async (req, res) => {
   try {
     const pendingCardsCount = await Card.countDocuments({ paymentStatus: 'pending' });
@@ -1439,58 +1435,33 @@ app.get('/api/admin/notifications', async (req, res) => {
       newPlanChanges: newPlanChangesCount
     });
   } catch (err) {
-    res.status(500).json({ message: '?뚮┝ 議고쉶 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '알림 조회 실패', error: err.message });
   }
 });
 
-// ?쒗쑕 諛??꾩엯 臾몄쓽 紐⑸줉 議고쉶
+// 제휴 및 도입 문의 목록 조회
 app.get('/api/admin/inquiries', async (req, res) => {
   try {
     const inquiries = await Inquiry.find().sort({ createdAt: -1 });
     res.json(inquiries);
   } catch (err) {
-    res.status(500).json({ message: '議고쉶 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '조회 실패', error: err.message });
   }
 });
 
-// 臾몄쓽?ы빆 ?쎌쓬 泥섎━
+// 문의사항 읽음 처리
 app.put('/api/admin/inquiry/:id/read', async (req, res) => {
   try {
     const inquiry = await Inquiry.findByIdAndUpdate(req.params.id, { isRead: true }, { new: true });
-    if (!inquiry) return res.status(404).json({ message: '臾몄쓽瑜?李얠쓣 ???놁뒿?덈떎.' });
-    res.json({ message: '?쎌쓬 泥섎━ ?꾨즺', inquiry });
+    if (!inquiry) return res.status(404).json({ message: '문의를 찾을 수 없습니다.' });
+    res.json({ message: '읽음 처리 완료', inquiry });
   } catch (err) {
-    res.status(500).json({ message: '泥섎━ ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '처리 실패', error: err.message });
   }
 });
 
 // ==========================================
-// 愿由ъ옄 ?붽툑 蹂寃??댁뿭
-// ==========================================
-app.get('/api/admin/plan-changes', async (req, res) => {
-  try {
-    const changes = await PlanChange.find({})
-      .populate('userId', 'name email phone')
-      .populate('cardId', 'cardData')
-      .sort({ changedAt: -1 })
-      .limit(100);
-    res.json(changes);
-  } catch (err) {
-    res.status(500).json({ message: '?붽툑 蹂寃??댁뿭 議고쉶 ?ㅽ뙣', error: err.message });
-  }
-});
-
-app.put('/api/admin/plan-changes/read', async (req, res) => {
-  try {
-    await PlanChange.updateMany({ isRead: false }, { $set: { isRead: true } });
-    res.json({ message: '紐⑤뱺 ?뚮┝ ?쎌쓬 泥섎━ ?꾨즺' });
-  } catch (err) {
-    res.status(500).json({ message: '?뚮┝ ?곹깭 ?낅뜲?댄듃 ?ㅽ뙣', error: err.message });
-  }
-});
-
-// ==========================================
-// 愿由ъ옄 ?붽툑 蹂寃??댁뿭
+// 관리자 요금 변경 내역
 // ==========================================
 app.get('/api/admin/plan-changes', async (req, res) => {
   try {
@@ -1501,61 +1472,86 @@ app.get('/api/admin/plan-changes', async (req, res) => {
       .limit(100);
     res.json(changes);
   } catch (err) {
-    res.status(500).json({ message: '?붽툑 蹂寃??댁뿭 議고쉶 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '요금 변경 내역 조회 실패', error: err.message });
   }
 });
 
 app.put('/api/admin/plan-changes/read', async (req, res) => {
   try {
     await PlanChange.updateMany({ isRead: false }, { $set: { isRead: true } });
-    res.json({ message: '紐⑤몢 ?쎌쓬 泥섎━ ?꾨즺' });
+    res.json({ message: '모든 알림 읽음 처리 완료' });
   } catch (err) {
-    res.status(500).json({ message: '?곹깭 ?낅뜲?댄듃 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '알림 상태 업데이트 실패', error: err.message });
   }
 });
 
-// ?붽툑 蹂寃??댁뿭 ??젣
+// ==========================================
+// 관리자 요금 변경 내역
+// ==========================================
+app.get('/api/admin/plan-changes', async (req, res) => {
+  try {
+    const changes = await PlanChange.find({})
+      .populate('userId', 'name email phone')
+      .populate('cardId', 'cardData')
+      .sort({ changedAt: -1 })
+      .limit(100);
+    res.json(changes);
+  } catch (err) {
+    res.status(500).json({ message: '요금 변경 내역 조회 실패', error: err.message });
+  }
+});
+
+app.put('/api/admin/plan-changes/read', async (req, res) => {
+  try {
+    await PlanChange.updateMany({ isRead: false }, { $set: { isRead: true } });
+    res.json({ message: '모두 읽음 처리 완료' });
+  } catch (err) {
+    res.status(500).json({ message: '상태 업데이트 실패', error: err.message });
+  }
+});
+
+// 요금 변경 내역 삭제
 app.delete('/api/admin/plan-changes/:id', async (req, res) => {
   try {
     await PlanChange.findByIdAndDelete(req.params.id);
-    res.json({ message: '??젣 ?꾨즺' });
+    res.json({ message: '삭제 완료' });
   } catch (err) {
-    res.status(500).json({ message: '??젣 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '삭제 실패', error: err.message });
   }
 });
 
-// 臾몄쓽?ы빆 ??젣
+// 문의사항 삭제
 app.delete('/api/admin/inquiry/:id', async (req, res) => {
   try {
     const inquiry = await Inquiry.findByIdAndDelete(req.params.id);
-    if (!inquiry) return res.status(404).json({ message: '臾몄쓽瑜?李얠쓣 ???놁뒿?덈떎.' });
-    res.json({ message: '??젣 ?꾨즺' });
+    if (!inquiry) return res.status(404).json({ message: '문의를 찾을 수 없습니다.' });
+    res.json({ message: '삭제 완료' });
   } catch (err) {
-    res.status(500).json({ message: '??젣 ?ㅽ뙣', error: err.message });
+    res.status(500).json({ message: '삭제 실패', error: err.message });
   }
 });
 
-// ?뚯썝 ??젣
+// 회원 삭제
 app.delete('/api/admin/user/:userId', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
-    if (user.email === 'vikitour.boss@gmail.com') return res.status(403).json({ message: '留덉뒪????젣 遺덇?' });
+    if (user.email === 'vikitour.boss@gmail.com') return res.status(403).json({ message: '마스터 삭제 불가' });
     
     await User.findByIdAndDelete(req.params.userId);
     await Card.findOneAndDelete({ userId: req.params.userId });
-    res.json({ message: '??젣 ?꾨즺' });
+    res.json({ message: '삭제 완료' });
   } catch (err) {
-    res.status(500).json({ message: '??젣 ?ㅽ뙣' });
+    res.status(500).json({ message: '삭제 실패' });
   }
 });
 
-// ?곹뭹 愿由?
+// 상품 관리
 app.get('/api/admin/products', async (req, res) => {
   const products = await Product.find().sort({ order: 1 });
   res.json(products);
 });
 
-// ?곹뭹 ?쒖꽌 蹂寃?
+// 상품 순서 변경
 app.put('/api/admin/products/reorder', async (req, res) => {
   const { orderedIds } = req.body;
   try {
@@ -1563,9 +1559,9 @@ app.put('/api/admin/products/reorder', async (req, res) => {
       Product.findOneAndUpdate({ id }, { order: index })
     );
     await Promise.all(promises);
-    res.json({ message: '?쒖꽌 蹂寃??꾨즺' });
+    res.json({ message: '순서 변경 완료' });
   } catch (err) {
-    res.status(500).json({ message: '?쒖꽌 蹂寃??ㅽ뙣' });
+    res.status(500).json({ message: '순서 변경 실패' });
   }
 });
 
@@ -1592,22 +1588,23 @@ app.post('/api/admin/products', async (req, res) => {
 });
 
 app.put('/api/admin/products/:id', async (req, res) => {
-  const { name, description, price, features } = req.body;
+  const { name, description, price, features, sampleUrl } = req.body;
   await Product.findOneAndUpdate({ id: req.params.id }, { 
     name, 
     description, 
+    sampleUrl: sampleUrl || '',
     price: price || { annual: 0, threeMonths: 0, twoMonths: 0 }, 
     features 
   });
-  res.json({ message: '?섏젙 ?꾨즺' });
+  res.json({ message: '수정 완료' });
 });
 
 app.delete('/api/admin/products/:id', async (req, res) => {
   await Product.findOneAndDelete({ id: req.params.id });
-  res.json({ message: '??젣 ?꾨즺' });
+  res.json({ message: '삭제 완료' });
 });
 
-// [?ㅼ젙 API]
+// [설정 API]
 app.get('/api/settings/ad', async (req, res) => {
   const setting = await Setting.findOne({ key: 'global_ad' });
   res.json(setting ? setting.value : {});
@@ -1620,16 +1617,16 @@ app.put('/api/admin/settings/ad', async (req, res) => {
     { value: { text, link, bgColor, textColor } },
     { upsert: true }
   );
-  res.json({ message: '愿묎퀬 ?ㅼ젙 ????꾨즺' });
+  res.json({ message: '광고 설정 저장 완료' });
 });
 
-// [?쒕뵫?섏씠吏 API]
+// [랜딩페이지 API]
 app.get('/api/landing-content', async (req, res) => {
   try {
     const setting = await Setting.findOne({ key: 'landing_content' });
     if (setting) res.json(setting.value);
-    else res.status(404).json({ message: '?놁쓬' });
-  } catch (err) { res.status(500).json({ message: '?ㅽ뙣' }); }
+    else res.status(404).json({ message: '없음' });
+  } catch (err) { res.status(500).json({ message: '실패' }); }
 });
 
 app.put('/api/landing-content', async (req, res) => {
@@ -1639,20 +1636,20 @@ app.put('/api/landing-content', async (req, res) => {
       { $set: { value: req.body } },
       { upsert: true, new: true }
     );
-    res.json({ message: '??μ셿猷? });
+    res.json({ message: '저장완료' });
   } catch (err) { 
     console.error('[LANDING_SAVE_ERROR]', err);
-    res.status(500).json({ message: '?ㅽ뙣' }); 
+    res.status(500).json({ message: '실패' }); 
   }
 });
 
-// [紐낇븿 ?쒕뵫?섏씠吏 API]
+// [명함 랜딩페이지 API]
 app.get('/api/namecard-landing-content', async (req, res) => {
   try {
     const setting = await Setting.findOne({ key: 'namecard_landing_content' });
     if (setting) res.json(setting.value);
-    else res.status(404).json({ message: '?놁쓬' });
-  } catch (err) { res.status(500).json({ message: '?ㅽ뙣' }); }
+    else res.status(404).json({ message: '없음' });
+  } catch (err) { res.status(500).json({ message: '실패' }); }
 });
 
 app.put('/api/namecard-landing-content', async (req, res) => {
@@ -1662,30 +1659,29 @@ app.put('/api/namecard-landing-content', async (req, res) => {
       { $set: { value: req.body } },
       { upsert: true, new: true }
     );
-    res.json({ message: '??μ셿猷? });
+    res.json({ message: '저장완료' });
   } catch (err) {
     console.error('[NAMECARD_LANDING_SAVE_ERROR]', err);
-    res.status(500).json({ message: '?ㅽ뙣' });
+    res.status(500).json({ message: '실패' });
   }
 });
 
-// [臾몄쓽?ы빆 API]
+// [문의사항 API]
 app.post('/api/inquiry', async (req, res) => {
   try {
     const { name, phone, email, type, content } = req.body;
     if (!name || !phone || !email || !content) {
-      return res.status(400).json({ message: '紐⑤뱺 ?꾩닔 ??ぉ???낅젰??二쇱꽭??' });
+      return res.status(400).json({ message: '모든 필수 항목을 입력해 주세요.' });
     }
     const newInquiry = await Inquiry.create({ name, phone, email, type: type || 'general', content });
     console.log('[INQUIRY_RECEIVED]', newInquiry);
-    res.status(201).json({ message: '?깃났' });
+    res.status(201).json({ message: '성공' });
   } catch (err) {
     console.error('[INQUIRY_ERROR]', err);
-    res.status(500).json({ message: '?ㅽ뙣' });
+    res.status(500).json({ message: '실패' });
   }
 });
 
 app.listen(PORT, () => {
   console.log(`Server running on http://127.0.0.1:${PORT}`);
 });
-
