@@ -286,7 +286,7 @@ export default function AdminUserManagement() {
           user.phone || '',
           formatDate(user.createdAt),
           card.expiryDate ? formatDate(card.expiryDate) : '평생',
-          card.grade || '일반형',
+          prodName,
           status === 'published' ? '발행완료' : status === 'pending' ? '발행대기' : '미작성',
           fullUrl
         ].map(escapeCsvValue);
