@@ -27,19 +27,23 @@ const AdminUserTable = ({
 
   return (
     <>
-      <div className="table-header-controls">
-        <div className="search-bar">
-          <Search size={18} className="search-icon" />
-          <input
-            type="text"
-            placeholder="회원 이름, 이메일, 명함명 검색"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="table-header-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', flex: 1, maxWidth: '800px' }}>
+          <div className="search-bar" style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+            <Search size={18} className="search-icon" />
+            <input
+              type="text"
+              placeholder="회원 이름, 이메일, 명함명 검색"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%' }}
+            />
+          </div>
+          <button style={{ padding: '0 24px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', whiteSpace: 'nowrap' }}>검색</button>
+          <button className="btn-export" onClick={handleExportExcel} style={{ whiteSpace: 'nowrap', height: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <ExternalLink size={16} /> 엑셀 저장
+          </button>
         </div>
-        <button className="btn-export" onClick={handleExportExcel}>
-          <ExternalLink size={16} /> 엑셀 저장
-        </button>
       </div>
 
       <div className="table-responsive">

@@ -272,6 +272,7 @@ export default function AdminUserManagement() {
         const user = users.find(u => u.id === card.userId) || {};
         const status = card.cardData?.status || 'pending';
         const fullUrl = `${window.location.origin}/v/${card?.cardData?.customCardUrl || card._id}`;
+        const prodName = products.find(p => p.id === card.grade)?.name || card.grade || '일반';
         
         // 쉼표(,)가 포함되어 컬럼이 쪼개지거나 깨지는 결함을 막기 위한 더블 쿼트 이스케이프 매핑
         const escapeCsvValue = (val) => {
