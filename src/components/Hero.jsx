@@ -35,7 +35,7 @@ const Hero = () => {
         
         <div className="hero-visual">
           <div className="visual-wrapper">
-            <img src={heroImage} alt="Next Card Interface" className="hero-img" />
+            <img src={heroImage} alt="Next Card Interface" className="hero-img" loading="lazy" decoding="async" />
             <div className="floating-card card-1">
               <span className="icon">🚀</span>
               <span>Fast Sharing</span>

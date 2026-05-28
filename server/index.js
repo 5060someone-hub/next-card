@@ -6,14 +6,51 @@ require('dotenv').config();
 
 const app = express();
 
-// 미들웨어 설정
+// ─── CORS 보안 강화: 프로덕션은 허용 도메인만, 개발은 전체 허용 ───────────────
+const ALLOWED_ORIGINS = [
+  'https://nextcard.kr',
+  'https://www.nextcard.kr',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+];
+
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => {
+    // 서버간 요청(origin 없음) 또는 허용 목록에 있으면 통과
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy: Not allowed'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// ─── 인메모리 캐시 (명함 조회, 상품 목록용) ──────────────────────────────────
+const cache = {
+  cards: new Map(),   // key: identifier, value: { data, ts }
+  products: null,
+  productTs: 0,
+  CARD_TTL: 5 * 60 * 1000,      // 5분
+  PRODUCT_TTL: 10 * 60 * 1000,  // 10분
+  getCard(id) {
+    const entry = this.cards.get(id);
+    if (entry && Date.now() - entry.ts < this.CARD_TTL) return entry.data;
+    return null;
+  },
+  setCard(id, data) { this.cards.set(id, { data, ts: Date.now() }); },
+  clearCard(id) { this.cards.delete(id); },
+  getProducts() {
+    if (this.products && Date.now() - this.productTs < this.PRODUCT_TTL) return this.products;
+    return null;
+  },
+  setProducts(data) { this.products = data; this.productTs = Date.now(); },
+  clearProducts() { this.products = null; },
+};
 
 
 // ==========================================
@@ -1023,7 +1060,7 @@ app.post('/api/card', async (req, res) => {
   const timestamp = new Date().toISOString();
   
   try {
-    console.log(`[${timestamp}] Card Save Request - UserID: ${userId}`);
+    // 저장 요청 시작
     
     if (!userId) {
       return res.status(400).json({ message: '사용자 ID가 없습니다.' });
@@ -1039,10 +1076,12 @@ app.post('/api/card', async (req, res) => {
       { upsert: true, new: true }
     );
     
-    console.log(`[${timestamp}] Card Save Success - UserID: ${userId}`);
+    // ─── 명함 저장 후 캐시 무효화 (사용자 ID 기반 캐시 삭제) ──────────
+    cache.clearCard(userId);
+    if (cardData?.customCardUrl) cache.clearCard(cardData.customCardUrl);
     res.json({ message: '명함 정보가 안전하게 저장되었습니다.', cardData: updatedCard.cardData });
   } catch (err) {
-    console.error(`[${timestamp}] Card Save Error:`, err.message);
+    // 저장 실패
     res.status(500).json({ message: '저장 실패', error: err.message });
   }
 });
@@ -1051,6 +1090,10 @@ app.post('/api/card', async (req, res) => {
 app.get('/api/card/view/:identifier', async (req, res) => {
   const { identifier } = req.params;
   try {
+    // ─── 캐시 히트 ─────────────────────────────────────────────
+    const cached = cache.getCard(identifier);
+    if (cached) return res.json(cached);
+
     let card = null;
     
     // 1. 커스텀 URL로 먼저 검색
@@ -1069,6 +1112,8 @@ app.get('/api/card/view/:identifier', async (req, res) => {
     if (card) {
       // PublicCard 에서 등급(grade)별 광고 노출 여부 등을 판단할 수 있도록 productType 주입
       const responseData = Object.assign({}, card.cardData, { productType: card.grade || 'general' });
+      // ─── 캐시 저장 ───────────────────────────────────────────
+      cache.setCard(identifier, responseData);
       res.json(responseData);
     } else {
       res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
@@ -1077,6 +1122,7 @@ app.get('/api/card/view/:identifier', async (req, res) => {
     res.status(500).json({ message: '조회 실패', error: err.message });
   }
 });
+
 
 // 무통장 입금// ==========================================
 // [인맥로그 (Network Log) API]
