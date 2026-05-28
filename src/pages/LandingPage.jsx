@@ -619,7 +619,7 @@ const LandingPage = () => {
                     onChange={handleContactChange} 
                     required 
                   />
-                  <label htmlFor="agree" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  <label htmlFor="agree" style={{ fontSize: '0.85rem', color: '#64748b' }}>
                     개인정보 수집 및 이용에 동의합니다. (필수){' '}
                     <a 
                       href="#privacy" 
