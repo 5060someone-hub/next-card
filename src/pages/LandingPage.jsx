@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Check, ChevronRight, MessageCircle, Mail, Globe, Loader2, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'http://127.0.0.1:5000';
@@ -130,6 +131,7 @@ const getLinkProps = (url, defaultUrl = '/signup') => {
 
 const LandingPage = () => {
   const [c, setC] = useState(DEFAULT_CONTENT);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [activeFaq, setActiveFaq] = useState(null);
   const [policyModal, setPolicyModal] = useState({ open: false, title: '', content: '' });
@@ -378,6 +380,11 @@ const LandingPage = () => {
                   </React.Fragment>
                 );
               })}
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+              <button onClick={() => navigate('/samples')} className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.2rem', borderRadius: '50px', cursor: 'pointer', boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3)' }}>
+                👉 실제 동작하는 등급별 샘플 명함 체험하기
+              </button>
             </div>
           </div>
         </section>

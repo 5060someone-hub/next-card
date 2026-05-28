@@ -126,6 +126,7 @@ export default function AdminProductManagement() {
         body: JSON.stringify({ 
           name: newProductName, 
           description: newProductDesc,
+          sampleUrl: newSampleUrl,
           price: {
             annual: Number(newProductPriceAnnual) || 0,
             threeMonths: Number(newProductPriceThreeMonths) || 0,
@@ -286,6 +287,16 @@ export default function AdminProductManagement() {
                   onChange={(e) => setNewProductDesc(e.target.value)} 
                   placeholder="상품에 대한 간단한 설명"
                   style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', minHeight: '60px', fontSize: '0.75rem' }}
+                />
+              </div>
+              <div className="input-group" style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '0.719rem', fontWeight: 600, marginBottom: '0.35rem' }}>샘플 명함 URL (선택)</label>
+                <input 
+                  type="text" 
+                  value={newSampleUrl} 
+                  onChange={(e) => setNewSampleUrl(e.target.value)} 
+                  placeholder="예: /v/sample-vip 또는 https://nextcard.kr/v/sample"
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
