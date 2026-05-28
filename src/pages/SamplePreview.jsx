@@ -41,17 +41,78 @@ export default function SamplePreview() {
 
   return (
     <div className="sample-preview-page" style={{ minHeight: '100vh', background: '#f8fafc', paddingBottom: '4rem' }}>
+      <style>
+        {`
+          .sample-header {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+          }
+          .sample-header h1 {
+            margin: 0 auto;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            padding-right: 100px;
+          }
+          .sample-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3rem;
+          }
+          .sample-mockup-wrapper {
+            position: relative;
+            width: 340px;
+            height: 680px;
+            background: #ffffff;
+            border-radius: 44px;
+            border: 12px solid #0f172a;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            margin: 0 auto;
+          }
+          @media (max-width: 768px) {
+            .sample-header {
+              padding: 1rem;
+              justify-content: space-between;
+            }
+            .sample-header h1 {
+              font-size: 1.1rem !important;
+              padding-right: 0 !important;
+              margin: 0;
+            }
+            .sample-header button {
+              font-size: 0.9rem !important;
+              padding: 0;
+            }
+            .sample-container {
+              padding: 1rem;
+              gap: 2rem;
+            }
+            .sample-mockup-wrapper {
+              width: 100%;
+              max-width: 340px;
+            }
+            .sticky-right-side {
+              position: static !important;
+            }
+          }
+        `}
+      </style>
       {/* Header */}
-      <header style={{ background: 'white', borderBottom: '1px solid #e2e8f0', padding: '1rem 2rem', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, zIndex: 50 }}>
+      <header className="sample-header" style={{ background: 'white', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 50 }}>
         <button onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}>
           <ArrowLeft size={20} /> 돌아가기
         </button>
-        <h1 style={{ margin: '0 auto', fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', paddingRight: '100px' }}>
+        <h1>
           등급별 샘플 명함
         </h1>
       </header>
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem', display: 'flex', flexWrap: 'wrap', gap: '3rem' }}>
+      <div className="sample-container">
         
         {/* Left Side: Product Selection & Details */}
         <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -106,17 +167,8 @@ export default function SamplePreview() {
         </div>
 
         {/* Right Side: Smartphone Live Preview */}
-        <div style={{ flex: '1 1 400px', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '1rem' }}>
-          <div style={{ 
-            position: 'relative',
-            width: '340px', 
-            height: '680px', 
-            background: '#ffffff',
-            borderRadius: '44px',
-            border: '12px solid #0f172a',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            overflow: 'hidden'
-          }}>
+        <div className="sticky-right-side" style={{ flex: '1 1 400px', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '1rem', position: 'sticky', top: '100px', height: 'fit-content' }}>
+          <div className="sample-mockup-wrapper">
             {/* iPhone Notch */}
             <div style={{
               position: 'absolute',
