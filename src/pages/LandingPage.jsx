@@ -381,9 +381,13 @@ const LandingPage = () => {
                 );
               })}
             </div>
-            <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <div style={{ textAlign: 'center', marginTop: '3rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               <button onClick={() => navigate('/samples')} className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.2rem', borderRadius: '50px', cursor: 'pointer', boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3)' }}>
                 👉 실제 동작하는 등급별 샘플 명함 체험하기
+              
+              </button>
+              <button onClick={() => alert('동영상 튜토리얼이 준비 중입니다.')} className="btn-secondary" style={{ padding: '1rem 2rem', fontSize: '1.2rem', borderRadius: '50px', cursor: 'pointer', background: 'white', color: '#1d4ed8', border: '1px solid #1d4ed8', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                📺 동영상으로 디지털명함 편집 방법 배우기
               </button>
             </div>
           </div>
@@ -452,7 +456,7 @@ const LandingPage = () => {
                     ))}
                   </ul>
                   <a {...getLinkProps(plan.linkUrl, (plan.name && (plan.name.includes('기업') || plan.name.includes('Corp') || plan.name.includes('문의'))) ? '#contact' : '/signup')}>
-                    <button className={`btn-price ${plan.popular ? 'primary' : ''}`}>{plan.btn}</button>
+                    <button className={`btn-price ${plan.popular ? 'primary' : 'secondary'}`} style={plan.popular ? {} : { background: 'rgba(124,58,237,0.1)', color: 'var(--primary-color)', border: 'none', fontWeight: 'bold' }}>{plan.btn || (plan.name && plan.name.includes('문의') ? '문의하기' : '선택하기')}</button>
                   </a>
                 </div>
               ))}
@@ -534,10 +538,10 @@ const LandingPage = () => {
         {/* ── 문의하기 양식 ── */}
         <section className="landing-contact reveal" id="contact">
           <div className="container">
-            <div className="contact-card-wrapper">
+            <div className="contact-card-wrapper" style={{ background: 'white', padding: '3rem', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', maxWidth: '800px', margin: '0 auto' }}>
               <div className="section-header-centered" style={{ marginBottom: '24px' }}>
                 <span className="faq-badge" style={{ background: 'rgba(124, 58, 237, 0.1)', color: 'var(--secondary-color)' }}>CONTACT US</span>
-                <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--text-main)', marginTop: '8px' }}>제휴 및 도입 문의</h2>
+                <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#0f172a', marginTop: '8px' }}>제휴 및 도입 문의</h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '8px' }}>디지털 명함 단체 도입, 제휴 제안 등 문의사항을 남겨주시면 확인 후 연락드리겠습니다.</p>
               </div>
 
