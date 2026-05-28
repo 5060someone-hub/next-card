@@ -484,11 +484,12 @@ export default function AdminUserManagement() {
                       }}
                     >
                       {approvingUser.requestedGrade === 'prod_1778899977850' ? (
-                        <option value={6}>6개월 이용권 (무료 이벤트 고정)</option>
+                        <option value={2}>2개월 이용권 (무료 체험용 고정)</option>
                       ) : (
                         <>
-                          <option value={12}>1년 (12개월) 이용권</option>
-                          <option value={6}>6개월 이용권</option>
+                          <option value={12}>1년(12개월) 이용권</option>
+                          <option value={3}>3개월 이용권</option>
+                          <option value={2}>2개월 무료 이용권</option>
                         </>
                       )}
                     </select>
