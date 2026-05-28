@@ -63,6 +63,8 @@ export default function SamplePreview() {
             flex-wrap: wrap;
             gap: 3rem;
           }
+          .desktop-only-btn { display: block; }
+          .mobile-only-btn { display: none; }
           .sample-mockup-wrapper {
             position: relative;
             width: 340px;
@@ -96,6 +98,8 @@ export default function SamplePreview() {
               width: 100%;
               max-width: 340px;
             }
+            .desktop-only-btn { display: none; }
+            .mobile-only-btn { display: block; width: 100%; margin-top: 2rem; }
             .sticky-right-side {
               position: static !important;
             }
@@ -159,7 +163,7 @@ export default function SamplePreview() {
             ))}
           </div>
           
-          <div style={{ marginTop: 'auto', paddingTop: '2rem' }}>
+          <div className="desktop-only-btn" style={{ marginTop: 'auto', paddingTop: '2rem' }}>
              <button onClick={() => navigate('/signup')} style={{ width: '100%', padding: '1rem', background: '#0f172a', color: 'white', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
                내 명함 만들기 시작
              </button>
@@ -201,6 +205,12 @@ export default function SamplePreview() {
                 <div className="spinner" style={{ width: '30px', height: '30px', border: '3px solid #e2e8f0', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
               </div>
             )}
+          </div>
+          
+          <div className="mobile-only-btn">
+             <button onClick={() => navigate('/signup')} style={{ width: '100%', padding: '1rem', background: '#0f172a', color: 'white', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+               내 명함 만들기 시작
+             </button>
           </div>
         </div>
         
