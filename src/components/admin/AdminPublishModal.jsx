@@ -29,25 +29,25 @@ const AdminPublishModal = ({
   const qrRef = useRef(null);
 
   const user = selectedUserForPublish;
-  // localUrl 우선, 없으면 userId fallback
-  const cardUrl = localUrl || (user?.id ?? '');
+  // localUrl 우선, 없으면 card._id fallback
+  const cardUrl = localUrl || (user?._id ?? '');
   const fullUrl = `https://nextcard.kr/v/${cardUrl}`;
   const localPreviewUrl = `http://localhost:5173/v/${cardUrl}`;
 
   useEffect(() => {
-    if (isPublishModalOpen && user?.id) {
-      // 모달 열림시 기존 customUrl로 초기화
+    if (isPublishModalOpen && user?._id) {
+      // 모달 열릴때 기존 customUrl로 초기화
       setLocalUrl(customUrl || '');
       fetchCardData();
       setPublishDone(false);
       setActiveTab('publish');
     }
-  }, [isPublishModalOpen, user?.id]);
+  }, [isPublishModalOpen, user?._id]);
 
   const fetchCardData = async () => {
     setCardLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/card/${user.id}`);
+      const res = await fetch(`${API_BASE}/api/card-detail/${user._id}`);
       if (res.ok) {
         const data = await res.json();
         setCardData(data);
@@ -102,7 +102,8 @@ const AdminPublishModal = ({
     ctx.textAlign = 'center';
     ctx.fillText(fullUrl, 600, 1150);
     const link = document.createElement('a');
-    link.download = `QR_${user?.name}_NextCard.png`;
+    const safeCardName = (cardData?.name || '명함').replace(/[^a-zA-Z0-9가-힣]/g, '_');
+    link.download = `QR_${user?.name}_${safeCardName}_NextCard.png`;
     link.href = highRes.toDataURL('image/png');
     link.click();
   };

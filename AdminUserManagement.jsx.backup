@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { 
@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import './AdminDashboard.css';
 
-// 모듈화된 컴포넌트 임포트
+// 紐⑤뱢?붾맂 而댄룷?뚰듃 ?꾪룷??
 import AdminStats from '../components/admin/AdminStats';
 import AdminUserTable from '../components/admin/AdminUserTable';
 import AdminUserEditModal from '../components/admin/AdminUserEditModal';
@@ -24,7 +24,7 @@ export default function AdminUserManagement() {
   const [lastSync, setLastSync] = useState(null);
   const [error, setError] = useState(null);
   
-  // 상태 관리용
+  // ?곹깭 愿由ъ슜
   const [selectedIds, setSelectedIds] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
@@ -34,7 +34,7 @@ export default function AdminUserManagement() {
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', grade: '', expiryDate: '', paymentStatus: 'pending', paymentDate: '' });
 
-  // 무통장 입금 수동 승인 관리 상태값
+  // 臾댄넻???낃툑 ?섎룞 ?뱀씤 愿由??곹깭媛?
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   const [approvingUser, setApprovingUser] = useState(null);
   const [approvalDuration, setApprovalDuration] = useState(12); // 6 or 12
@@ -87,11 +87,11 @@ export default function AdminUserManagement() {
         setProducts(prodData);
         setLastSync(new Date());
       } else {
-        setError('데이터를 불러오는 데 실패했습니다. 서버 상태를 확인하세요.');
+        setError('?곗씠?곕? 遺덈윭?ㅻ뒗 ???ㅽ뙣?덉뒿?덈떎. ?쒕쾭 ?곹깭瑜??뺤씤?섏꽭??');
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      setError('서버와 통신 중 오류가 발생했습니다.');
+      setError('?쒕쾭? ?듭떊 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
     } finally {
       setLoading(false);
     }
@@ -128,30 +128,31 @@ export default function AdminUserManagement() {
         body: JSON.stringify(saveBody)
       });
       if (response.ok) {
-        alert('수정 완료');
+        alert('?섏젙 ?꾨즺');
         setEditingUser(null);
         fetchData();
       }
     } catch (err) {
-      alert('수정 실패');
+      alert('?섏젙 ?ㅽ뙣');
     }
   };
 
-  const deleteCard = async (cardId, label) => {
-    // 보안 강화: 대표님 계정만 삭제 권한 부여 (다른 운영자는 불가)
+  const deleteUser = async (userId, userName) => {
+    // 蹂댁븞 媛뺥솕: ??쒕떂 怨꾩젙留???젣 沅뚰븳 遺??(?ㅻⅨ ?댁쁺?먮뒗 遺덇?)
     const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
     if (auth.email !== 'vikitour.boss@gmail.com') {
-      return alert('명함 삭제 권한이 없습니다. 마스터 대표 계정만 명함 삭제가 가능합니다.');
+      return alert('?뚯썝 ??젣 沅뚰븳???놁뒿?덈떎. 留덉뒪?????怨꾩젙留??뚯썝 ??젣媛 媛?ν빀?덈떎.');
     }
-    if (!window.confirm(`[${label}] 명함을 정말로 삭제하시겠습니까?`)) return;
+    if (userName === '留덉뒪?곗슫?곸옄') return alert('留덉뒪??怨꾩젙? ??젣?????놁뒿?덈떎.');
+    if (!window.confirm(`[${userName}] ?뚯썝???뺣쭚濡???젣?섏떆寃좎뒿?덇퉴?`)) return;
     try {
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/cards/${cardId}`, { method: 'DELETE' });
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/user/${userId}`, { method: 'DELETE' });
       if (response.ok) {
-        alert('삭제 완료');
+        alert('??젣 ?꾨즺');
         fetchData();
       }
     } catch (err) {
-      alert('서버 오류');
+      alert('?쒕쾭 ?ㅻ쪟');
     }
   };
 
@@ -171,70 +172,60 @@ export default function AdminUserManagement() {
       });
       if (response.ok) {
         const targetUser = users.find(u => u.id === approvingUser.userId) || {};
-        const cardName = approvingUser.cardData?.name || '명함';
-        alert(`[${targetUser.name || '회원'} - ${cardName}] 명함의 무통장 입금이 성공적으로 승인되었습니다!`);
+        const cardName = approvingUser.cardData?.name || '紐낇븿';
+        alert(`[${targetUser.name || '?뚯썝'} - ${cardName}] 紐낇븿??臾댄넻???낃툑???깃났?곸쑝濡??뱀씤?섏뿀?듬땲??`);
         setIsApprovalModalOpen(false);
         setApprovingUser(null);
         fetchData();
       } else {
-        alert('승인 처리에 실패했습니다.');
+        alert('?뱀씤 泥섎━???ㅽ뙣?덉뒿?덈떎.');
       }
     } catch (err) {
       console.error('Approve failed:', err);
-      alert('서버와 통신 중 오류가 발생했습니다.');
+      alert('?쒕쾭? ?듭떊 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
     }
   };
 
   const handleRejectPayment = async (cardId, label) => {
-    if (!window.confirm(`[${label}] 명함의 결제 신청을 정말로 반려하시겠습니까?\n신청 내역이 리셋되며 대기 목록에서 제외됩니다.`)) return;
+    if (!window.confirm(`[${label}] 紐낇븿??寃곗젣 ?좎껌???뺣쭚濡?諛섎젮?섏떆寃좎뒿?덇퉴?\n?좎껌 ?댁뿭??由ъ뀑?섎ŉ ?湲?紐⑸줉?먯꽌 ?쒖쇅?⑸땲??`)) return;
     try {
       const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/payment/reject/${cardId}`, {
         method: 'PUT'
       });
       if (response.ok) {
-        alert('반려 처리가 완료되었습니다.');
+        alert('諛섎젮 泥섎━媛 ?꾨즺?섏뿀?듬땲??');
         fetchData();
       } else {
-        alert('반려 처리에 실패했습니다.');
+        alert('諛섎젮 泥섎━???ㅽ뙣?덉뒿?덈떎.');
       }
     } catch (err) {
       console.error('Reject failed:', err);
-      alert('서버와 통신 중 오류가 발생했습니다.');
+      alert('?쒕쾭? ?듭떊 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
     }
   };
 
 
-  const openPublishModal = (card) => {
-    // Find the associated user to get full user details (like phone, which is not in card)
-    const user = users.find(u => u.id === card.userId) || {};
-    
-    // Inject name, email, phone into the card object so AdminPublishModal can use them
-    const publishData = {
-      ...card,
-      name: user.name || card.userName || card.cardData?.name || '알수없음',
-      email: user.email || card.userEmail || card.cardData?.email || '이메일없음',
-      phone: user.phone || card.cardData?.phone || ''
-    };
-    
-    setSelectedUserForPublish(publishData);
+  const openPublishModal = (user) => {
+    setSelectedUserForPublish(user);
+    const card = cards.find(c => String(c.userId) === String(user.id));
     setCustomUrl(card?.cardData?.customCardUrl || '');
     setIsPublishModalOpen(true);
   };
 
   const handleSavePublish = async (url) => {
     try {
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/cards/${selectedUserForPublish._id}/publish`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/card/${selectedUserForPublish.id}/publish`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customCardUrl: url, status: 'published' })
       });
       if (response.ok) {
-        alert('발행 완료!');
+        alert('諛쒗뻾 ?꾨즺!');
         setIsPublishModalOpen(false);
         fetchData();
       }
     } catch (err) {
-      alert('발행 오류');
+      alert('諛쒗뻾 ?ㅻ쪟');
     }
   };
 
@@ -260,33 +251,33 @@ export default function AdminUserManagement() {
 
   const handleExportExcel = () => {
     try {
-      // 안전한 날짜 변환 헬퍼
+      // ?덉쟾???좎쭨 蹂???ы띁
       const formatDate = (dateVal) => {
         if (!dateVal) return '';
         const d = new Date(dateVal);
         return isNaN(d.getTime()) ? '' : d.toLocaleDateString();
       };
 
-      const headers = ["이름", "이메일", "연락처", "가입일", "만료일", "등급", "발행상태", "명함URL"];
-      const rows = sortedCards.map(card => {
-        const user = users.find(u => u.id === card.userId) || {};
-        const status = card.cardData?.status || 'pending';
-        const fullUrl = `${window.location.origin}/v/${card?.cardData?.customCardUrl || card._id}`;
+      const headers = ["?대쫫", "?대찓??, "?곕씫泥?, "媛?낆씪", "留뚮즺??, "?깃툒", "諛쒗뻾?곹깭", "紐낇븿URL"];
+      const rows = sortedUsers.map(user => {
+        const status = getCardStatus(user.id);
+        const card = cards.find(c => String(c.userId) === String(user.id));
+        const fullUrl = `${window.location.origin}/v/${card?.cardData?.customCardUrl || user.id}`;
         
-        // 쉼표(,)가 포함되어 컬럼이 쪼개지거나 깨지는 결함을 막기 위한 더블 쿼트 이스케이프 매핑
+        // ?쇳몴(,)媛 ?ы븿?섏뼱 而щ읆??履쇨컻吏嫄곕굹 源⑥???寃고븿??留됯린 ?꾪븳 ?붾툝 荑쇳듃 ?댁뒪耳?댄봽 留ㅽ븨
         const escapeCsvValue = (val) => {
           const str = String(val === null || val === undefined ? '' : val);
           return `"${str.replace(/"/g, '""')}"`;
         };
 
         return [
-          user.name || '',
-          user.email || '',
+          user.name,
+          user.email,
           user.phone || '',
           formatDate(user.createdAt),
-          card.expiryDate ? formatDate(card.expiryDate) : '평생',
-          card.grade || '일반형',
-          status === 'published' ? '발행완료' : status === 'pending' ? '발행대기' : '미작성',
+          user.expiryDate ? formatDate(user.expiryDate) : '?됱깮',
+          user.grade || '?쇰컲??,
+          status === 'published' ? '諛쒗뻾?꾨즺' : status === 'pending' ? '諛쒗뻾?湲? : '誘몄옉??,
           fullUrl
         ].map(escapeCsvValue);
       });
@@ -302,8 +293,8 @@ export default function AdminUserManagement() {
       link.click();
       document.body.removeChild(link);
     } catch (err) {
-      console.error('엑셀 내보내기 실패:', err);
-      alert(`엑셀 저장 중 오류가 발생했습니다: ${err.message}`);
+      console.error('?묒? ?대낫?닿린 ?ㅽ뙣:', err);
+      alert(`?묒? ???以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎: ${err.message}`);
     }
   };
 
@@ -314,14 +305,14 @@ export default function AdminUserManagement() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === filteredCards.length) {
+    if (selectedIds.length === filteredUsers.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filteredCards.map(c => c._id));
+      setSelectedIds(filteredUsers.map(u => u.id));
     }
   };
 
-  const toggleSelectCard = (id) => {
+  const toggleSelectUser = (id) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
@@ -332,39 +323,27 @@ export default function AdminUserManagement() {
     });
   };
 
-  const filteredCards = cards.filter(card => {
-    if (!card) return false;
-    const user = users.find(u => u.id === card.userId) || {};
+  const filteredUsers = users.filter(user => {
+    if (!user) return false;
     const term = searchTerm.toLowerCase();
     const name = (user.name || '').toLowerCase();
     const email = (user.email || '').toLowerCase();
-    const cardName = (card.cardData?.name || '').toLowerCase();
-    const company = (card.cardData?.company || '').toLowerCase();
-    return name.includes(term) || email.includes(term) || cardName.includes(term) || company.includes(term);
+    return name.includes(term) || email.includes(term);
   });
 
-  const sortedCards = [...filteredCards].sort((a, b) => {
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
     const key = sortConfig.key;
     const direction = sortConfig.direction === 'asc' ? 1 : -1;
-    let valA = a[key] || '';
-    let valB = b[key] || '';
-    if (key === 'name') {
-      valA = users.find(u => u.id === a.userId)?.name || '';
-      valB = users.find(u => u.id === b.userId)?.name || '';
-    } else if (key === 'createdAt') {
-      valA = a.createdAt || users.find(u => u.id === a.userId)?.createdAt || '';
-      valB = b.createdAt || users.find(u => u.id === b.userId)?.createdAt || '';
-    }
-    if (valA < valB) return -1 * direction;
-    if (valA > valB) return 1 * direction;
+    if (a[key] < b[key]) return -1 * direction;
+    if (a[key] > b[key]) return 1 * direction;
     return 0;
   });
 
   const counts = {
-    all: cards?.length || 0,
-    pending: cards?.filter(c => c.cardData?.status === 'pending' || !c.cardData?.status).length || 0,
-    published: cards?.filter(c => c.cardData?.status === 'published').length || 0,
-    uncreated: users?.length === 0 ? 0 : 0
+    all: users?.length || 0,
+    pending: users?.filter(u => u && getCardStatus(u.id) === 'pending').length || 0,
+    published: users?.filter(u => u && getCardStatus(u.id) === 'published').length || 0,
+    uncreated: users?.filter(u => u && getCardStatus(u.id) === 'uncreated').length || 0
   };
 
   return (
@@ -373,18 +352,18 @@ export default function AdminUserManagement() {
       <main className="admin-content">
         <header className="admin-header">
           <div>
-            <h1>통합 회원 및 발행 관리</h1>
-            <p>전체 회원 현황 파악 및 고화질 QR 명함 발행</p>
+            <h1>?듯빀 ?뚯썝 諛?諛쒗뻾 愿由?/h1>
+            <p>?꾩껜 ?뚯썝 ?꾪솴 ?뚯븙 諛?怨좏솕吏?QR 紐낇븿 諛쒗뻾</p>
           </div>
           <div className="header-info">
             {lastSync && (
               <span className="sync-time">
-                업데이트: {lastSync.toLocaleTimeString()}
+                ?낅뜲?댄듃: {lastSync.toLocaleTimeString()}
               </span>
             )}
             <button className={`btn-refresh ${loading ? 'spinning' : ''}`} onClick={fetchData} disabled={loading}>
               <RefreshCw size={18} />
-              {loading ? '로딩중...' : '새로고침'}
+              {loading ? '濡쒕뵫以?..' : '?덈줈怨좎묠'}
             </button>
           </div>
         </header>
@@ -400,22 +379,22 @@ export default function AdminUserManagement() {
 
         <AdminUserTable 
           loading={loading}
-          sortedCards={sortedCards}
-          users={users}
+          sortedUsers={sortedUsers}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           handleExportExcel={handleExportExcel}
           toggleSelectAll={toggleSelectAll}
           selectedIds={selectedIds}
-          filteredCards={filteredCards}
+          filteredUsers={filteredUsers}
           handleSort={handleSort}
-          toggleSelectCard={toggleSelectCard}
+          toggleSelectUser={toggleSelectUser}
           getCardStatus={getCardStatus}
+          cards={cards}
           products={products}
           openPublishModal={openPublishModal}
           handleEditCard={handleEditCard}
           handleEditUser={handleEditUser}
-          deleteCard={deleteCard}
+          deleteUser={deleteUser}
           handleApproveClick={handleApproveClick}
           handleRejectPayment={handleRejectPayment}
         />
@@ -441,14 +420,14 @@ export default function AdminUserManagement() {
 
         {isApprovalModalOpen && approvingUser && (() => {
           const targetUser = users.find(u => u.id === approvingUser.userId) || {};
-          const cardName = approvingUser.cardData?.name || '이름 없음';
-          const gradeName = products.find(p => p.id === approvingUser.requestedGrade)?.name || approvingUser.requestedGrade || '프리미엄';
+          const cardName = approvingUser.cardData?.name || '?대쫫 ?놁쓬';
+          const gradeName = products.find(p => p.id === approvingUser.requestedGrade)?.name || approvingUser.requestedGrade || '?꾨━誘몄뾼';
 
           return (
             <div className="modal-overlay" onClick={() => setIsApprovalModalOpen(false)}>
               <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px', padding: '2rem', borderRadius: '16px' }}>
                 <div className="modal-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#111827', fontWeight: 800 }}>💳 결제 수동 승인</h3>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#111827', fontWeight: 800 }}>?뮩 寃곗젣 ?섎룞 ?뱀씤</h3>
                   <button className="btn-close" onClick={() => setIsApprovalModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                     <X size={20} />
                   </button>
@@ -456,31 +435,31 @@ export default function AdminUserManagement() {
                 <div className="modal-body" style={{ fontSize: '0.95rem', color: '#4b5563', lineHeight: '1.6' }}>
                   <div style={{ background: '#f3f4f6', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', textAlign: 'left' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span>신청 회원</span>
-                      <strong style={{ color: '#111827' }}>{targetUser.name || '회원'}</strong>
+                      <span>?좎껌 ?뚯썝</span>
+                      <strong style={{ color: '#111827' }}>{targetUser.name || '?뚯썝'}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span>이메일</span>
-                      <strong>{targetUser.email || '—'}</strong>
+                      <span>?대찓??/span>
+                      <strong>{targetUser.email || '??}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span>대상 명함</span>
-                      <strong style={{ color: '#475569' }}>📇 {cardName}</strong>
+                      <span>???紐낇븿</span>
+                      <strong style={{ color: '#475569' }}>?뱡 {cardName}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span>결제 수단</span>
-                      <strong style={{ color: '#d97706' }}>{approvingUser.paymentMethod || '무통장 입금'}</strong>
+                      <span>寃곗젣 ?섎떒</span>
+                      <strong style={{ color: '#d97706' }}>{approvingUser.paymentMethod || '臾댄넻???낃툑'}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span>입금자명</span>
+                      <span>?낃툑?먮챸</span>
                       <strong style={{ color: '#d97706' }}>{approvingUser.depositorName}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span>결제(이체)예정금액</span>
-                      <strong style={{ color: '#d97706' }}>{approvingUser.paymentAmount?.toLocaleString()}원</strong>
+                      <span>寃곗젣(?댁껜)?덉젙湲덉븸</span>
+                      <strong style={{ color: '#d97706' }}>{approvingUser.paymentAmount?.toLocaleString()}??/strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>신청 등급</span>
+                      <span>?좎껌 ?깃툒</span>
                       <strong style={{ color: '#2563eb' }}>
                         {gradeName}
                       </strong>
@@ -489,7 +468,7 @@ export default function AdminUserManagement() {
 
                   <div className="input-group" style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
                     <label style={{ display: 'block', fontWeight: 700, marginBottom: '0.5rem', color: '#374151' }}>
-                      승인할 구독 기간 선택
+                      ?뱀씤??援щ룆 湲곌컙 ?좏깮
                     </label>
                     <select 
                       value={approvalDuration} 
@@ -505,17 +484,17 @@ export default function AdminUserManagement() {
                       }}
                     >
                       {approvingUser.requestedGrade === 'prod_1778899977850' ? (
-                        <option value={2}>2개월 이용권 (무료 체험용 고정)</option>
+                        <option value={2}>2媛쒖썡 ?댁슜沅?(臾대즺 泥댄뿕??怨좎젙)</option>
                       ) : (
                         <>
-                          <option value={12}>1년(12개월) 이용권</option>
-                          <option value={3}>3개월 이용권</option>
-                          <option value={2}>2개월 무료 이용권</option>
+                          <option value={12}>1??12媛쒖썡) ?댁슜沅?/option>
+                          <option value={3}>3媛쒖썡 ?댁슜沅?/option>
+                          <option value={2}>2媛쒖썡 臾대즺 ?댁슜沅?/option>
                         </>
                       )}
                     </select>
                     <p style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '6px' }}>
-                      * 입금이 완벽히 확인된 경우에만 승인해 주십시오. 승인 즉시 해당 명함의 멤버십이 개별 활성화되고 만료일이 지정된 기간만큼 가산됩니다.
+                      * ?낃툑???꾨꼍???뺤씤??寃쎌슦?먮쭔 ?뱀씤??二쇱떗?쒖삤. ?뱀씤 利됱떆 ?대떦 紐낇븿??硫ㅻ쾭??씠 媛쒕퀎 ?쒖꽦?붾릺怨?留뚮즺?쇱씠 吏?뺣맂 湲곌컙留뚰겮 媛?곕맗?덈떎.
                     </p>
                   </div>
                 </div>
@@ -525,7 +504,7 @@ export default function AdminUserManagement() {
                     onClick={() => setIsApprovalModalOpen(false)}
                     style={{ padding: '0.6rem 1.2rem', borderRadius: '8px' }}
                   >
-                    취소
+                    痍⑥냼
                   </button>
                   <button 
                     className="btn-table-primary" 
@@ -540,7 +519,7 @@ export default function AdminUserManagement() {
                       cursor: 'pointer'
                     }}
                   >
-                    승인 완료
+                    ?뱀씤 ?꾨즺
                   </button>
                 </div>
               </div>
