@@ -12,6 +12,7 @@ export default function AdminProductManagement() {
   const [newProductName, setNewProductName] = useState('');
   const [newProductDesc, setNewProductDesc] = useState('');
   const [newSampleUrl, setNewSampleUrl] = useState('');
+  const [newTags, setNewTags] = useState('');
   const [newProductPriceAnnual, setNewProductPriceAnnual] = useState('');
   const [newProductPriceThreeMonths, setNewProductPriceThreeMonths] = useState('');
   const [newProductPriceTwoMonths, setNewProductPriceTwoMonths] = useState('');
@@ -127,6 +128,7 @@ export default function AdminProductManagement() {
           name: newProductName, 
           description: newProductDesc,
           sampleUrl: newSampleUrl,
+            tags: newTags.split(',').map(t => t.trim()).filter(Boolean),
           price: {
             annual: Number(newProductPriceAnnual) || 0,
             threeMonths: Number(newProductPriceThreeMonths) || 0,
@@ -139,6 +141,8 @@ export default function AdminProductManagement() {
         setNewProductName('');
         setNewProductDesc('');
       setNewSampleUrl('');
+      setNewTags('');
+          setNewTags('');
         setNewProductPriceAnnual('');
         setNewProductPriceThreeMonths('');
         setNewProductPriceTwoMonths('');
@@ -168,6 +172,7 @@ export default function AdminProductManagement() {
     setNewProductName(prod.name);
     setNewProductDesc(prod.description || '');
     setNewSampleUrl(prod.sampleUrl || '');
+      setNewTags(prod.tags ? prod.tags.join(', ') : '');
     setNewProductPriceAnnual(prod.price?.annual !== undefined ? prod.price.annual : (typeof prod.price === 'number' ? prod.price : ''));
     setNewProductPriceThreeMonths(prod.price?.threeMonths !== undefined ? prod.price.threeMonths : '');
     setNewProductPriceTwoMonths(prod.price?.twoMonths !== undefined ? prod.price.twoMonths : '');
@@ -191,6 +196,7 @@ export default function AdminProductManagement() {
     setNewProductName('');
     setNewProductDesc('');
       setNewSampleUrl('');
+      setNewTags('');
     setNewProductPriceAnnual('');
     setNewProductPriceThreeMonths('');
     setNewProductPriceTwoMonths('');

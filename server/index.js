@@ -104,6 +104,7 @@ mongoose.connect(connectionUri)
 // [스키마 정의]
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  tags: { type: [String], default: [] },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   phone: { type: String, default: '' },
@@ -1566,11 +1567,12 @@ app.put('/api/admin/products/reorder', async (req, res) => {
 });
 
 app.post('/api/admin/products', async (req, res) => {
-  const { name, description, price, features, sampleUrl } = req.body;
+  const { name, description, price, features, sampleUrl, tags } = req.body;
   const product = await Product.create({ 
     id: 'prod_' + Date.now(), 
     name, 
     description,
+    tags: Array.isArray(tags) ? tags : [],
     sampleUrl: sampleUrl || '',
     price: price || { annual: 0, threeMonths: 0, twoMonths: 0 },
     order: await Product.countDocuments(),
@@ -1588,7 +1590,7 @@ app.post('/api/admin/products', async (req, res) => {
 });
 
 app.put('/api/admin/products/:id', async (req, res) => {
-  const { name, description, price, features, sampleUrl } = req.body;
+  const { name, description, price, features, sampleUrl, tags } = req.body;
   await Product.findOneAndUpdate({ id: req.params.id }, { 
     name, 
     description, 
