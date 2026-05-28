@@ -1012,18 +1012,18 @@
 .contact-group label {
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: #334155;
   opacity: 0.9;
 }
 
 .contact-group input,
 .contact-group select,
 .contact-group textarea {
-  background: rgba(15, 23, 42, 0.5);
+  background: #0f172a;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 14px 18px;
-  color: var(--text-main);
+  color: white;
   font-size: 0.95rem;
   font-family: inherit;
   outline: none;
@@ -1032,7 +1032,7 @@
 
 .contact-group input::placeholder,
 .contact-group textarea::placeholder {
-  color: rgba(148, 163, 184, 0.5);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .contact-group input:focus,
