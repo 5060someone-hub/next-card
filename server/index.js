@@ -133,6 +133,7 @@ const productSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   description: { type: String, default: '' },
+  tags: { type: [String], default: [] },
   sampleUrl: { type: String, default: '' },
   price: {
     annual: { type: Number, default: 0 },
@@ -1594,6 +1595,7 @@ app.put('/api/admin/products/:id', async (req, res) => {
   await Product.findOneAndUpdate({ id: req.params.id }, { 
     name, 
     description, 
+    tags: Array.isArray(tags) ? tags : [],
     sampleUrl: sampleUrl || '',
     price: price || { annual: 0, threeMonths: 0, twoMonths: 0 }, 
     features 
