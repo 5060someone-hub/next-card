@@ -27,21 +27,21 @@ const AdminUserTable = ({
 
   return (
     <>
-      <div className="table-header-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '8px', flex: 1, maxWidth: '800px' }}>
-          <div className="search-bar" style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-            <Search size={18} className="search-icon" />
+      <div className="table-header-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '8px', flex: 1, maxWidth: '800px', height: '60px' }}>
+          <div className="search-bar" style={{ flex: 1, display: 'flex', alignItems: 'center', height: '100%' }}>
+            <Search size={24} className="search-icon" style={{ marginLeft: '10px' }} />
             <input
               type="text"
               placeholder="회원 이름, 이메일, 명함명 검색"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '100%' }}
+              style={{ width: '100%', height: '100%', padding: '0 50px', fontSize: '1.2rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
             />
           </div>
-          <button style={{ padding: '0 24px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', whiteSpace: 'nowrap' }}>검색</button>
-          <button className="btn-export" onClick={handleExportExcel} style={{ whiteSpace: 'nowrap', height: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <ExternalLink size={16} /> 엑셀 저장
+          <button style={{ height: '100%', padding: '0 32px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>검색</button>
+          <button className="btn-export" onClick={handleExportExcel} style={{ height: '100%', padding: '0 24px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', borderRadius: '8px' }}>
+            <ExternalLink size={20} /> 엑셀 저장
           </button>
         </div>
       </div>
