@@ -1019,20 +1019,30 @@
 .contact-group input,
 .contact-group select,
 .contact-group textarea {
-  background: #374151;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #eef2f6;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 14px 18px;
-  color: white;
+  color: #0f172a;
   font-size: 0.95rem;
   font-family: inherit;
   outline: none;
   transition: all 0.3s ease;
 }
 
+/* Chrome autofill fix */
+.contact-group input:-webkit-autofill,
+.contact-group input:-webkit-autofill:hover, 
+.contact-group input:-webkit-autofill:focus, 
+.contact-group input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #eef2f6 inset !important;
+    -webkit-text-fill-color: #0f172a !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
 .contact-group input::placeholder,
 .contact-group textarea::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: #94a3b8;
 }
 
 .contact-group input:focus,
@@ -1040,13 +1050,13 @@
 .contact-group textarea:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.15);
-  background: #4b5563;
+  background: #ffffff;
 }
 
 /* select element custom dropdown icon compatibility */
 .contact-group select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23f8fafc'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 18px center;
   background-size: 16px;
