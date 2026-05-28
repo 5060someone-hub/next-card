@@ -23,6 +23,9 @@ const AdminUserTable = ({
   handleRejectClick,
   deleteCard
 }) => {
+  const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
+  const isSuperAdmin = auth.email === 'vikitour.boss@gmail.com';
+
   return (
     <>
       <div className="table-header-controls">

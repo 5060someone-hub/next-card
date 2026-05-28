@@ -83,7 +83,7 @@ export default function AdminUserManagement() {
         const cardDataList = await cardRes.json();
         const prodData = await prodRes.json();
         setUsers(userData);
-        setCards(cardDataList);
+        setCards(userData.flatMap(u => u.userCards || []));
         setProducts(prodData);
         setLastSync(new Date());
       } else {
