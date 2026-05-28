@@ -305,6 +305,16 @@ export default function AdminProductManagement() {
                   style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
                 />
               </div>
+              <div className="input-group" style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '0.719rem', fontWeight: 600, marginBottom: '0.35rem' }}>강조 태그 (콤마로 구분하여 입력)</label>
+                <input 
+                  type="text" 
+                  value={newTags} 
+                  onChange={(e) => setNewTags(e.target.value)} 
+                  placeholder="예: 로고 적용, 프리미엄, 통합 랜딩페이지"
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.75rem' }}
+                />
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
                 <div className="input-group">
                   <label style={{ display: 'block', fontSize: '0.719rem', fontWeight: 600, marginBottom: '0.35rem' }}>연간 요금 (원)</label>
