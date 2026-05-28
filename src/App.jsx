@@ -78,6 +78,7 @@ function App() {
         <Route path="/admin/plan-changes" element={<AdminPlanChanges />} />
 
         {/* 모바일 목업 전용 라우트 (최종결과물 및 인증) */}
+        <Route path="/samples" element={<SamplePreview />} />
         <Route path="/login" element={<MobileAppWrapper><Login /></MobileAppWrapper>} />
         <Route path="/signup" element={<MobileAppWrapper><Signup /></MobileAppWrapper>} />
         <Route path="/forgot-password" element={<MobileAppWrapper><ForgotPassword /></MobileAppWrapper>} />
