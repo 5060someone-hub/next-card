@@ -373,16 +373,6 @@ const PublicCard = () => {
           ))}
         </div>
 
-        {/* SPA Sections Rendering */}
-        {cardData.isSpaEnabled && productFeatures?.allowSinglePage !== false && (
-          <SpaSectionRenderer 
-            sections={cardData.sections} 
-            themeColor={themeColor} 
-            textColor={cardData.textColor} 
-            blockBgColor={finalBlockBg}
-          />
-        )}
-
         {/* Share and Add to Home Screen Buttons */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
           <button 
@@ -475,6 +465,16 @@ const PublicCard = () => {
               종이명함 보기
             </button>
           </div>
+        )}
+
+        {/* SPA Sections Rendering */}
+        {cardData.isSpaEnabled && productFeatures?.allowSinglePage !== false && (
+          <SpaSectionRenderer 
+            sections={cardData.sections} 
+            themeColor={themeColor} 
+            textColor={cardData.textColor} 
+            blockBgColor={finalBlockBg}
+          />
         )}
 
         {/* Footer QR */}
