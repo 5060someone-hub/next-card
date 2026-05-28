@@ -1570,11 +1570,12 @@ app.put('/api/admin/products/reorder', async (req, res) => {
 });
 
 app.post('/api/admin/products', async (req, res) => {
-  const { name, description, price, features } = req.body;
+  const { name, description, price, features, sampleUrl } = req.body;
   const product = await Product.create({ 
     id: 'prod_' + Date.now(), 
     name, 
     description,
+    sampleUrl: sampleUrl || '',
     price: price || { annual: 0, threeMonths: 0, twoMonths: 0 },
     order: await Product.countDocuments(),
     features: features || { 

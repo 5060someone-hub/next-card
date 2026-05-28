@@ -11,6 +11,7 @@ export default function AdminProductManagement() {
   const [error, setError] = useState(null);
   const [newProductName, setNewProductName] = useState('');
   const [newProductDesc, setNewProductDesc] = useState('');
+  const [newSampleUrl, setNewSampleUrl] = useState('');
   const [newProductPriceAnnual, setNewProductPriceAnnual] = useState('');
   const [newProductPriceThreeMonths, setNewProductPriceThreeMonths] = useState('');
   const [newProductPriceTwoMonths, setNewProductPriceTwoMonths] = useState('');
@@ -136,6 +137,7 @@ export default function AdminProductManagement() {
       if (response.ok) {
         setNewProductName('');
         setNewProductDesc('');
+      setNewSampleUrl('');
         setNewProductPriceAnnual('');
         setNewProductPriceThreeMonths('');
         setNewProductPriceTwoMonths('');
@@ -164,6 +166,7 @@ export default function AdminProductManagement() {
   const startEdit = (prod) => {
     setNewProductName(prod.name);
     setNewProductDesc(prod.description || '');
+    setNewSampleUrl(prod.sampleUrl || '');
     setNewProductPriceAnnual(prod.price?.annual !== undefined ? prod.price.annual : (typeof prod.price === 'number' ? prod.price : ''));
     setNewProductPriceThreeMonths(prod.price?.threeMonths !== undefined ? prod.price.threeMonths : '');
     setNewProductPriceTwoMonths(prod.price?.twoMonths !== undefined ? prod.price.twoMonths : '');
@@ -186,6 +189,7 @@ export default function AdminProductManagement() {
   const cancelEdit = () => {
     setNewProductName('');
     setNewProductDesc('');
+      setNewSampleUrl('');
     setNewProductPriceAnnual('');
     setNewProductPriceThreeMonths('');
     setNewProductPriceTwoMonths('');

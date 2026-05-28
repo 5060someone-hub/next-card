@@ -20,6 +20,7 @@ import FaqBoard from './pages/FaqBoard';
 import NetworkLog from './pages/NetworkLog';
 import Analytics from './pages/Analytics';
 import NamecardLanding from './pages/NamecardLanding';
+import SamplePreview from './pages/SamplePreview';
 
 const MobileAppWrapper = ({ children }) => (
   <div className="mobile-mockup-wrapper">
