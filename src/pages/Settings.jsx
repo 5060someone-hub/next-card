@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { 
   User, 
@@ -47,9 +48,24 @@ const toInputDate = (dateStr) => {
 
 const Settings = () => {
   const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
-  const [activeTab, setActiveTab] = useState('account');
+
+  const getInitialTab = () => {
+    const params = new URLSearchParams(location.search);
+    return params.get('tab') || 'account';
+  };
+  const [activeTab, setActiveTab] = useState(getInitialTab());
+
+  // Listen to URL changes to update activeTab
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
 
   // 계정 정보
   const [settings, setSettings] = useState({
@@ -68,6 +84,15 @@ const Settings = () => {
   const [selectedCardId, setSelectedCardId] = useState('');
   const [products, setProducts] = useState([]);
   const [subLoading, setSubLoading] = useState(false);
+
+  // Sync selectedCardId with URL if it changes
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const cardId = params.get('cardId');
+    if (cardId && userCards.some(c => c._id === cardId)) {
+      setSelectedCardId(cardId);
+    }
+  }, [location.search, userCards]);
 
   // 결제 수단 및 신청 상태 관리
   const [paymentMethods, setPaymentMethods] = useState([]);
