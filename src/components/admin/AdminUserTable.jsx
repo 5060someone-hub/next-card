@@ -18,7 +18,6 @@ const AdminUserTable = ({
   openPublishModal,
   handleEditCard,
   handleEditUser,
-  isSuperAdmin,
   handleApproveClick,
   handleRejectClick,
   deleteCard
