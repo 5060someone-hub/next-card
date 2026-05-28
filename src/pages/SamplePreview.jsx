@@ -171,7 +171,7 @@ export default function SamplePreview() {
         </div>
 
         {/* Right Side: Smartphone Live Preview */}
-        <div className="sticky-right-side" style={{ flex: '1 1 400px', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '1rem', position: 'sticky', top: '100px', height: 'fit-content' }}>
+        <div className="sticky-right-side" style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '1rem', position: 'sticky', top: '100px', height: 'fit-content' }}>
           <div className="sample-mockup-wrapper">
             {/* iPhone Notch */}
             <div style={{
