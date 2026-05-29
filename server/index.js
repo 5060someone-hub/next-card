@@ -1048,11 +1048,20 @@ app.post('/api/card/save/:cardId', async (req, res) => {
       });
     }
 
+    // ─── 캐시 무효화: 관리자 저장 후 방문자에게 최신 명함 즉시 노출 ──────────
+    const userId = String(existingCard.userId);
+    cache.clearCard(userId);
+    cache.clearCard(req.params.cardId);
+    if (cardData?.customCardUrl) cache.clearCard(cardData.customCardUrl);
+    // 기존 customCardUrl도 제거 (URL 변경 시 이전 캐시도 삭제)
+    if (existingCard.cardData?.customCardUrl) cache.clearCard(existingCard.cardData.customCardUrl);
+
     res.json({ message: '명함 정보가 안전하게 저장되었습니다.', cardData: card.cardData });
   } catch (err) {
     res.status(500).json({ message: '저장 실패', error: err.message });
   }
 });
+
 
 // 명함 데이터 저장/수정 (Legacy)
 app.post('/api/card', async (req, res) => {
