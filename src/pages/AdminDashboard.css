@@ -1,3 +1,10 @@
+/* ─── 레이아웃: 좌측 사이드바 + 우측 본문 ────────────────────────────────── */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
 .admin-content {
   flex: 1;
   padding: 1.25rem;
