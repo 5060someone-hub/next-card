@@ -1,14 +1,16 @@
 .blog-wrapper {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background: #f8fafc;
 }
 
 .blog-content {
   flex: 1;
-  margin-left: 250px;
   padding: 40px;
   max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .blog-header {

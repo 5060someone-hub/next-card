@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import ReactMarkdown from 'react-markdown';
@@ -69,7 +69,14 @@ const BlogPost = () => {
 
   return (
     <div className="blog-wrapper">
-      <Sidebar />
+      <header style={{ padding: '20px 40px', background: 'white', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Link to="/" style={{ fontSize: '1.25rem', fontWeight: '800', color: '#0f172a', textDecoration: 'none' }}>
+          NextCard<span style={{ color: '#3b82f6' }}>.kr</span>
+        </Link>
+        <Link to="/" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.95rem', fontWeight: '500' }}>
+          홈으로 가기
+        </Link>
+      </header>
       <div className="blog-content" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '40px' }}>
         <button onClick={() => navigate('/blog')} className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '24px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}>
           <ArrowLeft size={18} /> 목록으로 돌아가기

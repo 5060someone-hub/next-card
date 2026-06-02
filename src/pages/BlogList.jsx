@@ -57,7 +57,14 @@ const BlogList = () => {
 
   return (
     <div className="blog-wrapper">
-      <Sidebar />
+      <header style={{ padding: '20px 40px', background: 'white', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Link to="/" style={{ fontSize: '1.25rem', fontWeight: '800', color: '#0f172a', textDecoration: 'none' }}>
+          NextCard<span style={{ color: '#3b82f6' }}>.kr</span>
+        </Link>
+        <Link to="/" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.95rem', fontWeight: '500' }}>
+          홈으로 가기
+        </Link>
+      </header>
       <div className="blog-content">
         <div className="blog-header">
           <h1>NextCard 스토리</h1>
