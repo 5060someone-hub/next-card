@@ -92,7 +92,8 @@ const PublicCard = () => {
             data.btnBgColor = '#f8fafc';
             data.blockBgColor = '#f8fafc';
             data.template = data.template || 'modern';
-            data.themeColor = data.themeColor || '#3b82f6';
+            data.themeColor = data.themeColor || '#db2777';
+            data.btnIconColor = '#db2777';
           }
           
           setCardData(data);
@@ -426,18 +427,20 @@ const PublicCard = () => {
         </div>
 
         {/* About Section */}
-        <div style={{ 
-          background: finalBlockBg, 
-          borderRadius: '16px', 
-          padding: '1.15rem 0.85rem', 
-          marginBottom: '1rem', 
-          border: `1px solid ${glassBorder}`
-        }}>
-          <div style={{ fontSize: '0.7rem', color: themeColor, fontWeight: 900, marginBottom: '0.5rem', letterSpacing: '3px' }}>ABOUT</div>
-          <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.6', opacity: 0.9, whiteSpace: 'pre-wrap', textAlign: cardData.introAlign || 'center' }}>
-            {cardData.intro}
-          </p>
-        </div>
+        {cardData.intro && String(cardData.intro).trim() !== '' && (
+          <div style={{ 
+            background: finalBlockBg, 
+            borderRadius: '16px', 
+            padding: '1.15rem 0.85rem', 
+            marginBottom: '1rem', 
+            border: `1px solid ${glassBorder}`
+          }}>
+            <div style={{ fontSize: '0.7rem', color: themeColor, fontWeight: 900, marginBottom: '0.5rem', letterSpacing: '3px' }}>ABOUT</div>
+            <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.6', opacity: 0.9, whiteSpace: 'pre-wrap', textAlign: cardData.introAlign || 'center' }}>
+              {cardData.intro}
+            </p>
+          </div>
+        )}
 
         {/* Action Grid - 3 Columns */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '1.25rem' }}>
