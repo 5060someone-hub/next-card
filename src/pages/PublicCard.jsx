@@ -43,20 +43,32 @@ const PublicCard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const docRef = doc(db, 'business_cards', id);
-        const docSnap = await getDoc(docRef);
+        // 1. 먼저 백엔드 API에서 명함 조회를 시도합니다. (기존 정식 명함 및 샘플들)
+        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/view/${id}`);
         
-        if (docSnap.exists()) {
-          const docData = docSnap.data();
-          let data = {
-            id: docSnap.id,
-            userId: docData.userId,
-            productType: docData.productType || docData.grade || 'general',
-            status: docData.status || 'active',
-            createdAt: docData.createdAt,
-            ...docData.cardData
-          };
+        let data = null;
 
+        if (response.ok) {
+          data = await response.json();
+        } else {
+          // 2. 백엔드에 없으면 파이어베이스(체험용 임시명함)에서 조회합니다.
+          const docRef = doc(db, 'business_cards', id);
+          const docSnap = await getDoc(docRef);
+          
+          if (docSnap.exists()) {
+            const docData = docSnap.data();
+            data = {
+              id: docSnap.id,
+              userId: docData.userId,
+              productType: docData.productType || docData.grade || 'general',
+              status: docData.status || 'active',
+              createdAt: docData.createdAt,
+              ...docData.cardData
+            };
+          }
+        }
+
+        if (data) {
           if (data.status === 'temporary' && data.createdAt) {
             const createdDate = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
             const now = new Date();
@@ -64,7 +76,7 @@ const PublicCard = () => {
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             
             if (diffDays > 7) {
-              setCardData({ isExpired: true, id: docSnap.id });
+              setCardData({ isExpired: true, id: id });
               setLoading(false);
               return;
             } else {
@@ -78,18 +90,19 @@ const PublicCard = () => {
           // --- 통계 트래킹 (조회수 증가) ---
           const urlParams = new URLSearchParams(window.location.search);
           const source = urlParams.get('ref') || 'direct';
+
           fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/analytics/track`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               cardId: id,
-              userId: data.userId, // 백엔드에서 userId를 포함하여 반환한다고 가정
+              userId: data.userId,
               actionType: 'view',
-              source
+              source: source
             })
           }).catch(e => console.error('Tracking Error:', e));
           
-          // 상품 정보 및 광고 설정 가져오기
+          // 상품 정보 가져오기
           try {
             const prodRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/products`);
             if (prodRes.ok) {
@@ -101,7 +114,7 @@ const PublicCard = () => {
             console.error('Products fetch error', e);
           }
           
-          // 광고 설정 가져오기 (백엔드 API 사용)
+          // 광고 설정 가져오기
           try {
             const adRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/ad`);
             if (adRes.ok) {
