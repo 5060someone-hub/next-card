@@ -79,7 +79,7 @@ const BlogPost = () => {
           <header style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '24px', marginBottom: '32px' }}>
             <h1 style={{ fontSize: '2.5rem', color: '#0f172a', marginBottom: '16px', lineHeight: 1.3 }}>{post.title}</h1>
             <div style={{ display: 'flex', alignItems: 'center', color: '#64748b', fontSize: '0.9rem' }}>
-              <span>{post.createdAt ? new Date(post.createdAt.toMillis()).toLocaleDateString() : ''}</span>
+              <span>{post.publishDate ? new Date(post.publishDate.toMillis()).toLocaleDateString() : (post.createdAt ? new Date(post.createdAt.toMillis()).toLocaleDateString() : '')}</span>
             </div>
           </header>
 

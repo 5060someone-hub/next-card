@@ -397,6 +397,7 @@ const LandingPage = () => {
             {c.nav?.logo || 'NextCard'}<span>{c.nav?.logoSub || '.me'}</span>
           </div>
           <div className="nav-links">
+            <a href="/blog" className="hide-mobile">블로그</a>
             <a href="#pricing" className="hide-mobile">요금제</a>
             <a href="/login"  className="btn-login">로그인</a>
             <a href="/signup" className="btn-signup hide-mobile">시작하기</a>

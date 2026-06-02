@@ -79,7 +79,7 @@ const BlogList = () => {
                   <h3 className="blog-card-title">{post.title}</h3>
                   <p className="blog-card-summary">{post.summary}</p>
                   <span className="blog-card-date">
-                    {post.createdAt ? new Date(post.createdAt.toMillis()).toLocaleDateString() : ''}
+                    {post.publishDate ? new Date(post.publishDate.toMillis()).toLocaleDateString() : (post.createdAt ? new Date(post.createdAt.toMillis()).toLocaleDateString() : '')}
                   </span>
                 </div>
               </Link>
