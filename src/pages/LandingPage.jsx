@@ -196,7 +196,13 @@ const LandingPage = () => {
           website: heroForm.link,
           logoUrl: heroForm.logoUrl,
           profileUrl: heroForm.profileUrl,
-          template: 'modern', themeColor: '#3b82f6', useGradient: true
+          template: 'modern', 
+          themeColor: '#3b82f6', 
+          useGradient: true,
+          bgColor: '#ffffff',
+          textColor: '#1e293b',
+          btnBgColor: '#f8fafc',
+          blockBgColor: '#f8fafc'
         }
       });
       navigate(`/v/${newCardRef.id}`);

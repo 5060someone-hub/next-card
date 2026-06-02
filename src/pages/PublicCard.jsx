@@ -457,13 +457,14 @@ const PublicCard = () => {
         <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
           <button 
             onClick={handleAddToHome}
+            className="action-btn"
             style={{ 
               flex: 1,
               padding: '1rem', 
-              background: '#111827', 
-              color: '#ffffff', 
+              background: isLightBg(cardData.bgColor || '#111827') ? '#f1f5f9' : '#111827', 
+              color: isLightBg(cardData.bgColor || '#111827') ? '#1e293b' : '#ffffff', 
               borderRadius: '15px', 
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: isLightBg(cardData.bgColor || '#111827') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)',
               fontSize: '0.95rem',
               fontWeight: 700,
               cursor: 'pointer',
@@ -478,13 +479,14 @@ const PublicCard = () => {
           </button>
           <button 
             onClick={handleShare}
+            className="action-btn"
             style={{ 
               flex: 1,
               padding: '1rem', 
-              background: '#111827', 
-              color: '#ffffff', 
+              background: isLightBg(cardData.bgColor || '#111827') ? '#f1f5f9' : '#111827', 
+              color: isLightBg(cardData.bgColor || '#111827') ? '#1e293b' : '#ffffff', 
               borderRadius: '15px', 
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: isLightBg(cardData.bgColor || '#111827') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)',
               fontSize: '0.95rem',
               fontWeight: 700,
               cursor: 'pointer',
