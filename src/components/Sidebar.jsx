@@ -31,6 +31,7 @@ const Sidebar = () => {
     { name: '메인 페이지 편집', path: '/admin/landing', icon: '🖊️' },
     { name: '명함 페이지 편집', path: '/admin/namecard', icon: '💳' },
     { name: '자주묻는질문 (FAQ)', path: '/admin/landing?tab=faq', icon: '❓' },
+    { name: '블로그 글 관리', path: '/admin/blog', icon: '✍️' },
     { name: '제휴 및 도입 문의', path: '/admin/inquiries', icon: '✉️' },
   ];
 
