@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import './Auth.css';
 
 const Login = () => {
@@ -9,6 +11,9 @@ const Login = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const navigate = useNavigate();
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const claimId = urlParams.get('claimId');
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -38,6 +43,19 @@ const Login = () => {
                          data.user.email === 'vikitour.boss@gmail.com' || 
                          data.user.email === 'adqkorea@gmail.com' || 
                          data.user.email === 'cyy3172@naver.com';
+
+        // --- Claim Card Logic ---
+        if (claimId) {
+          try {
+            const cardRef = doc(db, 'business_cards', claimId);
+            await updateDoc(cardRef, {
+              userId: data.user.id,
+              status: 'active'
+            });
+          } catch (e) {
+            console.error('Failed to claim card:', e);
+          }
+        }
 
         setSuccessMsg(`반갑습니다, ${data.user.name}님! 잠시 후 이동합니다.`);
         
@@ -116,7 +134,7 @@ const Login = () => {
         </form>
 
         <div className="auth-footer">
-          계정이 없으신가요? <Link to="/signup">회원가입</Link>
+          계정이 없으신가요? <Link to={claimId ? `/signup?claimId=${claimId}` : "/signup"}>회원가입</Link>
         </div>
 
         <div className="auth-brand-footer">

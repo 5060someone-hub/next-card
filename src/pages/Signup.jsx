@@ -13,6 +13,9 @@ const Signup = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const navigate = useNavigate();
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const claimId = urlParams.get('claimId');
+
   const handleSignup = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -35,7 +38,7 @@ const Signup = () => {
       if (response.ok) {
         setSuccessMsg('회원가입이 완료되었습니다! 잠시 후 로그인 페이지로 이동합니다.');
         setTimeout(() => {
-          navigate('/login');
+          navigate(claimId ? `/login?claimId=${claimId}` : '/login');
         }, 1500);
       } else {
         setErrorMsg(data.message || '회원가입에 실패했습니다. 입력한 정보를 확인해 주세요.');
@@ -137,7 +140,7 @@ const Signup = () => {
         </form>
 
         <div className="auth-footer">
-          이미 계정이 있으신가요? <Link to="/login">로그인</Link>
+          이미 계정이 있으신가요? <Link to={claimId ? `/login?claimId=${claimId}` : "/login"}>로그인</Link>
         </div>
 
         <div className="auth-brand-footer">

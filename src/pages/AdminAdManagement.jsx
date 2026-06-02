@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import { Megaphone, Save, Link as LinkIcon, Palette, Type, RefreshCw } from 'lucide-react';
 import './AdminDashboard.css';
 
@@ -37,10 +39,13 @@ export default function AdminAdManagement() {
       const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/ad`);
       if (response.ok) {
         const data = await response.json();
-        setAdConfig(data);
+        if (data && Object.keys(data).length > 0) {
+          setAdConfig(data);
+        }
       }
     } catch (err) {
       setError('광고 설정을 불러오는 중 오류가 발생했습니다.');
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -50,18 +55,20 @@ export default function AdminAdManagement() {
     e.preventDefault();
     setSaving(true);
     try {
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/ad`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/settings/ad`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(adConfig)
       });
+      
       if (response.ok) {
         alert('광고 설정이 성공적으로 저장되었습니다.');
       } else {
         alert('저장에 실패했습니다.');
       }
     } catch (err) {
-      alert('서버와 통신할 수 없습니다.');
+      alert('서버 연결 오류로 저장에 실패했습니다.');
+      console.error(err);
     } finally {
       setSaving(false);
     }

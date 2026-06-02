@@ -12,3 +12,4 @@ server/db.json
 
 .vercel
 .env*.local
+.env*

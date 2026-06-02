@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import { useNavigate } from 'react-router-dom';
 import { Eye, RefreshCw, CreditCard, Calendar, AlertCircle, Loader2 } from 'lucide-react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
 import './Dashboard.css';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'http://127.0.0.1:5000';
@@ -30,16 +32,42 @@ const Dashboard = () => {
         fetch(`${API_BASE}/api/cards/${auth.id}`)
       ]);
 
+      let backendCards = [];
+      if (cardsRes.ok) {
+        backendCards = await cardsRes.json();
+      }
+
+      // Firestore에서 claim한 명함(또는 새로 생성한 명함) 가져오기
+      let firestoreCards = [];
+      try {
+        const q = query(collection(db, 'business_cards'), where('userId', '==', auth.id));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          const d = doc.data();
+          firestoreCards.push({
+            _id: doc.id,
+            userId: d.userId,
+            grade: d.productType || d.grade || 'general',
+            cardData: {
+              ...d.cardData,
+              status: d.status || 'published'
+            },
+            createdAt: d.createdAt,
+            isFirestore: true
+          });
+        });
+      } catch (e) {
+        console.error('Firestore fetch error:', e);
+      }
+
       if (profileRes.ok) {
         const p = await profileRes.json();
         setProfile(p);
       }
-      if (cardsRes.ok) {
-        const c = await cardsRes.json();
-        setCards(c);
-      } else {
-        setCards([]);
-      }
+
+      // 두 소스의 명함을 합침
+      setCards([...backendCards, ...firestoreCards]);
+      
     } catch (err) {
       console.error('Dashboard fetch error:', err);
     } finally {

@@ -1,0 +1,49 @@
+# NextCard robots.txt
+# https://nextcard.kr
+
+# ── 모든 크롤러 기본 설정 ──────────────────────────────────────────
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /cards
+Disallow: /logs
+Disallow: /analytics
+Disallow: /settings
+Disallow: /api/
+
+# ── 구글봇 ────────────────────────────────────────────────────────
+User-agent: Googlebot
+Allow: /
+Allow: /faq
+Allow: /samples
+Allow: /namecard
+Allow: /v/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /cards
+Disallow: /logs
+Disallow: /analytics
+Disallow: /settings
+Disallow: /api/
+
+# ── 네이버봇 (Yeti) ───────────────────────────────────────────────
+User-agent: Yeti
+Allow: /
+Allow: /faq
+Allow: /samples
+Allow: /namecard
+Allow: /v/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /cards
+Disallow: /logs
+Disallow: /analytics
+Disallow: /settings
+Disallow: /api/
+
+# ── 사이트맵 위치 ─────────────────────────────────────────────────
+Sitemap: https://nextcard.kr/sitemap.xml

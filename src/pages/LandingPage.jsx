@@ -199,7 +199,7 @@ const LandingPage = () => {
           template: 'modern', themeColor: '#3b82f6', useGradient: true
         }
       });
-      navigate(`/card/${newCardRef.id}`);
+      navigate(`/v/${newCardRef.id}`);
     } catch (error) {
       console.error('Error creating temporary card:', error);
       alert('명함 생성 중 오류가 발생했습니다.');

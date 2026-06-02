@@ -17,6 +17,8 @@ const NetworkLog         = React.lazy(() => import('./pages/NetworkLog'));
 const Analytics          = React.lazy(() => import('./pages/Analytics'));
 const NamecardLanding    = React.lazy(() => import('./pages/NamecardLanding'));
 const SamplePreview      = React.lazy(() => import('./pages/SamplePreview'));
+const BlogList           = React.lazy(() => import('./pages/BlogList'));
+const BlogPost           = React.lazy(() => import('./pages/BlogPost'));
 
 // 관리자 전용 (일반 사용자에게는 불필요)
 const AdminUserManagement    = React.lazy(() => import('./pages/AdminUserManagement'));
@@ -27,6 +29,8 @@ const AdminLandingEditor     = React.lazy(() => import('./pages/AdminLandingEdit
 const AdminNamecardEditor    = React.lazy(() => import('./pages/AdminNamecardEditor'));
 const AdminInquiryManagement = React.lazy(() => import('./pages/AdminInquiryManagement'));
 const AdminPlanChanges       = React.lazy(() => import('./pages/AdminPlanChanges'));
+const AdminBlogList          = React.lazy(() => import('./pages/AdminBlogList'));
+const AdminBlogEditor        = React.lazy(() => import('./pages/AdminBlogEditor'));
 
 // ─── Suspense 로딩 화면 ────────────────────────────────────────────────────
 const PageLoader = () => (
@@ -53,6 +57,8 @@ const MobileAppWrapper = ({ children }) => (
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
+import KakaoChatWidget from './components/KakaoChatWidget';
+
 function App() {
   // 전역 파비콘 설정
   useEffect(() => {
@@ -75,11 +81,14 @@ function App() {
 
   return (
     <Router>
+      <KakaoChatWidget />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* PC 데스크탑 풀사이즈 라우트 */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/faq" element={<FaqBoard />} />
+          <Route path="/blog" element={<BlogList />} />
+          <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/cards" element={<CardEditor />} />
           <Route path="/logs" element={<NetworkLog />} />
@@ -95,6 +104,8 @@ function App() {
           <Route path="/admin/namecard" element={<AdminNamecardEditor />} />
           <Route path="/admin/inquiries" element={<AdminInquiryManagement />} />
           <Route path="/admin/plan-changes" element={<AdminPlanChanges />} />
+          <Route path="/admin/blog" element={<AdminBlogList />} />
+          <Route path="/admin/blog/write" element={<AdminBlogEditor />} />
 
           {/* 모바일 목업 전용 라우트 (최종결과물 및 인증) */}
           <Route path="/samples" element={<SamplePreview />} />

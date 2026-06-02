@@ -18,6 +18,8 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import './PublicCard.css';
 import SpaSectionRenderer from '../components/SpaSectionRenderer';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const PublicCard = () => {
   const { id } = useParams();
@@ -41,9 +43,36 @@ const PublicCard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/view/${id}`);
-        if (response.ok) {
-          const data = await response.json();
+        const docRef = doc(db, 'business_cards', id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const docData = docSnap.data();
+          let data = {
+            id: docSnap.id,
+            userId: docData.userId,
+            productType: docData.productType || docData.grade || 'general',
+            status: docData.status || 'active',
+            createdAt: docData.createdAt,
+            ...docData.cardData
+          };
+
+          if (data.status === 'temporary' && data.createdAt) {
+            const createdDate = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+            const now = new Date();
+            const diffTime = Math.abs(now - createdDate);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 7) {
+              setCardData({ isExpired: true, id: docSnap.id });
+              setLoading(false);
+              return;
+            } else {
+              data.isTemporary = true;
+              data.daysLeft = 7 - diffDays;
+            }
+          }
+          
           setCardData(data);
           
           // --- 통계 트래킹 (조회수 증가) ---
@@ -61,19 +90,31 @@ const PublicCard = () => {
           }).catch(e => console.error('Tracking Error:', e));
           
           // 상품 정보 및 광고 설정 가져오기
-          const [prodRes, adRes] = await Promise.all([
-            fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/products`),
-            fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/ad`)
-          ]);
+          try {
+            const prodRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/products`);
+            if (prodRes.ok) {
+              const products = await prodRes.json();
+              const product = products.find(p => p.id === data.productType);
+              setProductFeatures(product?.features);
+            }
+          } catch (e) {
+            console.error('Products fetch error', e);
+          }
           
-          if (prodRes.ok) {
-            const products = await prodRes.json();
-            const product = products.find(p => p.id === data.productType);
-            setProductFeatures(product?.features);
+          // 광고 설정 가져오기 (백엔드 API 사용)
+          try {
+            const adRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/ad`);
+            if (adRes.ok) {
+              const adData = await adRes.json();
+              if (adData && adData.text) {
+                setAdConfig(adData);
+              }
+            }
+          } catch (e) {
+            console.error('Ad config fetch error', e);
           }
-          if (adRes.ok) {
-            setAdConfig(await adRes.json());
-          }
+        } else {
+          setCardData(null);
         }
       } catch (err) {
         console.error('Fetch error:', err);
@@ -154,6 +195,22 @@ const PublicCard = () => {
     );
   }
   if (!cardData) return <div className="error-screen">명함을 찾을 수 없습니다.</div>;
+
+  if (cardData.isExpired) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#f8fafc', color: '#1e293b', padding: '2rem', textAlign: 'center' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>만료된 명함입니다.</h2>
+        <p style={{ color: '#64748b', marginBottom: '2rem', lineHeight: '1.6' }}>
+          이 명함은 1주일 무료 체험 기간이 종료되어 비공개 처리되었습니다.<br />
+          본인의 명함이신가요? 지금 가입하시면 만들어둔 명함을 영구적으로 사용하실 수 있습니다!
+        </p>
+        <button onClick={() => window.location.href = `/signup?claimId=${cardData.id}`} className="btn-primary" style={{ padding: '1rem 2rem', borderRadius: '50px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', border: 'none', background: '#db2777', color: '#fff' }}>
+          무료 회원가입하고 명함 살리기
+        </button>
+      </div>
+    );
+  }
 
   const trackEvent = (actionType, linkUrl = '') => {
     if (!cardData) return;
@@ -239,9 +296,19 @@ const PublicCard = () => {
       minHeight: '100vh', 
       display: 'flex', 
       justifyContent: 'center',
-      paddingBottom: '40px'
+      paddingBottom: '40px',
+      paddingTop: cardData.isTemporary ? '40px' : '0'
     }}>
-      <div className="card-container" style={{ 
+      {cardData.isTemporary && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, background: '#ef4444', color: '#fff', padding: '0.75rem', textAlign: 'center', zIndex: 1000, fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+          ⏳ 체험용 명함 (D-{cardData.daysLeft} 삭제예정)
+          <button onClick={() => window.location.href = `/signup?claimId=${cardData.id}`} style={{ background: '#fff', color: '#ef4444', border: 'none', borderRadius: '4px', padding: '4px 12px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', marginLeft: '8px' }}>
+            가입하고 영구 보존하기
+          </button>
+        </div>
+      )}
+      {/* Container */}
+      <div className="card-v3-container" style={{ 
         width: '100%', 
         maxWidth: '480px', 
         background: cardData.bgColor || '#111827', 

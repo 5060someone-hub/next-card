@@ -77,14 +77,36 @@ const CardEditor = () => {
       // 2. 명함 데이터 로드
       if (cardId) {
         try {
-          const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card-detail/${cardId}`);
-          if (response.ok) {
-            const fullCard = await response.json();
+          let fullCard = null;
+          if (cardId.length !== 24) {
+            // Firestore document (length is typically 20)
+            const { doc, getDoc } = await import('firebase/firestore');
+            const { db } = await import('../firebase');
+            const docRef = doc(db, 'business_cards', cardId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              const d = docSnap.data();
+              fullCard = {
+                _id: docSnap.id,
+                grade: d.productType || d.grade || 'general',
+                paymentStatus: d.paymentStatus || 'completed',
+                cardData: d.cardData || {}
+              };
+            }
+          } else {
+            // MongoDB document
+            const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card-detail/${cardId}`);
+            if (response.ok) {
+              fullCard = await response.json();
+            }
+          }
+
+          if (fullCard) {
             const data = fullCard.cardData || {};
             setFormData(prev => ({
               ...prev,
               ...data,
-              productType: (fullCard.paymentStatus === 'pending' ? fullCard.requestedGrade : fullCard.grade) || fullCard.grade || data.productType || 'general', // 결제 대기 중인 경우 요청 등급을 우선 표시
+              productType: (fullCard.paymentStatus === 'pending' ? fullCard.requestedGrade : fullCard.grade) || fullCard.grade || data.productType || 'general',
               intro: data.intro || data.bio || '',
               introAlign: data.introAlign || 'center',
               nameFontSizeKor: data.nameFontSizeKor || data.nameFontSize || 24,
@@ -207,17 +229,31 @@ const CardEditor = () => {
     if (!cardId) return;
     setSaving(true);
     try {
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/save/${cardId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cardData: formData }),
-      });
-
-      if (response.ok) {
+      if (cardId.length !== 24) {
+        // Save to Firestore
+        const { doc, updateDoc } = await import('firebase/firestore');
+        const { db } = await import('../firebase');
+        const cardRef = doc(db, 'business_cards', cardId);
+        await updateDoc(cardRef, {
+          cardData: formData,
+          productType: formData.productType
+        });
         setLastSaved(new Date());
         alert('명함 정보가 성공적으로 저장되었습니다!');
       } else {
-        alert('저장에 실패했습니다.');
+        // Save to MongoDB API
+        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/save/${cardId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cardData: formData }),
+        });
+
+        if (response.ok) {
+          setLastSaved(new Date());
+          alert('명함 정보가 성공적으로 저장되었습니다!');
+        } else {
+          alert('저장에 실패했습니다.');
+        }
       }
     } catch (err) {
       console.error('저장 오류:', err);
