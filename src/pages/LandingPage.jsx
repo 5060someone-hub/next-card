@@ -847,43 +847,19 @@ const LandingPage = () => {
               <X size={24} />
             </button>
 
-            <div className="live-preview-card-side">
-              <LiveCardPreview heroForm={heroForm} />
-            </div>
-
-            <div className="live-preview-form-side">
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#f8fafc', marginBottom: '0.5rem' }}>무료 명함 1분 완성 체험</h3>
-              <p style={{ color: '#cbd5e1', marginBottom: '1.5rem', fontSize: '1rem' }}>가입 없이 필수 정보만 입력하고 나만의 프리미엄 디지털 명함을 즉시 만들어보세요.</p>
+            <div className="live-preview-card-side" style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '420px', margin: '0 auto', height: '100%' }}>
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <LiveCardPreview heroForm={heroForm} setHeroForm={setHeroForm} handleImageUpload={handleImageUpload} />
+              </div>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <input type="text" placeholder="이름 (예: 홍길동)" value={heroForm.name} onChange={e => setHeroForm({...heroForm, name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '5px', display: 'block' }}>프로필 사진 (선택)</label>
-                    <input type="file" accept="image/*" onChange={e => handleImageUpload(e, 'profileUrl')} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '0.9rem' }} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '5px', display: 'block' }}>회사 로고 (선택)</label>
-                    <input type="file" accept="image/*" onChange={e => handleImageUpload(e, 'logoUrl')} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '0.9rem' }} />
-                  </div>
-                </div>
-
-                <input type="text" placeholder="회사명 (예: 넥스트카드)" value={heroForm.company} onChange={e => setHeroForm({...heroForm, company: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
-                <input type="text" placeholder="부서명 (예: 디자인팀)" value={heroForm.department} onChange={e => setHeroForm({...heroForm, department: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
-                <input type="text" placeholder="직책 (예: 대표이사)" value={heroForm.jobTitle} onChange={e => setHeroForm({...heroForm, jobTitle: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
-                <input type="tel" placeholder="연락처 (예: 010-1234-5678)" value={heroForm.phonePersonal} onChange={e => setHeroForm({...heroForm, phonePersonal: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
-                <input type="text" placeholder="주소 (예: 서울시 강남구)" value={heroForm.address} onChange={e => setHeroForm({...heroForm, address: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
-                <input type="url" placeholder="대표 링크 (예: https://nextcard.kr)" value={heroForm.link} onChange={e => setHeroForm({...heroForm, link: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
-                
-                <button onClick={handleCreateTempCard} disabled={creatingCard} className="btn-primary" style={{ marginTop: '0.5rem', padding: '1rem', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: '#db2777', color: '#fff', flexShrink: 0 }}>
+              <div style={{ marginTop: '20px', padding: '0 10px', flexShrink: 0 }}>
+                <button onClick={handleCreateTempCard} disabled={creatingCard} className="btn-primary" style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', border: 'none', borderRadius: '12px', cursor: 'pointer', background: '#db2777', color: '#fff', boxShadow: '0 4px 14px 0 rgba(219, 39, 119, 0.39)' }}>
                   {creatingCard ? <Loader2 size={20} className="spin" /> : null}
                   내 명함 완성하고 링크 받기
                 </button>
-
-                <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '0.9rem', color: '#cbd5e1', textAlign: 'center' }}>
-                  <p style={{ margin: 0, fontWeight: 'bold', color: '#db2777', marginBottom: '5px' }}>💡 정식 회원가입 시 주어지는 혜택!</p>
-                  <p style={{ margin: 0 }}>SNS 다중 링크 버튼, 상세 자기소개, 방문자 통계 등 <strong>훨씬 더 다양하고 강력한 서비스</strong>를 이용하실 수 있습니다.</p>
+                <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '0.85rem', color: '#cbd5e1', textAlign: 'center' }}>
+                  <p style={{ margin: 0, fontWeight: 'bold', color: '#db2777', marginBottom: '5px' }}>💡 정식 회원가입 혜택!</p>
+                  <p style={{ margin: 0, lineHeight: '1.4' }}>SNS 다중 링크, 상세 자기소개 등<br/><strong>훨씬 더 강력한 서비스</strong>를 이용하세요.</p>
                 </div>
               </div>
             </div>

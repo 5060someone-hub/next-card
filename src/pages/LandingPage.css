@@ -1412,61 +1412,28 @@
 
 /* Live Preview Modal */
 .live-preview-modal-content {
-  background: rgba(23, 29, 41, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 28px;
-  width: 95%;
-  max-width: 1100px;
+  background: transparent;
+  width: 100%;
+  max-width: 450px;
   height: 90vh;
-  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8), 0 0 50px rgba(0, 0, 0, 0.3);
-  color: #f8fafc;
-  animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  display: flex;
-  overflow: hidden;
-  position: relative;
-}
-
-.live-preview-form-side {
-  flex: 1;
-  padding: 40px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-}
-
-.live-preview-form-side::-webkit-scrollbar {
-  width: 6px;
-}
-.live-preview-form-side::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 99px;
+  position: relative;
+  animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .live-preview-card-side {
-  width: 450px;
-  background: #0f172a;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   position: relative;
 }
 
-/* Mobile adjustments for Live Preview */
 @media (max-width: 900px) {
   .live-preview-modal-content {
-    flex-direction: column;
     height: 95vh;
-    border-radius: 20px;
-  }
-  .live-preview-card-side {
-    width: 100%;
-    flex: 0 0 45vh;
-    border-left: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  .live-preview-form-side {
-    flex: 1;
-    padding: 20px;
+    max-width: 100%;
+    padding: 0 10px;
   }
 }
