@@ -855,7 +855,7 @@ const LandingPage = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '10px' }}>
                 <input type="text" placeholder="이름 (예: 홍길동)" value={heroForm.name} onChange={e => setHeroForm({...heroForm, name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '1rem' }} />
                 
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '5px', display: 'block' }}>프로필 사진 (선택)</label>
                     <input type="file" accept="image/*" onChange={e => handleImageUpload(e, 'profileUrl')} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '0.9rem' }} />
