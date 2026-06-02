@@ -85,6 +85,16 @@ const PublicCard = () => {
             }
           }
           
+          // 과거에 생성되었거나 캐시 문제로 색상 값이 누락된 임시 명함을 위한 기본 화이트 테마 강제 적용
+          if (data.status === 'temporary' && !data.bgColor) {
+            data.bgColor = '#ffffff';
+            data.textColor = '#1e293b';
+            data.btnBgColor = '#f8fafc';
+            data.blockBgColor = '#f8fafc';
+            data.template = data.template || 'modern';
+            data.themeColor = data.themeColor || '#3b82f6';
+          }
+          
           setCardData(data);
           
           // --- 통계 트래킹 (조회수 증가) ---
