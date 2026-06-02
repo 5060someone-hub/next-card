@@ -810,7 +810,7 @@ const LandingPage = () => {
           bottom: '30px',
           left: '30px',
           zIndex: 999,
-          background: 'var(--primary-gradient)',
+          background: '#db2777',
           color: 'white',
           padding: '1rem 1.5rem',
           borderRadius: '50px',
@@ -873,7 +873,7 @@ const LandingPage = () => {
                 <input type="text" placeholder="주소 (예: 서울시 강남구)" value={heroForm.address} onChange={e => setHeroForm({...heroForm, address: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '1rem' }} />
                 <input type="url" placeholder="대표 링크 (예: https://nextcard.kr)" value={heroForm.link} onChange={e => setHeroForm({...heroForm, link: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '1rem' }} />
                 
-                <button onClick={handleCreateTempCard} disabled={creatingCard} className="btn-primary" style={{ marginTop: '0.5rem', padding: '1rem', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'var(--primary-gradient)', color: '#fff', flexShrink: 0 }}>
+                <button onClick={handleCreateTempCard} disabled={creatingCard} className="btn-primary" style={{ marginTop: '0.5rem', padding: '1rem', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: '#db2777', color: '#fff', flexShrink: 0 }}>
                   {creatingCard ? <Loader2 size={20} className="spin" /> : null}
                   내 명함 완성하고 링크 받기
                 </button>
