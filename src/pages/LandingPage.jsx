@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Check, ChevronRight, MessageCircle, Mail, Globe, Loader2, X, Building2, Smartphone, MapPin, Link as LinkIcon, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import LiveCardPreview from '../components/LiveCardPreview';
 import './LandingPage.css';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'http://127.0.0.1:5000';
@@ -834,141 +834,56 @@ const LandingPage = () => {
         <div 
           className="landing-policy-modal-overlay" 
           onClick={() => setIsFreeCardModalOpen(false)}
-          style={{ zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <div 
-            className="landing-policy-modal-content"
+            className="live-preview-modal-content"
             onClick={e => e.stopPropagation()}
-            style={{ maxWidth: '800px', width: '90%', padding: '2rem', display: 'flex', gap: '2rem', flexWrap: 'wrap', background: 'var(--dark-card, #ffffff)' }}
           >
             <button 
               className="landing-policy-modal-close"
               onClick={() => setIsFreeCardModalOpen(false)}
+              style={{ zIndex: 100 }}
             >
               <X size={24} />
             </button>
 
-            <div style={{ flex: '1 1 300px' }}>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--hero-title-color, #0f172a)', marginBottom: '0.5rem' }}>무료 명함 1분 완성 체험</h3>
-              <p style={{ color: 'var(--hero-desc-color, #475569)', marginBottom: '1.5rem', fontSize: '1rem' }}>가입 없이 필수 정보만 입력하고 나만의 프리미엄 디지털 명함을 즉시 만들어보세요.</p>
+            <div className="live-preview-card-side">
+              <LiveCardPreview heroForm={heroForm} />
+            </div>
+
+            <div className="live-preview-form-side">
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#f8fafc', marginBottom: '0.5rem' }}>무료 명함 1분 완성 체험</h3>
+              <p style={{ color: '#cbd5e1', marginBottom: '1.5rem', fontSize: '1rem' }}>가입 없이 필수 정보만 입력하고 나만의 프리미엄 디지털 명함을 즉시 만들어보세요.</p>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '10px' }}>
-                <input type="text" placeholder="이름 (예: 홍길동)" value={heroForm.name} onChange={e => setHeroForm({...heroForm, name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '1rem' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <input type="text" placeholder="이름 (예: 홍길동)" value={heroForm.name} onChange={e => setHeroForm({...heroForm, name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '5px', display: 'block' }}>프로필 사진 (선택)</label>
-                    <input type="file" accept="image/*" onChange={e => handleImageUpload(e, 'profileUrl')} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '0.9rem' }} />
+                    <label style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '5px', display: 'block' }}>프로필 사진 (선택)</label>
+                    <input type="file" accept="image/*" onChange={e => handleImageUpload(e, 'profileUrl')} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '0.9rem' }} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '5px', display: 'block' }}>회사 로고 (선택)</label>
-                    <input type="file" accept="image/*" onChange={e => handleImageUpload(e, 'logoUrl')} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '0.9rem' }} />
+                    <label style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '5px', display: 'block' }}>회사 로고 (선택)</label>
+                    <input type="file" accept="image/*" onChange={e => handleImageUpload(e, 'logoUrl')} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '0.9rem' }} />
                   </div>
                 </div>
 
-                <input type="text" placeholder="회사명 (예: 넥스트카드)" value={heroForm.company} onChange={e => setHeroForm({...heroForm, company: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '1rem' }} />
-                <input type="text" placeholder="부서명 (예: 디자인팀)" value={heroForm.department} onChange={e => setHeroForm({...heroForm, department: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '1rem' }} />
-                <input type="text" placeholder="직책 (예: 대표이사)" value={heroForm.jobTitle} onChange={e => setHeroForm({...heroForm, jobTitle: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '1rem' }} />
-                <input type="tel" placeholder="연락처 (예: 010-1234-5678)" value={heroForm.phonePersonal} onChange={e => setHeroForm({...heroForm, phonePersonal: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '1rem' }} />
-                <input type="text" placeholder="주소 (예: 서울시 강남구)" value={heroForm.address} onChange={e => setHeroForm({...heroForm, address: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '1rem' }} />
-                <input type="url" placeholder="대표 링크 (예: https://nextcard.kr)" value={heroForm.link} onChange={e => setHeroForm({...heroForm, link: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(128,128,128,0.2)', background: '#f1f5f9', color: '#334155', fontSize: '1rem' }} />
+                <input type="text" placeholder="회사명 (예: 넥스트카드)" value={heroForm.company} onChange={e => setHeroForm({...heroForm, company: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
+                <input type="text" placeholder="부서명 (예: 디자인팀)" value={heroForm.department} onChange={e => setHeroForm({...heroForm, department: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
+                <input type="text" placeholder="직책 (예: 대표이사)" value={heroForm.jobTitle} onChange={e => setHeroForm({...heroForm, jobTitle: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
+                <input type="tel" placeholder="연락처 (예: 010-1234-5678)" value={heroForm.phonePersonal} onChange={e => setHeroForm({...heroForm, phonePersonal: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
+                <input type="text" placeholder="주소 (예: 서울시 강남구)" value={heroForm.address} onChange={e => setHeroForm({...heroForm, address: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
+                <input type="url" placeholder="대표 링크 (예: https://nextcard.kr)" value={heroForm.link} onChange={e => setHeroForm({...heroForm, link: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '1rem' }} />
                 
                 <button onClick={handleCreateTempCard} disabled={creatingCard} className="btn-primary" style={{ marginTop: '0.5rem', padding: '1rem', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: '#db2777', color: '#fff', flexShrink: 0 }}>
                   {creatingCard ? <Loader2 size={20} className="spin" /> : null}
                   내 명함 완성하고 링크 받기
                 </button>
 
-                <div style={{ marginTop: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.9rem', color: '#475569', textAlign: 'center' }}>
+                <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '0.9rem', color: '#cbd5e1', textAlign: 'center' }}>
                   <p style={{ margin: 0, fontWeight: 'bold', color: '#db2777', marginBottom: '5px' }}>💡 정식 회원가입 시 주어지는 혜택!</p>
                   <p style={{ margin: 0 }}>SNS 다중 링크 버튼, 상세 자기소개, 방문자 통계 등 <strong>훨씬 더 다양하고 강력한 서비스</strong>를 이용하실 수 있습니다.</p>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ flex: '1 1 300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div className="interactive-mockup" style={{
-                background: '#ffffff',
-                borderRadius: '36px',
-                color: '#1e293b',
-                width: '300px',
-                height: '600px',
-                flexShrink: 0,
-                boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.2)',
-                border: '12px solid #0f172a',
-                position: 'relative',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column'
-              }}>
-                {/* 스마트폰 노치 (Notch) */}
-                <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '120px', height: '24px', background: '#0f172a', borderBottomLeftRadius: '16px', borderBottomRightRadius: '16px', zIndex: 10 }}></div>
-                
-                {/* 스크롤 가능한 컨텐츠 영역 */}
-                <div className="mockup-scroll-container" style={{ flex: 1, overflowY: 'auto', padding: '40px 20px 20px' }}>
-                  <style>{`.mockup-scroll-container::-webkit-scrollbar { display: none; } .mockup-scroll-container { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
-                  
-                  <div style={{ textAlign: 'center', marginTop: '10px', marginBottom: '20px', height: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  {heroForm.logoUrl ? (
-                    <img src={heroForm.logoUrl} alt="logo" style={{ maxHeight: '100%', maxWidth: '150px', objectFit: 'contain' }} />
-                  ) : (
-                    <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: '#db2777' }}>
-                      {heroForm.company || 'NextCard'}
-                    </h3>
-                  )}
-                </div>
-
-                <div style={{ textAlign: 'center', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
-                   <div style={{ width: '90px', height: '90px', borderRadius: '50%', background: 'linear-gradient(45deg, #db2777, #3b82f6)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 'bold', color: '#fff', border: '4px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-                     {heroForm.profileUrl ? (
-                       <img src={heroForm.profileUrl} alt="profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                     ) : (
-                       (heroForm.name || '홍').charAt(0)
-                     )}
-                   </div>
-                   <div style={{ width: '40px', height: '3px', background: 'linear-gradient(to right, #db2777, #3b82f6)', margin: '15px auto' }}></div>
-                   <h2 style={{ margin: 0, fontSize: '1.6rem', fontWeight: 800, color: '#0f172a' }}>{heroForm.name || '홍길동'}</h2>
-                   <p style={{ margin: '5px 0 0', fontSize: '1rem', color: '#64748b' }}>{heroForm.jobTitle || '대표이사'}</p>
-                </div>
-                
-                <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '16px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <Building2 size={18} color="#db2777" style={{ marginTop: '2px' }} />
-                    <div>
-                      <div style={{ fontSize: '0.75rem', color: '#db2777', fontWeight: 'bold', marginBottom: '2px' }}>Company</div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#1e293b' }}>{heroForm.company || '(주)넥스트카드'}</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <Briefcase size={18} color="#db2777" style={{ marginTop: '2px' }} />
-                    <div>
-                      <div style={{ fontSize: '0.75rem', color: '#db2777', fontWeight: 'bold', marginBottom: '2px' }}>Department</div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#1e293b' }}>{heroForm.department || '디자인팀'}</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <MapPin size={18} color="#db2777" style={{ marginTop: '2px' }} />
-                    <div>
-                      <div style={{ fontSize: '0.75rem', color: '#db2777', fontWeight: 'bold', marginBottom: '2px' }}>Address</div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#1e293b' }}>{heroForm.address || '서울시 강남구'}</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <Smartphone size={18} color="#db2777" style={{ marginTop: '2px' }} />
-                    <div>
-                      <div style={{ fontSize: '0.75rem', color: '#db2777', fontWeight: 'bold', marginBottom: '2px' }}>Phone</div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#1e293b' }}>{heroForm.phonePersonal || '010-1234-5678'}</div>
-                    </div>
-                  </div>
-                </div>
-
-                {heroForm.link && (
-                  <div style={{ background: '#db2777', borderRadius: '12px', padding: '12px', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                    <LinkIcon size={16} /> 웹사이트 방문하기
-                  </div>
-                )}
                 </div>
               </div>
             </div>
