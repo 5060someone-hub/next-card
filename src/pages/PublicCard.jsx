@@ -91,8 +91,8 @@ const PublicCard = () => {
             data.textColor = '#1e293b';
             data.btnBgColor = '#f8fafc';
             data.blockBgColor = '#f8fafc';
-            data.template = data.template || 'modern';
-            data.themeColor = data.themeColor || '#db2777';
+            data.template = 'modern';
+            data.themeColor = '#db2777';
             data.btnIconColor = '#db2777';
           }
           
