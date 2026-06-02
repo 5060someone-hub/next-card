@@ -101,6 +101,23 @@ const BlogPost = () => {
               {post.content}
             </ReactMarkdown>
           </div>
+
+          {post.tags && post.tags.length > 0 && (
+            <div style={{ marginTop: '40px', paddingTop: '24px', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 600, color: '#64748b', marginRight: '8px', display: 'flex', alignItems: 'center' }}>태그:</span>
+              {post.tags.map(tag => (
+                <button 
+                  key={tag}
+                  onClick={() => navigate(`/blog?tag=${encodeURIComponent(tag)}`)}
+                  style={{ padding: '6px 14px', borderRadius: '999px', border: '1px solid #cbd5e1', background: 'white', color: '#3b82f6', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.borderColor = '#3b82f6'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
+          )}
         </article>
       </div>
     </div>

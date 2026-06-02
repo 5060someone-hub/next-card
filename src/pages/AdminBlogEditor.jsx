@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import { ArrowLeft, Save, Loader2, Sparkles, Clock, Eye, Edit3 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Sparkles, Clock, Eye, Edit3, X } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import './AdminDashboard.css';
 
@@ -21,8 +21,10 @@ const AdminBlogEditor = () => {
     content: '', 
     thumbnail: '',
     status: 'published', // published, scheduled, draft
-    scheduledDate: '' // YYYY-MM-DDTHH:mm
+    scheduledDate: '', // YYYY-MM-DDTHH:mm
+    tags: []
   });
+  const [tagInput, setTagInput] = useState('');
   const [activeTab, setActiveTab] = useState('write'); // 'write' or 'preview'
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -41,7 +43,7 @@ const AdminBlogEditor = () => {
             const offset = dateObj.getTimezoneOffset() * 60000;
             scheduledDate = (new Date(dateObj - offset)).toISOString().slice(0, 16);
           }
-          setForm({ ...data, scheduledDate, status: data.status || 'published' });
+          setForm({ ...data, scheduledDate, status: data.status || 'published', tags: data.tags || [] });
         }
         setLoading(false);
       });
@@ -51,6 +53,21 @@ const AdminBlogEditor = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleTagKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const newTag = tagInput.trim().replace(/^#/, ''); // Remove # if user typed it
+      if (newTag && !form.tags.includes(newTag)) {
+        setForm(prev => ({ ...prev, tags: [...prev.tags, newTag] }));
+      }
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setForm(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tagToRemove) }));
   };
 
   const handleSave = async () => {
@@ -80,6 +97,7 @@ const AdminBlogEditor = () => {
         content: form.content,
         thumbnail: form.thumbnail,
         status: form.status,
+        tags: form.tags,
         publishDate: finalPublishDate,
         updatedAt: serverTimestamp()
       };
@@ -182,6 +200,28 @@ const AdminBlogEditor = () => {
                   placeholder="예: https://images.unsplash.com/... (인터넷 이미지 링크)" 
                   style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem', outline: 'none' }}
                 />
+              </div>
+
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontWeight: 600, color: '#334155' }}>검색어 태그 (해시태그)</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', minHeight: '48px', alignItems: 'center' }}>
+                  {form.tags.map(tag => (
+                    <div key={tag} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f1f5f9', padding: '4px 10px', borderRadius: '999px', fontSize: '0.85rem', color: '#334155', border: '1px solid #e2e8f0' }}>
+                      <span>#{tag}</span>
+                      <button onClick={() => removeTag(tag)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, color: '#94a3b8' }}>
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleTagKeyDown}
+                    placeholder={form.tags.length === 0 ? "단어 입력 후 Enter를 누르세요" : ""}
+                    style={{ border: 'none', outline: 'none', flex: 1, minWidth: '150px', fontSize: '0.95rem', background: 'transparent' }}
+                  />
+                </div>
               </div>
 
               <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
