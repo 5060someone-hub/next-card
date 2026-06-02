@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Check, ChevronRight, MessageCircle, Mail, Globe, Loader2, X, Building2, Smartphone, MapPin, Link as LinkIcon, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import LiveCardPreview from '../components/LiveCardPreview';
 import './LandingPage.css';
