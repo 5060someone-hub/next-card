@@ -56,12 +56,17 @@ const AdminBlogEditor = () => {
   };
 
   const handleTagKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ',') {
+    if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
       e.preventDefault();
-      const newTag = tagInput.trim().replace(/^#/, ''); // Remove # if user typed it
-      if (newTag && !form.tags.includes(newTag)) {
-        setForm(prev => ({ ...prev, tags: [...prev.tags, newTag] }));
-      }
+      const parts = tagInput.split(/[\s,]+/);
+      let newTags = [...form.tags];
+      parts.forEach(part => {
+        const t = part.trim().replace(/^#/, '');
+        if (t && !newTags.includes(t)) {
+          newTags.push(t);
+        }
+      });
+      setForm(prev => ({ ...prev, tags: newTags }));
       setTagInput('');
     }
   };
@@ -76,6 +81,20 @@ const AdminBlogEditor = () => {
       return;
     }
     setSaving(true);
+    
+    let finalTags = [...form.tags];
+    if (tagInput.trim()) {
+      const parts = tagInput.split(/[\s,]+/);
+      parts.forEach(part => {
+        const t = part.trim().replace(/^#/, '');
+        if (t && !finalTags.includes(t)) {
+          finalTags.push(t);
+        }
+      });
+      setForm(prev => ({ ...prev, tags: finalTags }));
+      setTagInput('');
+    }
+
     try {
       let finalPublishDate = serverTimestamp();
       
@@ -97,7 +116,7 @@ const AdminBlogEditor = () => {
         content: form.content,
         thumbnail: form.thumbnail,
         status: form.status,
-        tags: form.tags,
+        tags: finalTags,
         publishDate: finalPublishDate,
         updatedAt: serverTimestamp()
       };
@@ -218,7 +237,7 @@ const AdminBlogEditor = () => {
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleTagKeyDown}
-                    placeholder={form.tags.length === 0 ? "단어 입력 후 Enter를 누르세요" : ""}
+                    placeholder={form.tags.length === 0 ? "스페이스바 또는 엔터를 누르면 등록됩니다" : ""}
                     style={{ border: 'none', outline: 'none', flex: 1, minWidth: '150px', fontSize: '0.95rem', background: 'transparent' }}
                   />
                 </div>
