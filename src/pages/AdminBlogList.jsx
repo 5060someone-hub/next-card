@@ -114,7 +114,7 @@ const AdminBlogList = () => {
                           <td style={{ color: '#64748b', fontSize: '0.9rem' }}>
                             <div>등록: {post.createdAt ? new Date(post.createdAt.toMillis()).toLocaleDateString() : ''}</div>
                             {post.publishDate && (
-                              <div style={{ color: isScheduled ? '#d97706' : '#94a3b8', fontSize: '0.8rem', marginTop: '4px' }}>
+                              <div style={{ color: badgeText === '예약됨' ? '#d97706' : '#94a3b8', fontSize: '0.8rem', marginTop: '4px' }}>
                                 발행: {new Date(post.publishDate.toMillis()).toLocaleString([], {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute:'2-digit'})}
                               </div>
                             )}
