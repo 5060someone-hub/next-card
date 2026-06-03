@@ -91,9 +91,16 @@ const AdminBlogList = () => {
                         badgeColor = '#64748b';
                         badgeBg = '#f1f5f9';
                       } else if (isScheduled) {
-                        badgeText = '예약됨';
-                        badgeColor = '#d97706';
-                        badgeBg = '#fef3c7';
+                        const now = new Date().getTime();
+                        const pubTime = post.publishDate?.toDate ? post.publishDate.toDate().getTime() : new Date(post.publishDate || Date.now()).getTime();
+                        
+                        if (pubTime <= now) {
+                          badgeText = '발행됨'; // 이미 시간이 지난 예약발행은 발행됨으로 표시
+                        } else {
+                          badgeText = '예약됨';
+                          badgeColor = '#d97706';
+                          badgeBg = '#fef3c7';
+                        }
                       }
 
                       return (
