@@ -106,8 +106,10 @@ const AdminBlogEditor = () => {
         }
         finalPublishDate = Timestamp.fromDate(new Date(form.scheduledDate));
       } else if (form.status === 'draft') {
-        // 임시저장의 경우에도 일단 현재 시간으로 세팅해둠 (조회시 노출되지 않도록 status로 필터링)
         finalPublishDate = serverTimestamp();
+      } else if (form.status === 'published' && form.publishDate) {
+        // 기존 발행일이 있으면 그대로 유지 (수정할 때 발행일이 현재로 바뀌는 것 방지)
+        finalPublishDate = form.publishDate;
       }
 
       const postData = {
