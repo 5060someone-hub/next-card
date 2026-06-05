@@ -16,6 +16,25 @@ const B2BDashboard = () => {
   const [themeColor, setThemeColor] = useState('#3b82f6');
   const [address, setAddress] = useState('');
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 200 * 1024) {
+        alert('파일 크기는 200KB 이하여야 합니다.');
+        return;
+      }
+      if (!['image/jpeg', 'image/png'].includes(file.type)) {
+        alert('JPG, PNG 파일만 업로드 가능합니다.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // New Employee Form State
   const [newEmpName, setNewEmpName] = useState('');
   const [newEmpEmail, setNewEmpEmail] = useState('');
@@ -156,7 +175,7 @@ const B2BDashboard = () => {
           <h1 className="admin-title">B2B 기업 관리 대시보드</h1>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '2rem' }}>
           {/* Company Setup Section */}
           <div className="admin-card">
             <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -165,21 +184,41 @@ const B2BDashboard = () => {
             <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.5rem' }}>
               여기서 설정한 정보(로고, 색상 등)는 모든 임직원 명함에 강제로 적용되며, 직원이 임의로 수정할 수 없습니다.
             </p>
-            <div className="form-group">
-              <label>회사명</label>
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.2rem' }}>
+              <label style={{ fontWeight: '600', fontSize: '0.9rem' }}>회사명</label>
               <input type="text" className="admin-input" value={companyName} onChange={e => setCompanyName(e.target.value)} />
             </div>
-            <div className="form-group">
-              <label>회사 로고 URL</label>
-              <input type="text" className="admin-input" value={logoUrl} onChange={e => setLogoUrl(e.target.value)} placeholder="https://..." />
+            
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.2rem' }}>
+              <label style={{ fontWeight: '600', fontSize: '0.9rem' }}>회사 로고 업로드</label>
+              <input type="file" id="b2b-logo-upload" hidden onChange={handleImageChange} accept="image/jpeg, image/png" />
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                {logoUrl && (
+                  <div style={{ width: '40px', height: '40px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img src={logoUrl} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                  </div>
+                )}
+                <button type="button" onClick={() => document.getElementById('b2b-logo-upload').click()} style={{ padding: '0.5rem 1rem', background: '#1e293b', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                  이미지 찾기 (PC)
+                </button>
+                {logoUrl && (
+                  <button type="button" onClick={() => setLogoUrl('')} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>삭제</button>
+                )}
+              </div>
+              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>200KB 이하의 JPG, PNG 파일만 가능합니다.</p>
             </div>
-            <div className="form-group">
-              <label>대표 주소</label>
+
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.2rem' }}>
+              <label style={{ fontWeight: '600', fontSize: '0.9rem' }}>대표 주소</label>
               <input type="text" className="admin-input" value={address} onChange={e => setAddress(e.target.value)} />
             </div>
-            <div className="form-group">
-              <label>브랜드 색상 (테마)</label>
-              <input type="color" className="admin-input" style={{ padding: 0, height: '40px' }} value={themeColor} onChange={e => setThemeColor(e.target.value)} />
+
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.2rem' }}>
+              <label style={{ fontWeight: '600', fontSize: '0.9rem' }}>브랜드 색상 (테마)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <input type="color" style={{ width: '40px', height: '40px', padding: 0, border: 'none', borderRadius: '4px', cursor: 'pointer' }} value={themeColor} onChange={e => setThemeColor(e.target.value)} />
+                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{themeColor}</span>
+              </div>
             </div>
             <button className="btn-primary" onClick={handleSaveCompany} style={{ width: '100%', marginTop: '1rem' }}>
               <Save size={16} /> 설정 저장

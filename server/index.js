@@ -148,16 +148,6 @@ const companySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const companySchema = new mongoose.Schema({
-  companyName: { type: String, required: true },
-  logoUrl: { type: String, default: '' },
-  themeColor: { type: String, default: '#3b82f6' },
-  address: { type: String, default: '' },
-  adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  createdAt: { type: Date, default: Date.now }
-});
-const Company = mongoose.model('Company', companySchema);
-
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   tags: { type: [String], default: [] },
