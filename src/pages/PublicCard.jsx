@@ -675,7 +675,7 @@ const PublicCard = () => {
               boxShadow: `0 4px 12px rgba(0,0,0,0.1)`
             }}
           >
-            <Bookmark size={20} color="#3b82f6" /> 내 명함첩에 담기 (리멤버)
+            <Bookmark size={20} color="#3b82f6" /> 내 명함첩에 담기 (NextCard)
           </button>
         </div>
 
