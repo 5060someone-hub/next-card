@@ -85,7 +85,7 @@ function App() {
 
     // 2. 카카오 SDK 초기화
     if (window.Kakao && !window.Kakao.isInitialized()) {
-      window.Kakao.init('fdf21c86c51c769153c2a4b856f486e2'); // 정식 앱 키
+      window.Kakao.init('21003efec377258810eea15b29525fa0'); // 정식 앱 키
       console.log('Kakao SDK Initialized');
     }
   }, []);
