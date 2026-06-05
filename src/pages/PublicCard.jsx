@@ -14,7 +14,9 @@ import {
   Download,
   Home,
   X,
-  Wallet
+  Wallet,
+  Bookmark,
+  MessageCircle
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import './PublicCard.css';
@@ -277,16 +279,63 @@ const PublicCard = () => {
     }
   };
 
-  const handleDownloadPkpass = () => {
-    trackEvent('download_pkpass');
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
-    window.location.href = `${apiUrl}/api/wallet/apple/${id}`;
+  const handleKakaoShare = () => {
+    trackEvent('share_kakao');
+    if (window.Kakao && window.Kakao.isInitialized()) {
+      window.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: cardData.name ? `${cardData.name}님의 모바일 명함` : 'NextCard 디지털 명함',
+          description: cardData.company ? `${cardData.company} ${cardData.department || ''}` : '지금 바로 확인해보세요.',
+          imageUrl: cardData.profileUrl || cardData.logoUrl || 'https://nextcard.kr/og_preview.png',
+          link: {
+            mobileWebUrl: window.location.href,
+            webUrl: window.location.href,
+          },
+        },
+        buttons: [
+          {
+            title: '명함 확인하기',
+            link: {
+              mobileWebUrl: window.location.href,
+              webUrl: window.location.href,
+            },
+          },
+        ],
+      });
+    } else {
+      alert('카카오톡 공유 기능을 사용할 수 없습니다.');
+    }
   };
 
-  const handleGoogleWallet = () => {
-    trackEvent('download_gpay');
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
-    window.location.href = `${apiUrl}/api/wallet/google/${id}`;
+  const handleSaveToAddressBook = async () => {
+    trackEvent('save_addressbook');
+    const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
+    if (!auth.id) {
+      if (window.confirm('명함을 명함첩에 보관하려면 로그인이 필요합니다.\n로그인(회원가입) 페이지로 이동하시겠습니까?')) {
+        window.location.href = `/login?redirect=/v/${id}`;
+      }
+      return;
+    }
+    
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+      const res = await fetch(`${apiUrl}/api/connections/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: auth.id, savedCardId: cardData._id || id })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (window.confirm('명함첩에 성공적으로 보관되었습니다.\n내 명함첩으로 이동하시겠습니까?')) {
+          window.location.href = '/address-book';
+        }
+      } else {
+        alert(data.message || '저장에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('서버와 통신 중 오류가 발생했습니다.');
+    }
   };
 
   const themeColor = cardData.themeColor || '#db2777';
@@ -568,15 +617,15 @@ const PublicCard = () => {
           </button>
         </div>
 
-        {/* Apple Wallet Button */}
+        {/* KakaoTalk Share Button */}
         <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
           <button 
-            onClick={handleDownloadPkpass}
+            onClick={handleKakaoShare}
             style={{ 
               width: '100%', 
               padding: '1.15rem', 
-              background: '#000', 
-              color: '#fff', 
+              background: '#FEE500', 
+              color: '#000000', 
               borderRadius: '15px', 
               border: 'none',
               fontSize: '1.05rem',
@@ -586,24 +635,24 @@ const PublicCard = () => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              boxShadow: `0 4px 12px rgba(0,0,0,0.5)`
+              boxShadow: `0 4px 12px rgba(254, 229, 0, 0.4)`
             }}
           >
-            <Wallet size={20} /> Apple 지갑에 추가
+            <MessageCircle size={20} color="#000" /> 카카오톡으로 내게 보관하기
           </button>
         </div>
 
-        {/* Google Wallet Button */}
+        {/* Save to Address Book Button */}
         <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
           <button 
-            onClick={handleGoogleWallet}
+            onClick={handleSaveToAddressBook}
             style={{ 
               width: '100%', 
               padding: '1.15rem', 
               background: '#fff', 
-              color: '#3c4043', 
+              color: '#3b82f6', 
               borderRadius: '15px', 
-              border: '1px solid #dadce0',
+              border: '2px solid #3b82f6',
               fontSize: '1.05rem',
               fontWeight: 800,
               cursor: 'pointer',
@@ -614,7 +663,7 @@ const PublicCard = () => {
               boxShadow: `0 4px 12px rgba(0,0,0,0.1)`
             }}
           >
-            <Wallet size={20} color="#1a73e8" /> Google 지갑에 추가
+            <Bookmark size={20} color="#3b82f6" /> 내 명함첩에 담기 (리멤버)
           </button>
         </div>
 

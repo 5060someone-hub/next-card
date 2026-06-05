@@ -1,0 +1,176 @@
+import React, { useState, useEffect } from 'react';
+import { BookOpen, Search, Trash2, Edit3, Save } from 'lucide-react';
+import Sidebar from '../components/Sidebar';
+import './AdminDashboard.css'; // 사이드바 레이아웃 공유용
+
+const AddressBook = () => {
+  const [connections, setConnections] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState(null);
+  const [editMemo, setEditMemo] = useState('');
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+
+  useEffect(() => {
+    fetchConnections();
+  }, []);
+
+  const fetchConnections = async () => {
+    const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
+    if (!auth.id) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/api/connections/${auth.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setConnections(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('명함첩에서 이 명함을 삭제하시겠습니까?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/connections/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setConnections(connections.filter(c => c._id !== id));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveMemo = async (id) => {
+    try {
+      const res = await fetch(`${API_URL}/api/connections/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memo: editMemo })
+      });
+      if (res.ok) {
+        setConnections(connections.map(c => c._id === id ? { ...c, memo: editMemo } : c));
+        setEditingId(null);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const filtered = connections.filter(c => {
+    const card = c.savedCardId;
+    if (!card) return false;
+    const nameMatch = card.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const companyMatch = card.company?.toLowerCase().includes(searchTerm.toLowerCase());
+    const memoMatch = c.memo?.toLowerCase().includes(searchTerm.toLowerCase());
+    return nameMatch || companyMatch || memoMatch;
+  });
+
+  if (loading) return <div style={{ padding: '2rem' }}>로딩 중...</div>;
+
+  return (
+    <div className="admin-container">
+      <Sidebar />
+      <div className="admin-content">
+        <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem 1rem' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <BookOpen size={24} color="#3b82f6" /> 내 명함첩
+          </h1>
+
+          {/* 검색 바 */}
+          <div style={{ position: 'relative', marginBottom: '2rem' }}>
+            <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94a3b8' }} />
+            <input 
+              type="text" 
+              placeholder="이름, 회사, 또는 메모로 검색..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '1rem' }}
+            />
+          </div>
+
+          {connections.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '4rem 1rem', background: '#f8fafc', borderRadius: '12px' }}>
+              <BookOpen size={48} color="#cbd5e1" style={{ marginBottom: '1rem' }} />
+              <h3 style={{ fontSize: '1.2rem', color: '#475569', marginBottom: '0.5rem' }}>저장된 명함이 없습니다</h3>
+              <p style={{ color: '#94a3b8' }}>다른 사람의 명함에서 '내 명함첩에 담기'를 눌러 명함을 수집해 보세요.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+              {filtered.map(conn => {
+                const card = conn.savedCardId;
+                if (!card) return null;
+                return (
+                  <div key={conn._id} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', position: 'relative' }}>
+                    <button 
+                      onClick={() => handleDelete(conn._id)}
+                      style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer' }}
+                      title="삭제"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
+                      {card.profileUrl ? (
+                        <img src={card.profileUrl} alt="profile" style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                          {card.name?.charAt(0)}
+                        </div>
+                      )}
+                      <div>
+                        <h4 style={{ fontWeight: 'bold', fontSize: '1.1rem', margin: 0 }}>{card.name}</h4>
+                        <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '2px 0 0 0' }}>{card.company} {card.jobTitle && `· ${card.jobTitle}`}</p>
+                      </div>
+                    </div>
+
+                    <a href={card.customCardUrl ? `/v/${card.customCardUrl}` : `/v/${card._id}`} target="_blank" rel="noreferrer" style={{ display: 'block', textAlign: 'center', padding: '0.5rem', background: '#f1f5f9', color: '#3b82f6', borderRadius: '6px', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+                      명함 자세히 보기
+                    </a>
+
+                    <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '1rem' }}>
+                      {editingId === conn._id ? (
+                        <div>
+                          <textarea 
+                            value={editMemo} 
+                            onChange={(e) => setEditMemo(e.target.value)}
+                            style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.85rem', minHeight: '60px', marginBottom: '8px' }}
+                            placeholder="명함에 대한 개인 메모를 남겨보세요..."
+                          />
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                            <button onClick={() => setEditingId(null)} style={{ background: '#f1f5f9', border: 'none', padding: '4px 12px', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer' }}>취소</button>
+                            <button onClick={() => handleSaveMemo(conn._id)} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Save size={12} /> 저장
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <p style={{ margin: 0, fontSize: '0.85rem', color: conn.memo ? '#475569' : '#94a3b8', whiteSpace: 'pre-wrap', flex: 1 }}>
+                            {conn.memo || '저장된 메모가 없습니다.'}
+                          </p>
+                          <button onClick={() => { setEditingId(conn._id); setEditMemo(conn.memo || ''); }} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}>
+                            <Edit3 size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AddressBook;

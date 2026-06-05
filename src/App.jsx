@@ -34,6 +34,7 @@ const AdminBlogEditor        = React.lazy(() => import('./pages/AdminBlogEditor'
 
 const B2BDashboard           = React.lazy(() => import('./pages/B2BDashboard'));
 const NfcRedirect            = React.lazy(() => import('./pages/NfcRedirect'));
+const AddressBook            = React.lazy(() => import('./pages/AddressBook'));
 
 // ─── Suspense 로딩 화면 ────────────────────────────────────────────────────
 const PageLoader = () => (
@@ -63,8 +64,9 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 import KakaoChatWidget from './components/KakaoChatWidget';
 
 function App() {
-  // 전역 파비콘 설정
+  // 전역 파비콘 설정 및 카카오 SDK 초기화
   useEffect(() => {
+    // 1. 파비콘 설정
     fetch(`${API_URL}/api/landing-content`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
@@ -80,6 +82,13 @@ function App() {
         }
       })
       .catch(() => {}); // 조용히 실패 (콘솔 노출 없음)
+
+    // 2. 카카오 SDK 초기화
+    if (window.Kakao && !window.Kakao.isInitialized()) {
+      // TODO: 추후 발급받은 실제 JavaScript 키로 교체해야 합니다.
+      window.Kakao.init('c089c8172def97eb00c07217cae17495'); // 더미 또는 임시 키
+      console.log('Kakao SDK Initialized');
+    }
   }, []);
 
   return (
@@ -99,6 +108,7 @@ function App() {
           <Route path="/namecard" element={<NamecardLanding />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/nfc/:serial" element={<NfcRedirect />} />
+          <Route path="/address-book" element={<AddressBook />} />
           <Route path="/admin" element={<AdminUserManagement />} />
           <Route path="/admin/users" element={<AdminUserManagement />} />
           <Route path="/admin/card-editor/:cardId" element={<AdminCardEditor />} />

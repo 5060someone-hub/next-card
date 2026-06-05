@@ -259,6 +259,15 @@ const nfcCardSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+const connectionSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // 명함을 수집한 사용자
+  savedCardId: { type: mongoose.Schema.Types.ObjectId, ref: 'Card', required: true }, // 수집된 명함 (타인의 명함)
+  memo: { type: String, default: '' }, // 개인 메모
+  savedAt: { type: Date, default: Date.now }
+});
+// 한 사용자가 동일한 명함을 중복 저장하지 않도록 복합 인덱스 설정
+connectionSchema.index({ userId: 1, savedCardId: 1 }, { unique: true });
+
 const Company = mongoose.model('Company', companySchema);
 const User = mongoose.model('User', userSchema);
 const Card = mongoose.model('Card', cardSchema);
@@ -269,6 +278,7 @@ const NetworkLog = mongoose.model('NetworkLog', networkLogSchema);
 const CardAnalytics = mongoose.model('CardAnalytics', cardAnalyticsSchema);
 const PlanChange = mongoose.model('PlanChange', planChangeSchema);
 const NfcCard = mongoose.model('NfcCard', nfcCardSchema);
+const Connection = mongoose.model('Connection', connectionSchema);
 
 // [초기 데이터 시딩]
 async function seedData() {
@@ -2003,26 +2013,52 @@ app.post('/api/b2b/nfc/assign', async (req, res) => {
 });
 
 // ==========================================
-// [Wallet API] Apple / Google Wallet
+// [Connection API] 자체 명함첩 연동
 // ==========================================
-app.get('/api/wallet/apple/:cardId', async (req, res) => {
+app.post('/api/connections/save', async (req, res) => {
+  const { userId, savedCardId } = req.body;
   try {
-    const card = await Card.findById(req.params.cardId).populate('userId');
-    if (!card) return res.status(404).send('명함을 찾을 수 없습니다.');
-    
-    // Apple Developer 인증서 파일이 없으므로 에러 반환
-    throw new Error('Apple Developer 인증서(Certificate, Key, WWDR)가 서버에 등록되지 않았습니다.');
+    const existing = await Connection.findOne({ userId, savedCardId });
+    if (existing) {
+      return res.status(400).json({ message: '이미 명함첩에 저장되어 있습니다.' });
+    }
+    const newConnection = await Connection.create({ userId, savedCardId });
+    res.json({ message: '명함이 성공적으로 저장되었습니다.', connection: newConnection });
   } catch (err) {
-    console.error('Wallet Error:', err);
-    res.status(500).send(`Apple Wallet 생성 실패: ${err.message}`);
+    res.status(500).json({ message: '저장 실패: ' + err.message });
   }
 });
 
-app.get('/api/wallet/google/:cardId', async (req, res) => {
+app.get('/api/connections/:userId', async (req, res) => {
   try {
-    throw new Error('Google Wallet API 비즈니스 계정이 연결되지 않았습니다.');
+    const connections = await Connection.find({ userId: req.params.userId })
+      .populate('savedCardId')
+      .sort({ savedAt: -1 });
+    res.json(connections);
   } catch (err) {
-    res.status(500).send(`Google Wallet 연동 실패: ${err.message}`);
+    res.status(500).json({ message: '조회 실패' });
+  }
+});
+
+app.put('/api/connections/:id', async (req, res) => {
+  try {
+    const conn = await Connection.findByIdAndUpdate(
+      req.params.id, 
+      { memo: req.body.memo }, 
+      { new: true }
+    );
+    res.json(conn);
+  } catch (err) {
+    res.status(500).json({ message: '수정 실패' });
+  }
+});
+
+app.delete('/api/connections/:id', async (req, res) => {
+  try {
+    await Connection.findByIdAndDelete(req.params.id);
+    res.json({ message: '삭제 완료' });
+  } catch (err) {
+    res.status(500).json({ message: '삭제 실패' });
   }
 });
 
