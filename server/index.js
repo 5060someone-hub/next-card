@@ -148,6 +148,16 @@ const companySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+const companySchema = new mongoose.Schema({
+  companyName: { type: String, required: true },
+  logoUrl: { type: String, default: '' },
+  themeColor: { type: String, default: '#3b82f6' },
+  address: { type: String, default: '' },
+  adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+const Company = mongoose.model('Company', companySchema);
+
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   tags: { type: [String], default: [] },
@@ -1463,6 +1473,142 @@ app.put('/api/admin/user/:userId/role', async (req, res) => {
     res.json({ message: '권한 수정 완료', role });
   } catch (err) {
     res.status(500).json({ message: '수정 실패' });
+  }
+});
+
+// ==========================================
+// [B2B API] 기업 관리자 대시보드 연동
+// ==========================================
+
+// 1. 회사 정보 조회
+app.get('/api/b2b/company', async (req, res) => {
+  const { userId } = req.query;
+  try {
+    let company = await Company.findOne({ adminId: userId });
+    if (!company) {
+      // 없으면 임시 빈값 반환
+      return res.json({ companyName: '', logoUrl: '', themeColor: '#db2777', address: '' });
+    }
+    res.json(company);
+  } catch (err) {
+    res.status(500).json({ message: '회사 조회 실패' });
+  }
+});
+
+// 2. 회사 템플릿 마스터 설정 저장
+app.post('/api/b2b/company/setup', async (req, res) => {
+  const { userId, companyName, logoUrl, themeColor, address } = req.body;
+  try {
+    let company = await Company.findOne({ adminId: userId });
+    if (!company) {
+      company = await Company.create({ adminId: userId, companyName, logoUrl, themeColor, address });
+    } else {
+      company.companyName = companyName;
+      company.logoUrl = logoUrl;
+      company.themeColor = themeColor;
+      company.address = address;
+      await company.save();
+    }
+    // 마스터의 권한을 company_admin으로 승격, 소속 회사 연결
+    await User.findByIdAndUpdate(userId, { role: 'company_admin', companyId: company._id });
+    res.json({ message: '설정 완료', company });
+  } catch (err) {
+    res.status(500).json({ message: '설정 실패', error: err.message });
+  }
+});
+
+// 3. 직원 목록 조회
+app.get('/api/b2b/employees', async (req, res) => {
+  const { userId } = req.query;
+  try {
+    const company = await Company.findOne({ adminId: userId });
+    if (!company) return res.json([]);
+    
+    const employees = await User.find({ companyId: company._id, role: 'employee' });
+    const empIds = employees.map(e => e._id);
+    const cards = await Card.find({ userId: { $in: empIds } });
+
+    const result = employees.map(emp => {
+      const card = cards.find(c => String(c.userId) === String(emp._id));
+      return {
+        _id: emp._id,
+        name: emp.name,
+        email: emp.email,
+        createdAt: emp.createdAt,
+        cardId: card ? card._id : null,
+        customCardUrl: card ? card.cardData?.customCardUrl : null,
+        isRevoked: card ? card.isRevoked : false
+      };
+    });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: '직원 조회 실패' });
+  }
+});
+
+// 4. 새 직원 및 명함 즉시 발급
+app.post('/api/b2b/employee/create', async (req, res) => {
+  const { userId, employees } = req.body; // employees 배열 (단건 or 일괄)
+  try {
+    const company = await Company.findOne({ adminId: userId });
+    if (!company) return res.status(404).json({ message: '회사 설정을 먼저 완료해주세요.' });
+
+    for (let emp of employees) {
+      // 1) 유저 생성 (비밀번호 기본값 1234)
+      const newUser = await User.create({
+        name: emp.name,
+        email: emp.email,
+        password: '1234', // 실무에선 해싱 필요
+        phone: emp.phone || '',
+        role: 'employee',
+        companyId: company._id
+      });
+      // 2) 기업전용 프리미엄 명함 생성
+      const initialCardData = {
+        name: emp.name,
+        nameEng: '',
+        email: emp.email,
+        phoneWork: emp.phone || '',
+        company: company.companyName,
+        department: emp.department || '',
+        jobTitle: emp.position || '',
+        address: company.address,
+        logoUrl: company.logoUrl,
+        themeColor: company.themeColor,
+        theme: 'corporate', // 기업 템플릿
+        status: 'published',
+        customCardUrl: `b2b-${newUser._id.toString().slice(-6)}` // 임시 URL
+      };
+      await Card.create({
+        userId: newUser._id,
+        companyId: company._id,
+        grade: 'corporate',
+        cardData: initialCardData
+      });
+    }
+    res.json({ message: '임직원 명함 발급 완료' });
+  } catch (err) {
+    res.status(500).json({ message: '발급 실패', error: err.message });
+  }
+});
+
+// 5. 퇴사자 명함 무효화 (접근 차단) / 복구
+app.post('/api/b2b/employee/revoke/:cardId', async (req, res) => {
+  // 인증 로직 생략 (B2B 대시보드 권한)
+  try {
+    const card = await Card.findById(req.params.cardId);
+    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
+    
+    card.isRevoked = !card.isRevoked; // 토글
+    await card.save();
+    
+    // 캐시 삭제 (index.js 상단의 cache 모듈 사용)
+    const identifier = card.cardData?.customCardUrl || card._id;
+    cache.deleteCard(identifier);
+
+    res.json({ message: card.isRevoked ? '정지 완료' : '활성화 완료' });
+  } catch (err) {
+    res.status(500).json({ message: '상태 변경 실패' });
   }
 });
 

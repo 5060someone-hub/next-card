@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building, Users, Lock, Unlock, Plus, Save } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
-import './Admin.css';
+import './AdminDashboard.css';
 
 const B2BDashboard = () => {
   const [company, setCompany] = useState(null);
@@ -31,15 +31,16 @@ const B2BDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
+      if (!auth.isLoggedIn) {
         navigate('/login');
         return;
       }
+      const userId = auth.id;
 
       // 1. Get Company Info
-      const compRes = await fetch(`${API_URL}/api/b2b/company`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const compRes = await fetch(`${API_URL}/api/b2b/company?userId=${userId}`, {
+        headers: { 'Content-Type': 'application/json' }
       });
       if (compRes.ok) {
         const compData = await compRes.json();
@@ -51,8 +52,8 @@ const B2BDashboard = () => {
       }
 
       // 2. Get Employees List
-      const empRes = await fetch(`${API_URL}/api/b2b/employees`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const empRes = await fetch(`${API_URL}/api/b2b/employees?userId=${userId}`, {
+        headers: { 'Content-Type': 'application/json' }
       });
       if (empRes.ok) {
         const empData = await empRes.json();
@@ -67,14 +68,14 @@ const B2BDashboard = () => {
 
   const handleSaveCompany = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
+      const userId = auth.id;
       const res = await fetch(`${API_URL}/api/b2b/company/setup`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ companyName, logoUrl, themeColor, address })
+        body: JSON.stringify({ userId, companyName, logoUrl, themeColor, address })
       });
       const data = await res.json();
       if (res.ok) {
@@ -93,14 +94,15 @@ const B2BDashboard = () => {
       return alert('이름과 이메일을 입력해주세요.');
     }
     try {
-      const token = localStorage.getItem('token');
+      const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
+      const userId = auth.id;
       const res = await fetch(`${API_URL}/api/b2b/employee/create`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          userId,
           employees: [{
             name: newEmpName,
             email: newEmpEmail,
@@ -126,10 +128,12 @@ const B2BDashboard = () => {
   const handleRevoke = async (cardId, currentStatus) => {
     if (!confirm(`해당 명함을 ${currentStatus ? '활성화' : '정지(무효화)'} 하시겠습니까?`)) return;
     try {
-      const token = localStorage.getItem('token');
+      const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
+      const userId = auth.id;
       const res = await fetch(`${API_URL}/api/b2b/employee/revoke/${cardId}`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
       });
       if (res.ok) {
         fetchData();
