@@ -291,12 +291,18 @@ const PublicCard = () => {
       }
       
       if (window.Kakao.isInitialized()) {
+        const getValidImageUrl = () => {
+          if (cardData.profileUrl && cardData.profileUrl.startsWith('http')) return cardData.profileUrl;
+          if (cardData.logoUrl && cardData.logoUrl.startsWith('http')) return cardData.logoUrl;
+          return 'https://nextcard.kr/og_preview.png';
+        };
+
         window.Kakao.Share.sendDefault({
           objectType: 'feed',
           content: {
             title: cardData.name ? `${cardData.name}님의 모바일 명함` : 'NextCard 디지털 명함',
             description: cardData.company ? `${cardData.company} ${cardData.jobTitle || ''}` : '지금 바로 확인해보세요.',
-            imageUrl: cardData.profileUrl || cardData.logoUrl || 'https://nextcard.kr/og_preview.png',
+            imageUrl: getValidImageUrl(),
             link: {
               mobileWebUrl: window.location.href,
               webUrl: window.location.href,
