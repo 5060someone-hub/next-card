@@ -1965,16 +1965,17 @@ app.post('/api/inquiry', async (req, res) => {
 // ==========================================
 // [NFC API] NFC 카드 동적 맵핑 시스템
 // ==========================================
-app.get('/nfc/:serialNumber', async (req, res) => {
+app.get('/api/nfc/check/:serialNumber', async (req, res) => {
   try {
     const nfc = await NfcCard.findOne({ serialNumber: req.params.serialNumber }).populate('mappedCardId');
-    if (!nfc) return res.status(404).send('등록되지 않은 일련번호입니다.');
+    if (!nfc) return res.status(404).json({ message: '등록되지 않은 일련번호입니다.' });
     if (nfc.status === 'mapped' && nfc.mappedCardId) {
-      return res.redirect(`/v/${nfc.mappedCardId._id}`);
+      const cardUrl = nfc.mappedCardId.customCardUrl || nfc.mappedCardId._id;
+      return res.json({ status: 'mapped', cardUrl });
     }
-    return res.redirect(`/nfc-register?serial=${req.params.serialNumber}`);
+    return res.json({ status: nfc.status });
   } catch (err) {
-    res.status(500).send('NFC 조회 실패');
+    res.status(500).json({ message: 'NFC 조회 실패' });
   }
 });
 

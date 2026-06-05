@@ -33,6 +33,7 @@ const AdminBlogList          = React.lazy(() => import('./pages/AdminBlogList'))
 const AdminBlogEditor        = React.lazy(() => import('./pages/AdminBlogEditor'));
 
 const B2BDashboard           = React.lazy(() => import('./pages/B2BDashboard'));
+const NfcRedirect            = React.lazy(() => import('./pages/NfcRedirect'));
 
 // ─── Suspense 로딩 화면 ────────────────────────────────────────────────────
 const PageLoader = () => (
@@ -97,6 +98,7 @@ function App() {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/namecard" element={<NamecardLanding />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/nfc/:serial" element={<NfcRedirect />} />
           <Route path="/admin" element={<AdminUserManagement />} />
           <Route path="/admin/users" element={<AdminUserManagement />} />
           <Route path="/admin/card-editor/:cardId" element={<AdminCardEditor />} />
