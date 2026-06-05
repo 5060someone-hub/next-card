@@ -139,18 +139,30 @@ mongoose.connect(connectionUri)
   });
 
 // [스키마 정의]
+const companySchema = new mongoose.Schema({
+  adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  companyName: { type: String, required: true },
+  logoUrl: { type: String, default: '' },
+  themeColor: { type: String, default: '#3b82f6' },
+  address: { type: String, default: '' },
+  createdAt: { type: Date, default: Date.now }
+});
+
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   tags: { type: [String], default: [] },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   phone: { type: String, default: '' },
-  role: { type: String, default: 'user' },
+  role: { type: String, default: 'user' }, // 'user', 'admin', 'company_admin', 'employee'
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', default: null },
   createdAt: { type: Date, default: Date.now }
 });
 
 const cardSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', default: null },
+  isRevoked: { type: Boolean, default: false },
   grade: { type: String, default: 'general' },
   paymentStatus: { type: String, default: 'none' }, // 'none', 'pending', 'confirmed'
   depositorName: { type: String, default: '' },
@@ -238,6 +250,7 @@ const planChangeSchema = new mongoose.Schema({
   changedAt: { type: Date, default: Date.now }
 });
 
+const Company = mongoose.model('Company', companySchema);
 const User = mongoose.model('User', userSchema);
 const Card = mongoose.model('Card', cardSchema);
 const Product = mongoose.model('Product', productSchema);
@@ -1177,6 +1190,10 @@ app.get('/api/card/view/:identifier', async (req, res) => {
     }
 
     if (card) {
+      if (card.isRevoked) {
+        return res.status(403).json({ isRevoked: true, message: '이 명함은 회사 관리자에 의해 무효화(정지)되었습니다.' });
+      }
+      
       // PublicCard 에서 등급(grade)별 광고 노출 여부 등을 판단할 수 있도록 productType 주입
       const responseData = Object.assign({}, card.cardData, { productType: card.grade || 'general' });
       // ─── 캐시 저장 ───────────────────────────────────────────

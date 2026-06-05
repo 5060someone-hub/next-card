@@ -32,6 +32,8 @@ const AdminPlanChanges       = React.lazy(() => import('./pages/AdminPlanChanges
 const AdminBlogList          = React.lazy(() => import('./pages/AdminBlogList'));
 const AdminBlogEditor        = React.lazy(() => import('./pages/AdminBlogEditor'));
 
+const B2BDashboard           = React.lazy(() => import('./pages/B2BDashboard'));
+
 // ─── Suspense 로딩 화면 ────────────────────────────────────────────────────
 const PageLoader = () => (
   <div style={{
@@ -106,6 +108,8 @@ function App() {
           <Route path="/admin/plan-changes" element={<AdminPlanChanges />} />
           <Route path="/admin/blog" element={<AdminBlogList />} />
           <Route path="/admin/blog/write" element={<AdminBlogEditor />} />
+          
+          <Route path="/b2b" element={<B2BDashboard />} />
 
           {/* 모바일 목업 전용 라우트 (최종결과물 및 인증) */}
           <Route path="/samples" element={<SamplePreview />} />

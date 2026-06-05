@@ -37,6 +37,7 @@ const CardEditor = () => {
   const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
   const [products, setProducts] = useState([]);
   const [saving, setSaving] = useState(false);
+  const isEmployee = auth.role === 'employee';
 
   const [formData, setFormData] = useState({
     name: '', nameEng: '', jobTitle: '', company: '', department: '', 
@@ -399,12 +400,12 @@ const CardEditor = () => {
                         return (
                           <div
                             key={t}
-                            onClick={() => allowed && setFormData({ ...formData, theme: t })}
+                            onClick={() => !isEmployee && allowed && setFormData({ ...formData, theme: t })}
                             style={{
                               padding: '0.75rem 0.25rem',
                               borderRadius: '10px',
                               border: `2px solid ${formData.theme === t ? '#db2777' : '#e2e8f0'}`,
-                              cursor: allowed ? 'pointer' : 'not-allowed',
+                              cursor: (allowed && !isEmployee) ? 'pointer' : 'not-allowed',
                               textAlign: 'center',
                               position: 'relative',
                               background: formData.theme === t ? '#fff1f2' : '#fff',
@@ -424,10 +425,10 @@ const CardEditor = () => {
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', gridColumn: 'span 2' }}>
                     <div className="input-group">
-                      <label>포인트 컬러</label>
+                      <label>포인트 컬러 {isEmployee && '(수정 불가)'}</label>
                       <div style={{ display: 'flex', gap: '0.25rem' }}>
-                        <input type="color" name="themeColor" value={formData.themeColor} onChange={handleChange} style={{ width: '40px', height: '40px', padding: '2px', border: 'none', background: 'transparent' }} />
-                        <input type="text" name="themeColor" value={formData.themeColor} onChange={handleChange} style={{ flex: 1, padding: '4px 6px', fontSize: '0.8rem' }} />
+                        <input type="color" name="themeColor" value={formData.themeColor} onChange={handleChange} disabled={isEmployee} style={{ width: '40px', height: '40px', padding: '2px', border: 'none', background: 'transparent', cursor: isEmployee ? 'not-allowed' : 'pointer' }} />
+                        <input type="text" name="themeColor" value={formData.themeColor} onChange={handleChange} disabled={isEmployee} style={{ flex: 1, padding: '4px 6px', fontSize: '0.8rem', cursor: isEmployee ? 'not-allowed' : 'text' }} />
                       </div>
                     </div>
 
@@ -501,10 +502,10 @@ const CardEditor = () => {
                         {formData.logoUrl ? <img src={formData.logoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <ImageIcon color="#cbd5e1" />}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <input type="file" id="logo-upload" hidden onChange={(e) => handleImageChange(e, 'logoUrl')} accept="image/jpeg, image/png" disabled={!canUseFeature('allowLogo')} />
+                        <input type="file" id="logo-upload" hidden onChange={(e) => handleImageChange(e, 'logoUrl')} accept="image/jpeg, image/png" disabled={!canUseFeature('allowLogo') || isEmployee} />
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                          <button type="button" onClick={() => canUseFeature('allowLogo') && document.getElementById('logo-upload').click()} style={{ padding: '0.5rem 1rem', background: canUseFeature('allowLogo') ? '#1e293b' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: canUseFeature('allowLogo') ? 'pointer' : 'not-allowed' }}>이미지 교체</button>
-                          {formData.logoUrl && <button type="button" onClick={() => handleRemoveImage('logoUrl')} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>삭제</button>}
+                          <button type="button" onClick={() => canUseFeature('allowLogo') && !isEmployee && document.getElementById('logo-upload').click()} disabled={isEmployee} style={{ padding: '0.5rem 1rem', background: (canUseFeature('allowLogo') && !isEmployee) ? '#1e293b' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: (canUseFeature('allowLogo') && !isEmployee) ? 'pointer' : 'not-allowed' }}>이미지 교체</button>
+                          {formData.logoUrl && <button type="button" onClick={() => !isEmployee && handleRemoveImage('logoUrl')} disabled={isEmployee} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: isEmployee ? '#cbd5e1' : '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: isEmployee ? 'not-allowed' : 'pointer' }}>삭제</button>}
                         </div>
                         <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.5rem', marginBottom: 0 }}>250KB 이하의 JPG, PNG 권장</p>
                       </div>
@@ -547,12 +548,12 @@ const CardEditor = () => {
                   <div className="input-group"><label>성함 (국문)</label><input name="name" value={formData.name} onChange={handleChange} /></div>
                   <div className="input-group"><label>성함 (영문)</label><input name="nameEng" value={formData.nameEng} onChange={handleChange} /></div>
                   <div className="input-group"><label>직함 (예: 대표이사)</label><input name="jobTitle" value={formData.jobTitle} onChange={handleChange} /></div>
-                  <div className="input-group"><label>회사명</label><input name="company" value={formData.company} onChange={handleChange} /></div>
+                  <div className="input-group"><label>회사명 {isEmployee && '(수정 불가)'}</label><input name="company" value={formData.company} onChange={handleChange} disabled={isEmployee} style={{ cursor: isEmployee ? 'not-allowed' : 'text', opacity: isEmployee ? 0.7 : 1 }} /></div>
                   <div className="input-group"><label>부서명</label><input name="department" value={formData.department} onChange={handleChange} /></div>
                   <div className="input-group"><label>대표 번호</label><input name="phoneWork" value={formData.phoneWork} onChange={handleChange} /></div>
                   <div className="input-group"><label>개인 휴대폰</label><input name="phonePersonal" value={formData.phonePersonal} onChange={handleChange} /></div>
                   <div className="input-group"><label>이메일</label><input name="email" value={formData.email} onChange={handleChange} /></div>
-                  <div className="input-group" style={{ gridColumn: 'span 2' }}><label>사무실 주소</label><input name="address" value={formData.address} onChange={handleChange} /></div>
+                  <div className="input-group" style={{ gridColumn: 'span 2' }}><label>사무실 주소 {isEmployee && '(수정 불가)'}</label><input name="address" value={formData.address} onChange={handleChange} disabled={isEmployee} style={{ cursor: isEmployee ? 'not-allowed' : 'text', opacity: isEmployee ? 0.7 : 1 }} /></div>
                   <div className="input-group" style={{ gridColumn: 'span 2' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                       <label style={{ margin: 0 }}>인사말 (ABOUT)</label>
