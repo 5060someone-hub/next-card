@@ -280,7 +280,13 @@ const PublicCard = () => {
   const handleDownloadPkpass = () => {
     trackEvent('download_pkpass');
     const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
-    window.location.href = `${apiUrl}/api/card/pkpass/${id}`;
+    window.location.href = `${apiUrl}/api/wallet/apple/${id}`;
+  };
+
+  const handleGoogleWallet = () => {
+    trackEvent('download_gpay');
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+    window.location.href = `${apiUrl}/api/wallet/google/${id}`;
   };
 
   const themeColor = cardData.themeColor || '#db2777';
@@ -563,7 +569,7 @@ const PublicCard = () => {
         </div>
 
         {/* Apple Wallet Button */}
-        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
           <button 
             onClick={handleDownloadPkpass}
             style={{ 
@@ -584,6 +590,31 @@ const PublicCard = () => {
             }}
           >
             <Wallet size={20} /> Apple 지갑에 추가
+          </button>
+        </div>
+
+        {/* Google Wallet Button */}
+        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+          <button 
+            onClick={handleGoogleWallet}
+            style={{ 
+              width: '100%', 
+              padding: '1.15rem', 
+              background: '#fff', 
+              color: '#3c4043', 
+              borderRadius: '15px', 
+              border: '1px solid #dadce0',
+              fontSize: '1.05rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              boxShadow: `0 4px 12px rgba(0,0,0,0.1)`
+            }}
+          >
+            <Wallet size={20} color="#1a73e8" /> Google 지갑에 추가
           </button>
         </div>
 

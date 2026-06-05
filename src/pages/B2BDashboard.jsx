@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building, Users, Lock, Unlock, Plus, Save } from 'lucide-react';
+import { Building, Users, Lock, Unlock, Plus, Save, Smartphone } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import './AdminDashboard.css';
 
@@ -161,11 +161,37 @@ const B2BDashboard = () => {
         alert(data.message || '오류가 발생했습니다.');
       }
     } catch (err) {
-      alert('오류: ' + err.message);
+      alert('오류 발생: ' + err.message);
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  const handleAssignNfc = async (empCardId, empName) => {
+    const serial = window.prompt(`${empName}님의 명함에 할당할 NFC 카드 뒷면의 일련번호를 입력하세요 (예: 001):`);
+    if (!serial) return;
+
+    try {
+      const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
+      const res = await fetch(`${API_URL}/api/b2b/nfc/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyUserId: auth.id,
+          employeeCardId: empCardId,
+          serialNumber: serial
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`${empName}님에게 NFC 실물 카드(No. ${serial})가 성공적으로 매핑되었습니다!\n이제 카드를 태그하면 이 명함으로 연결됩니다.`);
+      } else {
+        alert('할당 실패: ' + data.message);
+      }
+    } catch (err) {
+      alert('오류 발생: ' + err.message);
+    }
+  };
+
+  if (loading) return <div style={{ padding: '2rem' }}>로딩 중...</div>;
 
   return (
     <div className="admin-container">
@@ -259,6 +285,7 @@ const B2BDashboard = () => {
                     <th>이메일</th>
                     <th>가입일</th>
                     <th>상태</th>
+                    <th>NFC 태그</th>
                     <th>명함 링크</th>
                     <th>관리</th>
                   </tr>
@@ -276,6 +303,17 @@ const B2BDashboard = () => {
                           <span className="badge badge-error">정지됨</span>
                         ) : (
                           <span className="badge badge-success">활성</span>
+                        )}
+                      </td>
+                      <td>
+                        {emp.cardId && !emp.isRevoked && (
+                          <button 
+                            type="button" 
+                            style={{ padding: '4px 8px', fontSize: '0.75rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            onClick={() => handleAssignNfc(emp.cardId, emp.name)}
+                          >
+                            <Smartphone size={12} /> 카드 매핑
+                          </button>
                         )}
                       </td>
                       <td>

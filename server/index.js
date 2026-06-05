@@ -250,6 +250,15 @@ const planChangeSchema = new mongoose.Schema({
   changedAt: { type: Date, default: Date.now }
 });
 
+const nfcCardSchema = new mongoose.Schema({
+  serialNumber: { type: String, required: true, unique: true }, // 001, 002 등 일련번호
+  pinCode: { type: String, required: true }, // 뒷면 핀번호
+  mappedCardId: { type: mongoose.Schema.Types.ObjectId, ref: 'Card', default: null }, // 연결된 명함
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', default: null }, // 할당된 B2B 회사
+  status: { type: String, enum: ['blank', 'assigned', 'mapped'], default: 'blank' },
+  createdAt: { type: Date, default: Date.now }
+});
+
 const Company = mongoose.model('Company', companySchema);
 const User = mongoose.model('User', userSchema);
 const Card = mongoose.model('Card', cardSchema);
@@ -259,6 +268,7 @@ const Inquiry = mongoose.model('Inquiry', inquirySchema);
 const NetworkLog = mongoose.model('NetworkLog', networkLogSchema);
 const CardAnalytics = mongoose.model('CardAnalytics', cardAnalyticsSchema);
 const PlanChange = mongoose.model('PlanChange', planChangeSchema);
+const NfcCard = mongoose.model('NfcCard', nfcCardSchema);
 
 // [초기 데이터 시딩]
 async function seedData() {
@@ -1949,6 +1959,69 @@ app.post('/api/inquiry', async (req, res) => {
   } catch (err) {
     console.error('[INQUIRY_ERROR]', err);
     res.status(500).json({ message: '실패' });
+  }
+});
+
+// ==========================================
+// [NFC API] NFC 카드 동적 맵핑 시스템
+// ==========================================
+app.get('/nfc/:serialNumber', async (req, res) => {
+  try {
+    const nfc = await NfcCard.findOne({ serialNumber: req.params.serialNumber }).populate('mappedCardId');
+    if (!nfc) return res.status(404).send('등록되지 않은 일련번호입니다.');
+    if (nfc.status === 'mapped' && nfc.mappedCardId) {
+      return res.redirect(`/v/${nfc.mappedCardId._id}`);
+    }
+    return res.redirect(`/nfc-register?serial=${req.params.serialNumber}`);
+  } catch (err) {
+    res.status(500).send('NFC 조회 실패');
+  }
+});
+
+app.post('/api/b2b/nfc/assign', async (req, res) => {
+  const { companyUserId, employeeCardId, serialNumber } = req.body;
+  try {
+    const company = await Company.findOne({ adminId: companyUserId });
+    if (!company) return res.status(403).json({ message: '권한 없음' });
+
+    let nfc = await NfcCard.findOne({ serialNumber });
+    if (!nfc) {
+      // 데모를 위해 등록되지 않은 번호면 자동으로 빈 카드 데이터 생성
+      nfc = await NfcCard.create({ serialNumber, pinCode: '1234', status: 'blank' });
+    }
+
+    nfc.mappedCardId = employeeCardId;
+    nfc.companyId = company._id;
+    nfc.status = 'mapped';
+    await nfc.save();
+
+    res.json({ message: 'NFC 카드 할당 완료', nfc });
+  } catch (err) {
+    res.status(500).json({ message: '할당 실패: ' + err.message });
+  }
+});
+
+// ==========================================
+// [Wallet API] Apple / Google Wallet
+// ==========================================
+app.get('/api/wallet/apple/:cardId', async (req, res) => {
+  try {
+    const card = await Card.findById(req.params.cardId).populate('userId');
+    if (!card) return res.status(404).send('명함을 찾을 수 없습니다.');
+    
+    // Apple Developer 인증서 파일이 없으므로 에러 반환
+    throw new Error('Apple Developer 인증서(Certificate, Key, WWDR)가 서버에 등록되지 않았습니다.');
+  } catch (err) {
+    console.error('Wallet Error:', err);
+    res.status(500).send(`Apple Wallet 생성 실패: ${err.message}`);
+  }
+});
+
+app.get('/api/wallet/google/:cardId', async (req, res) => {
+  try {
+    throw new Error('Google Wallet API 비즈니스 계정이 연결되지 않았습니다.');
+  } catch (err) {
+    res.status(500).send(`Google Wallet 연동 실패: ${err.message}`);
   }
 });
 
