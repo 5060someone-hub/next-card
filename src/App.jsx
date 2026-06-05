@@ -85,8 +85,7 @@ function App() {
 
     // 2. 카카오 SDK 초기화
     if (window.Kakao && !window.Kakao.isInitialized()) {
-      // TODO: 추후 발급받은 실제 JavaScript 키로 교체해야 합니다.
-      window.Kakao.init('c089c8172def97eb00c07217cae17495'); // 더미 또는 임시 키
+      window.Kakao.init('fdf21c86c51c769153c2a4b856f486e2'); // 정식 앱 키
       console.log('Kakao SDK Initialized');
     }
   }, []);

@@ -284,7 +284,7 @@ const PublicCard = () => {
     if (window.Kakao) {
       if (!window.Kakao.isInitialized()) {
         try {
-          window.Kakao.init('c089c8172def97eb00c07217cae17495'); // 임시 앱 키 (추후 정식 키로 교체 필요)
+          window.Kakao.init('fdf21c86c51c769153c2a4b856f486e2'); // 정식 앱 키
         } catch(err) {
           console.error('Kakao init error:', err);
         }
