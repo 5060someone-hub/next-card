@@ -13,7 +13,8 @@ import {
   UserCircle,
   Download,
   Home,
-  X
+  X,
+  Wallet
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import './PublicCard.css';
@@ -255,9 +256,31 @@ const PublicCard = () => {
   const handleSaveContact = () => {
     trackEvent('save_contact');
     
-    // URL의 id 파라미터를 백엔드 VCF 엔드포인트로 바로 전달
     const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
-    window.location.href = `${apiUrl}/api/card/vcf/${id}`;
+    const now = new Date().toISOString();
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          window.location.href = `${apiUrl}/api/card/vcf/${id}?lat=${lat}&lng=${lng}&date=${now}`;
+        },
+        (error) => {
+          console.log("Geolocation error:", error);
+          window.location.href = `${apiUrl}/api/card/vcf/${id}?date=${now}`;
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      window.location.href = `${apiUrl}/api/card/vcf/${id}?date=${now}`;
+    }
+  };
+
+  const handleDownloadPkpass = () => {
+    trackEvent('download_pkpass');
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+    window.location.href = `${apiUrl}/api/card/pkpass/${id}`;
   };
 
   const themeColor = cardData.themeColor || '#db2777';
@@ -515,7 +538,7 @@ const PublicCard = () => {
         </div>
 
         {/* Save Contact Button */}
-        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
           <button 
             onClick={handleSaveContact}
             style={{ 
@@ -536,6 +559,31 @@ const PublicCard = () => {
             }}
           >
             <Download size={20} /> 연락처 폰에 저장하기
+          </button>
+        </div>
+
+        {/* Apple Wallet Button */}
+        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+          <button 
+            onClick={handleDownloadPkpass}
+            style={{ 
+              width: '100%', 
+              padding: '1.15rem', 
+              background: '#000', 
+              color: '#fff', 
+              borderRadius: '15px', 
+              border: 'none',
+              fontSize: '1.05rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              boxShadow: `0 4px 12px rgba(0,0,0,0.5)`
+            }}
+          >
+            <Wallet size={20} /> Apple 지갑에 추가
           </button>
         </div>
 

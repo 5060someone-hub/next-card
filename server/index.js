@@ -860,6 +860,7 @@ app.get('/api/card/image/:identifier', async (req, res) => {
 app.get('/api/card/vcf/:identifier', async (req, res) => {
   try {
     const { identifier } = req.params;
+    const { lat, lng, date } = req.query;
     const cleanIdentifier = identifier.replace(/\.vcf$/i, '');
     let card = null;
 
@@ -896,7 +897,24 @@ app.get('/api/card/vcf/:identifier', async (req, res) => {
     if (d.email)         lines.push(`EMAIL:${d.email}`);
     if (d.website)       lines.push(`URL:${d.website}`);
     if (d.address)       lines.push(`ADR;TYPE=WORK:;;${String(d.address).replace(/;/g, ' ').replace(/\r?\n/g, ' ')};;;;`);
-    if (d.intro)         lines.push(`NOTE:${String(d.intro).replace(/\r?\n/g, '\\n')}`);
+    
+    // 맥락(위치, 시간) 자동 저장 로직
+    let contextNote = '';
+    if (date) {
+      try {
+        const formattedDate = new Date(date).toLocaleString('ko-KR');
+        contextNote += `교환 일시: ${formattedDate}\\n`;
+      } catch(e) {}
+    }
+    if (lat && lng && lat !== 'null' && lng !== 'null') {
+      contextNote += `교환 장소 (지도): https://map.kakao.com/link/map/${lat},${lng}\\n`;
+    }
+    
+    let baseIntro = d.intro ? String(d.intro).replace(/\r?\n/g, '\\n') : '';
+    if (contextNote) {
+      baseIntro = contextNote + (baseIntro ? '\\n---\\n' + baseIntro : '');
+    }
+    if (baseIntro) lines.push(`NOTE:${baseIntro}`);
     
     // SNS 추가
     if (d.sns) {
@@ -918,6 +936,46 @@ app.get('/api/card/vcf/:identifier', async (req, res) => {
     res.send(Buffer.from(vcf, 'utf-8'));
   } catch (err) {
     console.error('VCF 생성 오류:', err);
+    res.status(500).send('서버 오류: ' + err.message);
+  }
+});
+
+const { PKPass } = require('passkit-generator');
+
+// Apple Wallet .pkpass 더미 다운로드
+app.get('/api/card/pkpass/:identifier', async (req, res) => {
+  try {
+    const { identifier } = req.params;
+    const cleanIdentifier = identifier.replace(/\.pkpass$/i, '');
+    let card = null;
+
+    card = await Card.findOne({ 'cardData.customCardUrl': cleanIdentifier });
+    if (!card && mongoose.Types.ObjectId.isValid(cleanIdentifier)) {
+      card = await Card.findOne({
+        $or: [
+          { _id: new mongoose.Types.ObjectId(cleanIdentifier) },
+          { userId: new mongoose.Types.ObjectId(cleanIdentifier) }
+        ]
+      });
+    }
+
+    if (!card) {
+      return res.status(404).send('명함을 찾을 수 없습니다.');
+    }
+
+    const d = card.cardData || {};
+
+    // 임시 더미 패스 생성 구조 (실제로는 인증서 파일 3종이 필요함)
+    // 인증서가 없으므로 코드는 뼈대만 잡아두고 가짜 버퍼를 반환합니다.
+    const dummyBuffer = Buffer.from('dummy pkpass content (requires real certificates)', 'utf-8');
+    
+    res.setHeader('Content-Type', 'application/vnd.apple.pkpass');
+    const safeName = encodeURIComponent(d.name || 'card');
+    res.setHeader('Content-Disposition', `attachment; filename="${safeName}.pkpass"`);
+    res.send(dummyBuffer);
+
+  } catch (err) {
+    console.error('PKPass 처리 오류:', err);
     res.status(500).send('서버 오류: ' + err.message);
   }
 });
