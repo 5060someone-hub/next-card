@@ -65,9 +65,9 @@ const AddressBook = () => {
 
   const filtered = connections.filter(c => {
     const card = c.savedCardId;
-    if (!card) return false;
-    const nameMatch = card.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const companyMatch = card.company?.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!card || !card.cardData) return false;
+    const nameMatch = card.cardData.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const companyMatch = card.cardData.company?.toLowerCase().includes(searchTerm.toLowerCase());
     const memoMatch = c.memo?.toLowerCase().includes(searchTerm.toLowerCase());
     return nameMatch || companyMatch || memoMatch;
   });
@@ -105,7 +105,12 @@ const AddressBook = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
               {filtered.map(conn => {
                 const card = conn.savedCardId;
-                if (!card) return null;
+                if (!card || !card.cardData) return null;
+                const profileUrl = card.cardData.profileUrl;
+                const name = card.cardData.name || '이름 없음';
+                const company = card.cardData.company || '';
+                const jobTitle = card.cardData.jobTitle || '';
+                
                 return (
                   <div key={conn._id} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', position: 'relative' }}>
                     <button 
@@ -117,16 +122,16 @@ const AddressBook = () => {
                     </button>
                     
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
-                      {card.profileUrl ? (
-                        <img src={card.profileUrl} alt="profile" style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }} />
+                      {profileUrl ? (
+                        <img src={profileUrl} alt="profile" style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }} />
                       ) : (
                         <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '1.2rem', fontWeight: 'bold' }}>
-                          {card.name?.charAt(0)}
+                          {name.charAt(0)}
                         </div>
                       )}
                       <div>
-                        <h4 style={{ fontWeight: 'bold', fontSize: '1.1rem', margin: 0 }}>{card.name}</h4>
-                        <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '2px 0 0 0' }}>{card.company} {card.jobTitle && `· ${card.jobTitle}`}</p>
+                        <h4 style={{ fontWeight: 'bold', fontSize: '1.1rem', margin: 0 }}>{name}</h4>
+                        <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '2px 0 0 0' }}>{company} {jobTitle && `· ${jobTitle}`}</p>
                       </div>
                     </div>
 

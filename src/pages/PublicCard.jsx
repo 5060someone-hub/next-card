@@ -281,30 +281,42 @@ const PublicCard = () => {
 
   const handleKakaoShare = () => {
     trackEvent('share_kakao');
-    if (window.Kakao && window.Kakao.isInitialized()) {
-      window.Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: cardData.name ? `${cardData.name}님의 모바일 명함` : 'NextCard 디지털 명함',
-          description: cardData.company ? `${cardData.company} ${cardData.department || ''}` : '지금 바로 확인해보세요.',
-          imageUrl: cardData.profileUrl || cardData.logoUrl || 'https://nextcard.kr/og_preview.png',
-          link: {
-            mobileWebUrl: window.location.href,
-            webUrl: window.location.href,
-          },
-        },
-        buttons: [
-          {
-            title: '명함 확인하기',
+    if (window.Kakao) {
+      if (!window.Kakao.isInitialized()) {
+        try {
+          window.Kakao.init('c089c8172def97eb00c07217cae17495'); // 임시 앱 키 (추후 정식 키로 교체 필요)
+        } catch(err) {
+          console.error('Kakao init error:', err);
+        }
+      }
+      
+      if (window.Kakao.isInitialized()) {
+        window.Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: cardData.name ? `${cardData.name}님의 모바일 명함` : 'NextCard 디지털 명함',
+            description: cardData.company ? `${cardData.company} ${cardData.jobTitle || ''}` : '지금 바로 확인해보세요.',
+            imageUrl: cardData.profileUrl || cardData.logoUrl || 'https://nextcard.kr/og_preview.png',
             link: {
               mobileWebUrl: window.location.href,
               webUrl: window.location.href,
             },
           },
-        ],
-      });
+          buttons: [
+            {
+              title: '명함 확인하기',
+              link: {
+                mobileWebUrl: window.location.href,
+                webUrl: window.location.href,
+              },
+            },
+          ],
+        });
+      } else {
+        alert('카카오톡 API 키가 등록되지 않아 공유할 수 없습니다. 관리자에게 문의해주세요.');
+      }
     } else {
-      alert('카카오톡 공유 기능을 사용할 수 없습니다.');
+      alert('카카오톡 라이브러리를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
     }
   };
 
