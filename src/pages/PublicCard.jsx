@@ -291,33 +291,64 @@ const PublicCard = () => {
       }
       
       if (window.Kakao.isInitialized()) {
-        const getValidImageUrl = () => {
-          if (cardData.profileUrl && cardData.profileUrl.startsWith('http')) return cardData.profileUrl;
-          if (cardData.logoUrl && cardData.logoUrl.startsWith('http')) return cardData.logoUrl;
-          return 'https://nextcard.kr/og_preview.png';
-        };
+        const shareKakaoMessage = async () => {
+          let finalImageUrl = 'https://nextcard.kr/og_preview.png';
+          const targetImage = cardData.profileUrl || cardData.logoUrl;
 
-        window.Kakao.Share.sendDefault({
-          objectType: 'feed',
-          content: {
-            title: cardData.name ? `${cardData.name}님의 모바일 명함` : 'NextCard 디지털 명함',
-            description: cardData.company ? `${cardData.company} ${cardData.jobTitle || ''}` : '지금 바로 확인해보세요.',
-            imageUrl: getValidImageUrl(),
-            link: {
-              mobileWebUrl: window.location.href,
-              webUrl: window.location.href,
-            },
-          },
-          buttons: [
-            {
-              title: '명함 확인하기',
+          if (targetImage) {
+            if (targetImage.startsWith('http')) {
+              finalImageUrl = targetImage;
+            } else if (targetImage.startsWith('data:image')) {
+              try {
+                // Base64를 File 객체로 변환
+                const arr = targetImage.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                  u8arr[n] = bstr.charCodeAt(n);
+                }
+                const file = new File([u8arr], 'thumbnail.jpg', { type: mime });
+
+                // 카카오 서버에 임시 업로드 (최대 100일 보관됨)
+                const response = await window.Kakao.Share.uploadImage({
+                  file: [file]
+                });
+                
+                if (response && response.infos && response.infos.original) {
+                  finalImageUrl = response.infos.original.url;
+                }
+              } catch (err) {
+                console.error('Kakao image upload failed:', err);
+              }
+            }
+          }
+
+          window.Kakao.Share.sendDefault({
+            objectType: 'feed',
+            content: {
+              title: cardData.name ? `${cardData.name}님의 모바일 명함` : 'NextCard 디지털 명함',
+              description: cardData.company ? `${cardData.company} ${cardData.jobTitle || ''}` : '지금 바로 확인해보세요.',
+              imageUrl: finalImageUrl,
               link: {
                 mobileWebUrl: window.location.href,
                 webUrl: window.location.href,
               },
             },
-          ],
-        });
+            buttons: [
+              {
+                title: '명함 확인하기',
+                link: {
+                  mobileWebUrl: window.location.href,
+                  webUrl: window.location.href,
+                },
+              },
+            ],
+          });
+        };
+
+        shareKakaoMessage();
       } else {
         alert('카카오톡 API 키가 등록되지 않아 공유할 수 없습니다. 관리자에게 문의해주세요.');
       }
