@@ -44,6 +44,9 @@ const LiveCardPreview = ({ heroForm, setHeroForm, handleImageUpload }) => {
     input::placeholder {
       color: rgba(0,0,0,0.3);
     }
+    .link-input::placeholder {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
   `;
 
   return (
@@ -253,6 +256,7 @@ const LiveCardPreview = ({ heroForm, setHeroForm, handleImageUpload }) => {
           <div style={{ background: '#db2777', borderRadius: '12px', padding: '12px', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '1.5rem', border: '1px dashed rgba(255,255,255,0.5)' }}>
             <LinkIcon size={16} /> 
             <input 
+              className="link-input"
               value={heroForm.link || ''} 
               onChange={(e) => handleChange(e, 'link')} 
               placeholder="링크 입력 (예: https://nextcard.kr)"

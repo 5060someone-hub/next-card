@@ -860,8 +860,7 @@ const LandingPage = () => {
                   내 명함 완성하고 링크 받기
                 </button>
                 <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '0.85rem', color: '#cbd5e1', textAlign: 'center' }}>
-                  <p style={{ margin: 0, fontWeight: 'bold', color: '#db2777', marginBottom: '5px' }}>💡 정식 회원가입 혜택!</p>
-                  <p style={{ margin: 0, lineHeight: '1.4' }}>SNS 다중 링크, 상세 자기소개 등<br/><strong>훨씬 더 강력한 서비스</strong>를 이용하세요.</p>
+                  <p style={{ margin: 0, lineHeight: '1.4' }}>💡 SNS 다중링크, 색상변경, 자기소개 등<br/><strong>더 강력한 서비스로 이용하세요.</strong></p>
                 </div>
               </div>
             </div>
