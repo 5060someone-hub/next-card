@@ -4,6 +4,27 @@ const mongoose = require('mongoose');
 const path = require('path');
 require('dotenv').config();
 
+const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY || 'd44f8bc3d35895c619e719b7eb7a67dc';
+
+async function getAddressFromCoords(lat, lng) {
+  try {
+    const url = `https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lng}&y=${lat}`;
+    const response = await fetch(url, {
+      headers: { 'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}` }
+    });
+    const data = await response.json();
+    if (data.documents && data.documents.length > 0) {
+      if (data.documents[0].road_address) {
+        return data.documents[0].road_address.address_name;
+      }
+      return data.documents[0].address.address_name;
+    }
+  } catch(e) {
+    console.error('Kakao coord2address error:', e);
+  }
+  return '';
+}
+
 const app = express();
 
 // ─── CORS 보안 강화: 프로덕션은 허용 도메인만, 개발은 전체 허용 ───────────────
@@ -263,6 +284,9 @@ const connectionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // 명함을 수집한 사용자
   savedCardId: { type: mongoose.Schema.Types.ObjectId, ref: 'Card', required: true }, // 수집된 명함 (타인의 명함)
   memo: { type: String, default: '' }, // 개인 메모
+  lat: { type: Number, default: null }, // 만난 위치(위도)
+  lng: { type: Number, default: null }, // 만난 위치(경도)
+  meetingAddress: { type: String, default: '' }, // 역지오코딩된 만난 주소
   savedAt: { type: Date, default: Date.now }
 });
 // 한 사용자가 동일한 명함을 중복 저장하지 않도록 복합 인덱스 설정
@@ -940,7 +964,11 @@ app.get('/api/card/vcf/:identifier', async (req, res) => {
       } catch(e) {}
     }
     if (lat && lng && lat !== 'null' && lng !== 'null') {
-      contextNote += `교환 장소 (지도): https://map.kakao.com/link/map/${lat},${lng}\\n`;
+      const addressName = await getAddressFromCoords(lat, lng);
+      if (addressName) {
+        contextNote += `만난 장소: ${addressName}\\n`;
+      }
+      contextNote += `지도 보기: https://map.kakao.com/link/map/${lat},${lng}\\n`;
     }
     
     let baseIntro = d.intro ? String(d.intro).replace(/\r?\n/g, '\\n') : '';
@@ -2016,13 +2044,25 @@ app.post('/api/b2b/nfc/assign', async (req, res) => {
 // [Connection API] 자체 명함첩 연동
 // ==========================================
 app.post('/api/connections/save', async (req, res) => {
-  const { userId, savedCardId } = req.body;
+  const { userId, savedCardId, lat, lng } = req.body;
   try {
     const existing = await Connection.findOne({ userId, savedCardId });
     if (existing) {
       return res.status(400).json({ message: '이미 명함첩에 저장되어 있습니다.' });
     }
-    const newConnection = await Connection.create({ userId, savedCardId });
+    
+    let meetingAddress = '';
+    if (lat && lng) {
+      meetingAddress = await getAddressFromCoords(lat, lng);
+    }
+    
+    const newConnection = await Connection.create({ 
+      userId, 
+      savedCardId, 
+      lat: lat || null, 
+      lng: lng || null, 
+      meetingAddress 
+    });
     res.json({ message: '명함이 성공적으로 저장되었습니다.', connection: newConnection });
   } catch (err) {
     res.status(500).json({ message: '저장 실패: ' + err.message });

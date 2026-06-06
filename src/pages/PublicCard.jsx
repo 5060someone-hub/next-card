@@ -361,29 +361,46 @@ const PublicCard = () => {
     trackEvent('save_addressbook');
     const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
     if (!auth.id) {
-      if (window.confirm('명함을 명함첩에 보관하려면 로그인이 필요합니다.\n로그인(회원가입) 페이지로 이동하시겠습니까?')) {
+      if (window.confirm('명함을 명함첩에 보관하려면 로그인이 필요합니다.\\n로그인(회원가입) 페이지로 이동하시겠습니까?')) {
         window.location.href = `/login?redirect=/v/${id}`;
       }
       return;
     }
     
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
-      const res = await fetch(`${apiUrl}/api/connections/save`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: auth.id, savedCardId: cardData._id || id })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        if (window.confirm('명함첩에 성공적으로 보관되었습니다.\n내 명함첩으로 이동하시겠습니까?')) {
-          window.location.href = '/address-book';
+    const saveConnection = async (lat = null, lng = null) => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+        const res = await fetch(`${apiUrl}/api/connections/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: auth.id, savedCardId: cardData._id || id, lat, lng })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          if (window.confirm('명함첩에 성공적으로 보관되었습니다.\\n내 명함첩으로 이동하시겠습니까?')) {
+            window.location.href = '/address-book';
+          }
+        } else {
+          alert(data.message || '저장에 실패했습니다.');
         }
-      } else {
-        alert(data.message || '저장에 실패했습니다.');
+      } catch (err) {
+        alert('서버와 통신 중 오류가 발생했습니다.');
       }
-    } catch (err) {
-      alert('서버와 통신 중 오류가 발생했습니다.');
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          saveConnection(position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.log("Geolocation error:", error);
+          saveConnection(null, null);
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      saveConnection(null, null);
     }
   };
 

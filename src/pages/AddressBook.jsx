@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Search, Trash2, Edit3, Save } from 'lucide-react';
+import { BookOpen, Search, Trash2, Edit3, Save, Map as MapIcon, List } from 'lucide-react';
+import { Map, MapMarker } from 'react-kakao-maps-sdk';
 import Sidebar from '../components/Sidebar';
 import './AdminDashboard.css'; // 사이드바 레이아웃 공유용
 
@@ -9,6 +10,8 @@ const AddressBook = () => {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [editMemo, setEditMemo] = useState('');
+  const [viewMode, setViewMode] = useState('list');
+  const [selectedMarkerId, setSelectedMarkerId] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
@@ -84,7 +87,7 @@ const AddressBook = () => {
           </h1>
 
           {/* 검색 바 */}
-          <div style={{ position: 'relative', marginBottom: '2rem' }}>
+          <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
             <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94a3b8' }} />
             <input 
               type="text" 
@@ -95,13 +98,28 @@ const AddressBook = () => {
             />
           </div>
 
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
+            <button 
+              onClick={() => setViewMode('list')}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: viewMode === 'list' ? '2px solid #3b82f6' : '1px solid #e2e8f0', background: viewMode === 'list' ? '#eff6ff' : '#fff', color: viewMode === 'list' ? '#1d4ed8' : '#64748b', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+            >
+              <List size={18} /> 목록 보기
+            </button>
+            <button 
+              onClick={() => setViewMode('map')}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: viewMode === 'map' ? '2px solid #3b82f6' : '1px solid #e2e8f0', background: viewMode === 'map' ? '#eff6ff' : '#fff', color: viewMode === 'map' ? '#1d4ed8' : '#64748b', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+            >
+              <MapIcon size={18} /> 히스토리 맵
+            </button>
+          </div>
+
           {connections.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '4rem 1rem', background: '#f8fafc', borderRadius: '12px' }}>
               <BookOpen size={48} color="#cbd5e1" style={{ marginBottom: '1rem' }} />
               <h3 style={{ fontSize: '1.2rem', color: '#475569', marginBottom: '0.5rem' }}>저장된 명함이 없습니다</h3>
               <p style={{ color: '#94a3b8' }}>다른 사람의 명함에서 '내 명함첩에 담기'를 눌러 명함을 수집해 보세요.</p>
             </div>
-          ) : (
+          ) : viewMode === 'list' ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
               {filtered.map(conn => {
                 const card = conn.savedCardId;
@@ -170,6 +188,47 @@ const AddressBook = () => {
                   </div>
                 );
               })}
+            </div>
+          ) : (
+            <div style={{ width: '100%', height: '600px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              {filtered.filter(c => c.lat && c.lng).length === 0 ? (
+                <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+                  <MapIcon size={48} style={{ margin: '0 auto 1rem auto' }} />
+                  <p>위치 정보가 저장된 명함이 없습니다.</p>
+                </div>
+              ) : (
+                <Map
+                  center={{
+                    lat: filtered.find(c => c.lat && c.lng)?.lat || 37.5665,
+                    lng: filtered.find(c => c.lat && c.lng)?.lng || 126.9780
+                  }}
+                  style={{ width: '100%', height: '100%' }}
+                  level={8}
+                >
+                  {filtered.filter(c => c.lat && c.lng).map(conn => {
+                    const card = conn.savedCardId;
+                    const name = card?.cardData?.name || '이름 없음';
+                    const company = card?.cardData?.company || '';
+                    const date = new Date(conn.savedAt).toLocaleDateString('ko-KR');
+                    return (
+                      <MapMarker
+                        key={conn._id}
+                        position={{ lat: conn.lat, lng: conn.lng }}
+                        onClick={() => setSelectedMarkerId(conn._id)}
+                      >
+                        {selectedMarkerId === conn._id && (
+                          <div style={{ padding: '10px', minWidth: '150px' }}>
+                            <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '4px' }}>{name}</div>
+                            <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{company}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '6px' }}>만난 날: {date}</div>
+                            <a href={card.customCardUrl ? `/v/${card.customCardUrl}` : `/v/${card._id}`} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '8px', fontSize: '0.8rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 'bold' }}>명함 보기 &rarr;</a>
+                          </div>
+                        )}
+                      </MapMarker>
+                    );
+                  })}
+                </Map>
+              )}
             </div>
           )}
         </div>
