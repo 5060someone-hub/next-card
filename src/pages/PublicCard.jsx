@@ -666,15 +666,17 @@ const PublicCard = () => {
           </button>
         </div>
 
-        {/* KakaoTalk Share Button */}
-        <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
+
+
+        {/* Save to Address Book Button */}
+        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
           <button 
-            onClick={handleKakaoShare}
+            onClick={handleSaveToAddressBook}
             style={{ 
               width: '100%', 
               padding: '1.15rem', 
-              background: '#FEE500', 
-              color: '#000000', 
+              background: '#3b82f6', 
+              color: '#fff', 
               borderRadius: '15px', 
               border: 'none',
               fontSize: '1.05rem',
@@ -684,35 +686,10 @@ const PublicCard = () => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              boxShadow: `0 4px 12px rgba(254, 229, 0, 0.4)`
+              boxShadow: `0 4px 12px rgba(59, 130, 246, 0.4)`
             }}
           >
-            <MessageCircle size={20} color="#000" /> 카카오톡으로 내게 보관하기
-          </button>
-        </div>
-
-        {/* Save to Address Book Button */}
-        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-          <button 
-            onClick={handleSaveToAddressBook}
-            style={{ 
-              width: '100%', 
-              padding: '1.15rem', 
-              background: '#fff', 
-              color: '#3b82f6', 
-              borderRadius: '15px', 
-              border: '2px solid #3b82f6',
-              fontSize: '1.05rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: `0 4px 12px rgba(0,0,0,0.1)`
-            }}
-          >
-            <Bookmark size={20} color="#3b82f6" /> 내 명함첩에 담기 (NextCard)
+            <Bookmark size={20} color="#fff" /> 내 명함첩에 담기 (NextCard)
           </button>
         </div>
 
