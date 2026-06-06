@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Search, Trash2, Edit3, Save, Map as MapIcon, List } from 'lucide-react';
-import { Map, MapMarker } from 'react-kakao-maps-sdk';
+import { BookOpen, Search, Trash2, Edit3, Save, Map as MapIcon, List, Loader2 } from 'lucide-react';
+import { Map, MapMarker, useKakaoLoader } from 'react-kakao-maps-sdk';
 import Sidebar from '../components/Sidebar';
 import './AdminDashboard.css'; // 사이드바 레이아웃 공유용
 
@@ -12,6 +12,11 @@ const AddressBook = () => {
   const [editMemo, setEditMemo] = useState('');
   const [viewMode, setViewMode] = useState('list');
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
+
+  const [mapLoading, mapError] = useKakaoLoader({
+    appkey: '21003efec377258810eea15b29525fa0',
+    libraries: ['services', 'clusterer']
+  });
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
@@ -191,7 +196,17 @@ const AddressBook = () => {
             </div>
           ) : (
             <div style={{ width: '100%', height: '600px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              {filtered.filter(c => c.lat && c.lng).length === 0 ? (
+              {mapLoading ? (
+                <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+                  <Loader2 size={32} className="spin-icon" style={{ margin: '0 auto 1rem auto' }} />
+                  <p>지도를 불러오는 중...</p>
+                </div>
+              ) : mapError ? (
+                <div style={{ textAlign: 'center', color: '#ef4444' }}>
+                  <MapIcon size={48} style={{ margin: '0 auto 1rem auto' }} />
+                  <p>지도를 불러오지 못했습니다. 도메인 등록을 확인해주세요.</p>
+                </div>
+              ) : filtered.filter(c => c.lat && c.lng).length === 0 ? (
                 <div style={{ textAlign: 'center', color: '#94a3b8' }}>
                   <MapIcon size={48} style={{ margin: '0 auto 1rem auto' }} />
                   <p>위치 정보가 저장된 명함이 없습니다.</p>
