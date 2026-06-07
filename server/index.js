@@ -106,7 +106,7 @@ app.post('/api/scan-card', upload.single('image'), async (req, res) => {
 
     if (maxScanLimit !== -1 && (user.scanCount || 0) >= maxScanLimit) {
       return res.status(403).json({ 
-        message: `무료 AI 명함 스캔 횟수(${maxScanLimit}회)를 모두 소진했습니다. 무제한 스캔 기능을 이용하시려면 프리미엄 명함으로 업그레이드 해주세요.`,
+        message: `약정된 무료 AI 명함 스캔 횟수를 모두 소진 했습니다. 스캔 기능을 이용하시려면 명함을 업그레이드 해주세요.`,
         limitExceeded: true
       });
     }
