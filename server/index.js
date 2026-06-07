@@ -327,6 +327,7 @@ const productSchema = new mongoose.Schema({
     maxSnsCount: { type: Number, default: 1 },
     maxGallery: { type: Number, default: 1 },
     maxVideo: { type: Number, default: 1 },
+    scanLimit: { type: Number, default: 10 },
     allowedThemes: { type: [String], default: ['modern'] }
   }
 });
