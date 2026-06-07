@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, Search, Trash2, Edit3, Save, Map as MapIcon, List, Loader2, Camera, X } from 'lucide-react';
+import { BookOpen, Search, Trash2, Edit3, Save, Map as MapIcon, List, Loader2, Camera, X, Download } from 'lucide-react';
 import { Map, MapMarker } from 'react-kakao-maps-sdk';
 import Sidebar from '../components/Sidebar';
 import './AdminDashboard.css'; // 사이드바 레이아웃 공유용
@@ -158,6 +158,30 @@ const AddressBook = () => {
     }
   };
 
+  const downloadVCard = (data) => {
+    const vcard = `BEGIN:VCARD
+VERSION:3.0
+N:${data.name || ''};;;;
+FN:${data.name || ''}
+ORG:${data.company || ''}
+TITLE:${data.jobTitle || ''}
+TEL;TYPE=CELL:${data.phone || ''}
+EMAIL;TYPE=WORK:${data.email || ''}
+ADR;TYPE=WORK:;;${data.address || ''};;;;
+NOTE:${data.memo || ''}
+END:VCARD`;
+
+    const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${data.name || 'contact'}.vcf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const handleSaveScannedCard = async () => {
     const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
     try {
@@ -305,6 +329,22 @@ const AddressBook = () => {
                       <Trash2 size={16} />
                     </button>
                     
+                    <button 
+                      onClick={() => downloadVCard({
+                        name,
+                        company,
+                        jobTitle,
+                        phone: card.cardData.phone || '',
+                        email: card.cardData.email || '',
+                        address: card.cardData.address || '',
+                        memo: conn.memo || ''
+                      })}
+                      style={{ position: 'absolute', top: '1rem', right: '3rem', background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer' }}
+                      title="스마트폰 연락처에 저장"
+                    >
+                      <Download size={16} />
+                    </button>
+                    
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
                       {profileUrl ? (
                         <img src={profileUrl} alt="profile" style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }} />
@@ -448,8 +488,11 @@ const AddressBook = () => {
 
               <div className="modal-footer" style={{ marginTop: '1.5rem', display: 'flex', gap: '10px' }}>
                 <button onClick={() => setScanModalOpen(false)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer' }}>취소</button>
-                <button onClick={handleSaveScannedCard} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
-                  <Save size={16} /> 명함첩에 저장
+                <button onClick={() => downloadVCard(scanData)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #2563eb', color: '#2563eb', background: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                  <Download size={16} /> 기기 저장
+                </button>
+                <button onClick={handleSaveScannedCard} style={{ flex: 1.5, padding: '12px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                  <Save size={16} /> 명함첩 저장
                 </button>
               </div>
             </div>
