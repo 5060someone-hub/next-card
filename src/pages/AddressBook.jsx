@@ -127,6 +127,9 @@ const AddressBook = () => {
     setIsScanning(true);
     const formData = new FormData();
     formData.append('image', file);
+    if (auth.id) {
+      formData.append('userId', auth.id);
+    }
 
     try {
       const res = await fetch(`${API_URL}/api/scan-card`, {
@@ -135,7 +138,13 @@ const AddressBook = () => {
       });
       const data = await res.json();
       
-      if (!res.ok) throw new Error(data.message || '스캔 실패');
+      if (!res.ok) {
+        if (res.status === 403 && data.limitExceeded) {
+          alert(data.message);
+          return;
+        }
+        throw new Error(data.message || '스캔 실패');
+      }
 
       // AI가 분석한 데이터 모달에 띄우기
       setScanData({

@@ -24,6 +24,7 @@ export default function AdminProductManagement() {
     allowSinglePage: false,
     showAds: true,
     maxSnsCount: 1,
+    scanLimit: 10,
     allowedThemes: ['modern']
   });
   const [editingId, setEditingId] = useState(null); // 수정 중인 상품 ID
@@ -154,6 +155,7 @@ export default function AdminProductManagement() {
           allowSinglePage: false,
           showAds: true,
           maxSnsCount: 1,
+          scanLimit: 10,
           allowedThemes: ['modern']
         });
         setEditingId(null);
@@ -186,6 +188,7 @@ export default function AdminProductManagement() {
       maxSnsCount: prod.features?.maxSnsCount ?? 1,
       maxGallery: prod.features?.maxGallery ?? 1,
       maxVideo: prod.features?.maxVideo ?? 1,
+      scanLimit: prod.features?.scanLimit !== undefined ? prod.features.scanLimit : 10,
       allowedThemes: prod.features?.allowedThemes || ['modern']
     });
     setEditingId(prod.id || prod._id);
@@ -210,6 +213,7 @@ export default function AdminProductManagement() {
       maxSnsCount: 1,
       maxGallery: 1,
       maxVideo: 1,
+      scanLimit: 10,
       allowedThemes: ['modern']
     });
     setEditingId(null);
@@ -427,6 +431,32 @@ export default function AdminProductManagement() {
                     SPA(싱글페이지) 기능 허용
                   </label>
                   
+                  <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem 0' }}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>AI 명함 스캔 횟수</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <label style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={features.scanLimit === -1}
+                          onChange={(e) => setFeatures({...features, scanLimit: e.target.checked ? -1 : 10})}
+                        />
+                        무제한
+                      </label>
+                      <input 
+                        type="number" 
+                        min="0" 
+                        max="9999" 
+                        value={features.scanLimit === -1 ? '' : (features.scanLimit || 0)} 
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          setFeatures({...features, scanLimit: isNaN(val) ? 0 : val});
+                        }}
+                        disabled={features.scanLimit === -1}
+                        style={{ width: '60px', padding: '0.4rem', borderRadius: '4px', border: '1px solid #e2e8f0', background: features.scanLimit === -1 ? '#f1f5f9' : '#fff' }}
+                      />
+                    </div>
+                  </div>
+
                   <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem 0' }}>
                     <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>최대 SNS 링크 개수</label>
                     <input 

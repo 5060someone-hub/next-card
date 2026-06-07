@@ -65,6 +65,52 @@ app.post('/api/scan-card', upload.single('image'), async (req, res) => {
       return res.status(400).json({ message: '이미지 파일이 제공되지 않았습니다.' });
     }
 
+    const userId = req.body.userId;
+    if (!userId) {
+      return res.status(401).json({ message: '스캔 기능을 사용하려면 로그인이 필요합니다.' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    // 유저의 활성 명함을 기반으로 최대 허용 스캔 횟수 계산
+    const userCards = await Card.find({ userId, status: 'published' });
+    let maxScanLimit = 10; // 기본값 (general)
+
+    if (userCards.length > 0) {
+      const grades = userCards.map(c => c.productType || c.grade || 'general');
+      const products = await Product.find({ id: { $in: grades } });
+      
+      let hasUnlimited = false;
+      let highestLimit = 10;
+      
+      for (const p of products) {
+        const limit = p.features?.scanLimit !== undefined ? p.features.scanLimit : 10;
+        if (limit === -1) {
+          hasUnlimited = true;
+          break;
+        }
+        if (limit > highestLimit) {
+          highestLimit = limit;
+        }
+      }
+      
+      if (hasUnlimited) {
+        maxScanLimit = -1;
+      } else {
+        maxScanLimit = highestLimit;
+      }
+    }
+
+    if (maxScanLimit !== -1 && (user.scanCount || 0) >= maxScanLimit) {
+      return res.status(403).json({ 
+        message: `무료 AI 명함 스캔 횟수(${maxScanLimit}회)를 모두 소진했습니다. 무제한 스캔 기능을 이용하시려면 프리미엄 명함으로 업그레이드 해주세요.`,
+        limitExceeded: true
+      });
+    }
+
     const base64Image = req.file.buffer.toString('base64');
     const mimeType = req.file.mimetype;
 
@@ -98,6 +144,11 @@ app.post('/api/scan-card', upload.single('image'), async (req, res) => {
 
     const parsedContent = response.choices[0].message.content;
     const result = JSON.parse(parsedContent);
+
+    // 스캔 성공 시 카운트 증가
+    user.scanCount = (user.scanCount || 0) + 1;
+    await user.save();
+
     res.json(result);
   } catch (error) {
     console.error('Scan card error:', error);
@@ -231,6 +282,7 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, default: '' },
   role: { type: String, default: 'user' }, // 'user', 'admin', 'company_admin', 'employee'
   companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', default: null },
+  scanCount: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
 
