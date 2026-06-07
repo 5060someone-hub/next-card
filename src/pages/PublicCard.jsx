@@ -441,10 +441,10 @@ const PublicCard = () => {
   };
 
   const actions = [
-    { icon: <Phone size={22} color={iconColor} />, label: '회사전화', value: cardData.phoneWork, href: `tel:${cardData.phoneWork}` },
-    { icon: <Smartphone size={22} color={iconColor} />, label: '개인전화', value: cardData.phonePersonal, href: `tel:${cardData.phonePersonal}` },
+    { icon: <Phone size={22} color={iconColor} />, label: '회사전화', value: cardData.phoneWork || (cardData.grade === 'paper' ? cardData.phone : null), href: `tel:${cardData.phoneWork || cardData.phone}` },
+    { icon: <Smartphone size={22} color={iconColor} />, label: '개인전화', value: cardData.phonePersonal || (cardData.grade !== 'paper' ? cardData.phone : null), href: `tel:${cardData.phonePersonal || cardData.phone}` },
     { icon: <Mail size={22} color={iconColor} />, label: '메일보내기', value: cardData.email, href: `mailto:${cardData.email}` },
-    { icon: <MessageSquare size={22} color={iconColor} />, label: '문자보내기', value: cardData.phonePersonal, href: `sms:${cardData.phonePersonal}` },
+    { icon: <MessageSquare size={22} color={iconColor} />, label: '문자보내기', value: cardData.phonePersonal || cardData.phone, href: `sms:${cardData.phonePersonal || cardData.phone}` },
     { icon: <MapPin size={22} color={iconColor} />, label: '지도보기', value: cardData.address, href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cardData.address || '')}` },
     { icon: <Globe size={22} color={iconColor} />, label: '웹사이트', value: cardData.website, href: cardData.website?.startsWith('http') ? cardData.website : `https://${cardData.website}` },
     ...Object.entries(cardData.sns || {}).map(([platform, value]) => ({
@@ -743,19 +743,55 @@ const PublicCard = () => {
           />
         )}
 
-        {/* Footer QR */}
-        <div style={{ textAlign: 'center', padding: '2rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ 
-            background: '#fff', 
-            padding: '12px', 
-            borderRadius: '16px', 
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            display: 'inline-block'
-          }}>
-            <QRCodeSVG value={window.location.href} size={100} bgColor="#ffffff" fgColor="#000000" />
+        {/* Footer QR (Exclude for Paper Cards) */}
+        {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
+          <div style={{ textAlign: 'center', padding: '2rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ 
+              background: '#fff', 
+              padding: '12px', 
+              borderRadius: '16px', 
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              display: 'inline-block'
+            }}>
+              <QRCodeSVG value={window.location.href} size={100} bgColor="#ffffff" fgColor="#000000" />
+            </div>
+            <p style={{ fontSize: '0.65rem', marginTop: '1rem', letterSpacing: '1px', opacity: 0.4 }}>SCAN TO CONNECT</p>
           </div>
-          <p style={{ fontSize: '0.65rem', marginTop: '1rem', letterSpacing: '1px', opacity: 0.4 }}>SCAN TO CONNECT</p>
-        </div>
+        )}
+
+        {/* Advertisement for Paper Cards */}
+        {(cardData.grade === 'paper' || cardData.productType === 'paper') && (
+          <div style={{ 
+            marginTop: '2rem', 
+            padding: '1.5rem 1rem', 
+            background: 'linear-gradient(135deg, #1e293b, #0f172a)', 
+            borderRadius: '16px', 
+            textAlign: 'center',
+            border: '1px solid rgba(255,255,255,0.1)',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)'
+          }}>
+            <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: '#fff', fontWeight: 'bold' }}>나만의 모바일 명함을 만들어보세요!</h3>
+            <p style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', color: '#94a3b8', lineHeight: '1.4' }}>
+              종이명함의 한계를 넘어, 사진/영상/SNS가 모두 담긴<br/>스마트한 모바일 명함을 무료로 제작할 수 있습니다.
+            </p>
+            <button 
+              onClick={() => window.location.href = '/'}
+              style={{
+                background: 'linear-gradient(90deg, #db2777, #f43f5e)',
+                color: '#fff',
+                border: 'none',
+                padding: '0.8rem 1.5rem',
+                borderRadius: '50px',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(219, 39, 119, 0.3)'
+              }}
+            >
+              무료로 명함 만들기
+            </button>
+          </div>
+        )}
 
         {/* Paper Card Modal */}
         {showPaperCard && (
