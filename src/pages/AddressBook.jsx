@@ -127,6 +127,8 @@ const AddressBook = () => {
     setIsScanning(true);
     const formData = new FormData();
     formData.append('image', file);
+    
+    const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
     if (auth.id) {
       formData.append('userId', auth.id);
     }
