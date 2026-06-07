@@ -212,10 +212,14 @@ const AddressBook = () => {
   const filtered = connections.filter(conn => {
     const card = conn.savedCardId;
     if (!card || !card.cardData) return false;
-    const nameMatch = card.cardData.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const companyMatch = card.cardData.company?.toLowerCase().includes(searchTerm.toLowerCase());
-    const memoMatch = conn.memo?.toLowerCase().includes(searchTerm.toLowerCase());
-    return nameMatch || companyMatch || memoMatch;
+    const nameStr = card.cardData.name || '';
+    const companyStr = card.cardData.company || '';
+    const memoStr = conn.memo || '';
+    const term = searchTerm.toLowerCase();
+    
+    return nameStr.toLowerCase().includes(term) || 
+           companyStr.toLowerCase().includes(term) || 
+           memoStr.toLowerCase().includes(term);
   });
 
   if (loading) return <div style={{ padding: '2rem' }}>로딩 중...</div>;
