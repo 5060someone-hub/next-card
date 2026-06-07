@@ -612,28 +612,30 @@ const PublicCard = () => {
 
         {/* Share and Add to Home Screen Buttons */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
-          <button 
-            onClick={handleAddToHome}
-            className="action-btn"
-            style={{ 
-              flex: 1,
-              padding: '1rem', 
-              background: isLightBg(cardData.bgColor || '#111827') ? '#f1f5f9' : '#111827', 
-              color: isLightBg(cardData.bgColor || '#111827') ? '#1e293b' : '#ffffff', 
-              borderRadius: '15px', 
-              border: isLightBg(cardData.bgColor || '#111827') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)',
-              fontSize: '0.95rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-            }}
-          >
-            <Home size={18} /> 홈화면에 추가
-          </button>
+          {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
+            <button 
+              onClick={handleAddToHome}
+              className="action-btn"
+              style={{ 
+                flex: 1,
+                padding: '1rem', 
+                background: isLightBg(cardData.bgColor || '#111827') ? '#f1f5f9' : '#111827', 
+                color: isLightBg(cardData.bgColor || '#111827') ? '#1e293b' : '#ffffff', 
+                borderRadius: '15px', 
+                border: isLightBg(cardData.bgColor || '#111827') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)',
+                fontSize: '0.95rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+              }}
+            >
+              <Home size={18} /> 홈화면에 추가
+            </button>
+          )}
           <button 
             onClick={handleShare}
             className="action-btn"
@@ -659,56 +661,60 @@ const PublicCard = () => {
         </div>
 
         {/* Save Contact Button */}
-        <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
-          <button 
-            onClick={handleSaveContact}
-            style={{ 
-              width: '100%', 
-              padding: '1.15rem', 
-              background: themeColor, 
-              color: '#fff', 
-              borderRadius: '15px', 
-              border: 'none',
-              fontSize: '1.05rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: `0 4px 12px ${themeColor}66`
-            }}
-          >
-            <Download size={20} /> 연락처 폰에 저장하기
-          </button>
-        </div>
+        {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
+          <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
+            <button 
+              onClick={handleSaveContact}
+              style={{ 
+                width: '100%', 
+                padding: '1.15rem', 
+                background: themeColor, 
+                color: '#fff', 
+                borderRadius: '15px', 
+                border: 'none',
+                fontSize: '1.05rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: `0 4px 12px ${themeColor}66`
+              }}
+            >
+              <Download size={20} /> 연락처 폰에 저장하기
+            </button>
+          </div>
+        )}
 
 
 
         {/* Save to Address Book Button */}
-        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-          <button 
-            onClick={handleSaveToAddressBook}
-            style={{ 
-              width: '100%', 
-              padding: '1.15rem', 
-              background: '#3b82f6', 
-              color: '#fff', 
-              borderRadius: '15px', 
-              border: 'none',
-              fontSize: '1.05rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: `0 4px 12px rgba(59, 130, 246, 0.4)`
-            }}
-          >
-            <Bookmark size={20} color="#fff" /> 내 명함첩에 담기 (NextCard)
-          </button>
-        </div>
+        {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
+          <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+            <button 
+              onClick={handleSaveToAddressBook}
+              style={{ 
+                width: '100%', 
+                padding: '1.15rem', 
+                background: '#3b82f6', 
+                color: '#fff', 
+                borderRadius: '15px', 
+                border: 'none',
+                fontSize: '1.05rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: `0 4px 12px rgba(59, 130, 246, 0.4)`
+              }}
+            >
+              <Bookmark size={20} color="#fff" /> 내 명함첩에 담기 (NextCard)
+            </button>
+          </div>
+        )}
 
         {/* Paper Card Trigger */}
         {cardData.paperCardUrl && (
