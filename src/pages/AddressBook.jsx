@@ -225,7 +225,7 @@ const AddressBook = () => {
   if (loading) return <div style={{ padding: '2rem' }}>로딩 중...</div>;
 
   return (
-    <div className="admin-container">
+    <div className="dashboard-layout">
       <Sidebar />
       <div className="admin-content">
         <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem 1rem' }}>
