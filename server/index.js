@@ -88,7 +88,7 @@ app.post('/api/scan-card', upload.single('image'), async (req, res) => {
           role: 'user',
           content: [
             { type: 'text', text: '이 명함에서 정보를 추출해주세요.' },
-            { type: 'image_url', image_url: { url: \`data:\${mimeType};base64,\${base64Image}\` } }
+            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } }
           ]
         }
       ],
