@@ -2,7 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
+const multer = require('multer');
+const { OpenAI } = require('openai');
 require('dotenv').config();
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const upload = multer({ storage: multer.memoryStorage() });
 
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY || 'd44f8bc3d35895c619e719b7eb7a67dc';
 
@@ -50,6 +57,53 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// ─── 명함 스캐너 API (OpenAI GPT-4o Vision) ──────────────────────────────────
+app.post('/api/scan-card', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: '이미지 파일이 제공되지 않았습니다.' });
+    }
+
+    const base64Image = req.file.buffer.toString('base64');
+    const mimeType = req.file.mimetype;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: `당신은 명함 정보를 추출하는 전문가입니다. 
+제공된 명함 이미지를 분석하여 다음 JSON 형식으로만 응답하세요. 다른 설명은 절대 추가하지 마세요.
+{
+  "name": "이름 (없으면 빈 문자열)",
+  "company": "회사명 (없으면 빈 문자열)",
+  "title": "직책 또는 부서 (없으면 빈 문자열)",
+  "phone": "휴대전화번호 (숫자와 하이픈만, 없으면 빈 문자열)",
+  "email": "이메일 주소 (없으면 빈 문자열)",
+  "address": "주소 (없으면 빈 문자열)"
+}`
+        },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: '이 명함에서 정보를 추출해주세요.' },
+            { type: 'image_url', image_url: { url: \`data:\${mimeType};base64,\${base64Image}\` } }
+          ]
+        }
+      ],
+      max_tokens: 500,
+      response_format: { type: "json_object" }
+    });
+
+    const parsedContent = response.choices[0].message.content;
+    const result = JSON.parse(parsedContent);
+    res.json(result);
+  } catch (error) {
+    console.error('Scan card error:', error);
+    res.status(500).json({ message: '명함 스캔 중 오류가 발생했습니다.', error: error.message });
+  }
+});
 
 // ─── 인메모리 캐시 (명함 조회, 상품 목록용) ──────────────────────────────────
 const cache = {
@@ -2066,6 +2120,40 @@ app.post('/api/connections/save', async (req, res) => {
     res.json({ message: '명함이 성공적으로 저장되었습니다.', connection: newConnection });
   } catch (err) {
     res.status(500).json({ message: '저장 실패: ' + err.message });
+  }
+});
+
+// ─── 스캔된 종이명함 저장 API ────────────────────────────────────────────────
+app.post('/api/connections/paper', async (req, res) => {
+  const { userId, cardData, lat, lng } = req.body;
+  try {
+    const newCard = await Card.create({
+      userId,
+      grade: 'paper', // 종이명함 구분
+      cardData: {
+        ...cardData,
+        isPaperCard: true,
+        status: 'published'
+      }
+    });
+
+    let meetingAddress = '';
+    if (lat && lng) {
+      meetingAddress = await getAddressFromCoords(lat, lng);
+    }
+
+    const newConnection = await Connection.create({
+      userId,
+      savedCardId: newCard._id,
+      lat: lat || null,
+      lng: lng || null,
+      meetingAddress
+    });
+
+    res.json({ message: '종이명함이 저장되었습니다.', connection: newConnection });
+  } catch (err) {
+    console.error('Paper card save error:', err);
+    res.status(500).json({ message: '종이명함 저장 중 오류가 발생했습니다.' });
   }
 });
 

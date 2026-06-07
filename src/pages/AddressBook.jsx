@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { BookOpen, Search, Trash2, Edit3, Save, Map as MapIcon, List, Loader2 } from 'lucide-react';
-import { Map, MapMarker, useKakaoLoader } from 'react-kakao-maps-sdk';
+import React, { useState, useEffect, useRef } from 'react';
+import { BookOpen, Search, Trash2, Edit3, Save, Map as MapIcon, List, Loader2, Camera, X } from 'lucide-react';
+import { Map, MapMarker } from 'react-kakao-maps-sdk';
 import Sidebar from '../components/Sidebar';
 import './AdminDashboard.css'; // 사이드바 레이아웃 공유용
 
@@ -13,14 +13,56 @@ const AddressBook = () => {
   const [viewMode, setViewMode] = useState('list');
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
 
-  const [mapLoading, mapError] = useKakaoLoader({
-    appkey: '21003efec377258810eea15b29525fa0',
-    libraries: ['services', 'clusterer']
-  });
+  // AI 스캐너 상태
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanModalOpen, setScanModalOpen] = useState(false);
+  const [scanData, setScanData] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
   useEffect(() => {
+    // 카카오맵 스크립트 수동 로드
+    const loadKakaoMap = () => {
+      if (window.kakao && window.kakao.maps && window.kakao.maps.load) {
+        window.kakao.maps.load(() => setMapLoaded(true));
+        return;
+      }
+
+      // 기존 스크립트가 있다면 이벤트만 등록
+      const existingScript = document.getElementById('kakao-map-script');
+      if (existingScript) {
+        existingScript.addEventListener('load', () => {
+          if (window.kakao && window.kakao.maps && window.kakao.maps.load) {
+            window.kakao.maps.load(() => setMapLoaded(true));
+          } else {
+            setMapError(new Error("Kakao Maps SDK 초기화 실패 (도메인 미등록 의심)"));
+          }
+        });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = 'kakao-map-script';
+      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=21003efec377258810eea15b29525fa0&libraries=services,clusterer&autoload=false`;
+      script.async = true;
+      
+      script.onload = () => {
+        if (window.kakao && window.kakao.maps && window.kakao.maps.load) {
+          window.kakao.maps.load(() => setMapLoaded(true));
+        } else {
+          setMapError(new Error("Kakao Maps SDK namespace not found. 도메인이 등록되지 않았거나 키가 유효하지 않습니다."));
+        }
+      };
+      
+      script.onerror = () => setMapError(new Error("네트워크 오류: 카카오 스크립트를 불러올 수 없습니다."));
+      document.head.appendChild(script);
+    };
+
+    loadKakaoMap();
     fetchConnections();
   }, []);
 
@@ -68,15 +110,111 @@ const AddressBook = () => {
       }
     } catch (err) {
       console.error(err);
+      alert('메모 저장 실패');
     }
   };
 
-  const filtered = connections.filter(c => {
-    const card = c.savedCardId;
+  const handleScanClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsScanning(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await fetch(`${API_URL}/api/scan-card`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.message || '스캔 실패');
+
+      // AI가 분석한 데이터 모달에 띄우기
+      setScanData({
+        name: data.name || '',
+        company: data.company || '',
+        jobTitle: data.title || '',
+        phone: data.phone || '',
+        email: data.email || '',
+        address: data.address || '',
+        memo: 'AI로 자동 스캔된 종이명함입니다.',
+      });
+      setScanModalOpen(true);
+    } catch (err) {
+      console.error(err);
+      alert('명함 스캔 중 오류가 발생했습니다: ' + err.message);
+    } finally {
+      setIsScanning(false);
+      // 같은 파일 다시 선택 가능하도록 초기화
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSaveScannedCard = async () => {
+    const auth = JSON.parse(localStorage.getItem('nextcard_auth') || '{}');
+    try {
+      // 위치 권한 가져오기 (히스토리 맵용)
+      let lat = null;
+      let lng = null;
+      if (navigator.geolocation) {
+        try {
+          const pos = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+          });
+          lat = pos.coords.latitude;
+          lng = pos.coords.longitude;
+        } catch (e) {
+          console.log('GPS 수집 실패:', e.message);
+        }
+      }
+
+      const res = await fetch(`${API_URL}/api/connections/paper`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: auth.id,
+          cardData: {
+            name: scanData.name,
+            company: scanData.company,
+            jobTitle: scanData.jobTitle,
+            phone: scanData.phone,
+            email: scanData.email,
+            address: scanData.address,
+            profileUrl: '' // 임시 프로필
+          },
+          lat,
+          lng
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert('내 명함첩에 성공적으로 추가되었습니다.');
+        setScanModalOpen(false);
+        fetchConnections(); // 목록 새로고침
+      } else {
+        alert(data.message || '저장 실패');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('저장 중 오류가 발생했습니다.');
+    }
+  };
+
+  const filtered = connections.filter(conn => {
+    const card = conn.savedCardId;
     if (!card || !card.cardData) return false;
     const nameMatch = card.cardData.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const companyMatch = card.cardData.company?.toLowerCase().includes(searchTerm.toLowerCase());
-    const memoMatch = c.memo?.toLowerCase().includes(searchTerm.toLowerCase());
+    const memoMatch = conn.memo?.toLowerCase().includes(searchTerm.toLowerCase());
     return nameMatch || companyMatch || memoMatch;
   });
 
@@ -93,7 +231,7 @@ const AddressBook = () => {
 
           {/* 검색 바 */}
           <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-            <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94a3b8' }} />
+            <Search className="search-icon" size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94a3b8' }} />
             <input 
               type="text" 
               placeholder="이름, 회사, 또는 메모로 검색..." 
@@ -101,6 +239,25 @@ const AddressBook = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '1rem' }}
             />
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '1.5rem' }}>
+            <input 
+              type="file" 
+              accept="image/*" 
+              capture="environment" 
+              style={{ display: 'none' }} 
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
+            <button 
+              onClick={handleScanClick}
+              disabled={isScanning}
+              style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 6px rgba(37,99,235,0.2)' }}
+            >
+              {isScanning ? <Loader2 size={18} className="spin-icon" /> : <Camera size={18} />}
+              {isScanning ? 'AI 명함 분석 중...' : 'AI 종이명함 스캔하기'}
+            </button>
           </div>
 
           <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
@@ -196,15 +353,16 @@ const AddressBook = () => {
             </div>
           ) : (
             <div style={{ width: '100%', height: '600px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              {mapLoading ? (
+              {!mapLoaded && !mapError ? (
                 <div style={{ textAlign: 'center', color: '#94a3b8' }}>
                   <Loader2 size={32} className="spin-icon" style={{ margin: '0 auto 1rem auto' }} />
                   <p>지도를 불러오는 중...</p>
                 </div>
               ) : mapError ? (
-                <div style={{ textAlign: 'center', color: '#ef4444' }}>
+                <div style={{ textAlign: 'center', color: '#ef4444', padding: '1rem' }}>
                   <MapIcon size={48} style={{ margin: '0 auto 1rem auto' }} />
-                  <p>지도를 불러오지 못했습니다. 도메인 등록을 확인해주세요.</p>
+                  <p>지도를 불러오지 못했습니다.</p>
+                  <p style={{ fontSize: '0.8rem', marginTop: '10px', color: '#7f1d1d' }}>에러 정보: {mapError.message}</p>
                 </div>
               ) : filtered.filter(c => c.lat && c.lng).length === 0 ? (
                 <div style={{ textAlign: 'center', color: '#94a3b8' }}>
@@ -247,6 +405,52 @@ const AddressBook = () => {
             </div>
           )}
         </div>
+
+        {/* AI 스캔 결과 확인 및 수정 모달 */}
+        {scanModalOpen && scanData && (
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ maxWidth: '400px', padding: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Camera size={20} color="#2563eb" /> AI 스캔 결과 확인
+                </h2>
+                <button onClick={() => setScanModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <X size={20} color="#64748b" />
+                </button>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '4px' }}>
+                <div className="input-group" style={{ marginBottom: 0 }}>
+                  <label>이름</label>
+                  <input type="text" value={scanData.name} onChange={(e) => setScanData({...scanData, name: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                </div>
+                <div className="input-group" style={{ marginBottom: 0 }}>
+                  <label>회사명</label>
+                  <input type="text" value={scanData.company} onChange={(e) => setScanData({...scanData, company: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                </div>
+                <div className="input-group" style={{ marginBottom: 0 }}>
+                  <label>직책/부서</label>
+                  <input type="text" value={scanData.jobTitle} onChange={(e) => setScanData({...scanData, jobTitle: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                </div>
+                <div className="input-group" style={{ marginBottom: 0 }}>
+                  <label>연락처</label>
+                  <input type="text" value={scanData.phone} onChange={(e) => setScanData({...scanData, phone: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                </div>
+                <div className="input-group" style={{ marginBottom: 0 }}>
+                  <label>이메일</label>
+                  <input type="email" value={scanData.email} onChange={(e) => setScanData({...scanData, email: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                </div>
+              </div>
+
+              <div className="modal-footer" style={{ marginTop: '1.5rem', display: 'flex', gap: '10px' }}>
+                <button onClick={() => setScanModalOpen(false)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer' }}>취소</button>
+                <button onClick={handleSaveScannedCard} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                  <Save size={16} /> 명함첩에 저장
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
