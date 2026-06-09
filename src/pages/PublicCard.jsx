@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Phone,
@@ -33,59 +33,6 @@ const PublicCard = () => {
   const [productFeatures, setProductFeatures] = useState(null);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showIosGuide, setShowIosGuide] = useState(false);
-
-  const handlersRef = useRef({});
-
-  useEffect(() => {
-    handlersRef.current = {
-      share: () => {
-        const isKakao = navigator.userAgent.toLowerCase().includes('kakaotalk');
-        if (isKakao && typeof handleKakaoShare === 'function') handleKakaoShare();
-        else if (typeof handleShare === 'function') handleShare();
-      },
-      home: () => { if (typeof handleAddToHome === 'function') handleAddToHome(); },
-      save: () => { if (typeof handleSaveContact === 'function') handleSaveContact(); },
-      addressbook: () => { if (typeof handleSaveToAddressBook === 'function') handleSaveToAddressBook(); },
-      paper: () => { if (typeof setShowPaperCard === 'function') setShowPaperCard(true); }
-    };
-  });
-
-  useEffect(() => {
-    if (!cardData) return;
-    
-    const bindNativeEvent = (id, actionName) => {
-      const el = document.getElementById(id);
-      if (el && !el.__bound) {
-        el.__bound = true; // prevent multiple bindings
-        
-        const execute = (e) => {
-          if (e.cancelable) e.preventDefault();
-          e.stopPropagation();
-          if (handlersRef.current[actionName]) {
-            handlersRef.current[actionName]();
-          }
-        };
-        
-        // Use capture phase to intercept before React or Kakao can swallow it
-        el.addEventListener('click', execute, true);
-        el.addEventListener('touchend', (e) => {
-          if (e.cancelable) e.preventDefault();
-          execute(e);
-        }, { passive: false, capture: true });
-      }
-    };
-
-    const timer = setTimeout(() => {
-      bindNativeEvent('btn-home', 'home');
-      bindNativeEvent('btn-share', 'share');
-      bindNativeEvent('btn-save', 'save');
-      bindNativeEvent('btn-addressbook', 'addressbook');
-      bindNativeEvent('btn-paper', 'paper');
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [cardData]);
-
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
@@ -666,7 +613,9 @@ const PublicCard = () => {
         {/* Share and Add to Home Screen Buttons */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
           {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
-            <button id="btn-home" className="action-btn"
+            <button 
+              onClick={handleAddToHome}
+              className="action-btn"
               style={{ 
                 flex: 1,
                 padding: '1rem', 
@@ -687,7 +636,9 @@ const PublicCard = () => {
               <Home size={18} /> 홈화면에 추가
             </button>
           )}
-          <button id="btn-share" className="action-btn"
+          <button 
+            onClick={handleShare}
+            className="action-btn"
             style={{ 
               flex: 1,
               padding: '1rem', 
@@ -712,7 +663,8 @@ const PublicCard = () => {
         {/* Save Contact Button */}
         {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
           <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
-            <button id="btn-save"
+            <button 
+              onClick={handleSaveContact}
               style={{ 
                 width: '100%', 
                 padding: '1.15rem', 
@@ -740,7 +692,8 @@ const PublicCard = () => {
         {/* Save to Address Book Button */}
         {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-            <button id="btn-addressbook"
+            <button 
+              onClick={handleSaveToAddressBook}
               style={{ 
                 width: '100%', 
                 padding: '1.15rem', 
@@ -766,7 +719,8 @@ const PublicCard = () => {
         {/* Paper Card Trigger */}
         {cardData.paperCardUrl && (
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <button id="btn-paper"
+            <button 
+              onClick={() => setShowPaperCard(true)}
               style={{ 
                 width: '100%', 
                 padding: '1.15rem', 
