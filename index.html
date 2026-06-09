@@ -7,7 +7,7 @@
         if (ua.indexOf('kakao') > -1) {
           var url = window.location.href;
           if (ua.indexOf('android') > -1) {
-            window.location.href = 'intent://' + url.replace(/https?:\/\//i, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+            window.location.href = 'intent://' + url.replace(/https?:\/\//i, '') + '#Intent;scheme=https;end';
           } else if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1 || ua.indexOf('ipod') > -1) {
             window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url);
           }
