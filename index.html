@@ -4,7 +4,7 @@
     <script>
       (function() {
         var ua = navigator.userAgent.toLowerCase();
-        if (ua.indexOf('kakaotalk') > -1) {
+        if (ua.indexOf('kakao') > -1) {
           var url = window.location.href;
           if (ua.indexOf('android') > -1) {
             window.location.href = 'intent://' + url.replace(/https?:\/\//i, '') + '#Intent;scheme=https;package=com.android.chrome;end';

@@ -36,10 +36,10 @@ const PublicCard = () => {
 
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
-    if (/kakaotalk/.test(ua)) {
+    if (/kakao/.test(ua)) {
       const currentUrl = window.location.href;
       if (/iphone|ipad|ipod/.test(ua)) {
-        window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl);
+        window.location.href = 'kakao://web/openExternal?url=' + encodeURIComponent(currentUrl);
       } else {
         window.location.href = 'intent://' + currentUrl.replace(/https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
       }
@@ -165,7 +165,7 @@ const PublicCard = () => {
   }, [id]);
 
   const handleShare = async () => {
-    const isKakao = navigator.userAgent.toLowerCase().includes('kakaotalk');
+    const isKakao = navigator.userAgent.toLowerCase().includes('kakao');
     if (isKakao && typeof handleKakaoShare === 'function') {
       handleKakaoShare();
       return;
@@ -201,7 +201,7 @@ const PublicCard = () => {
   };
 
   // KakaoTalk detection for global block modal
-  const isKakaoWebView = navigator.userAgent.toLowerCase().includes('kakaotalk');
+  const isKakaoWebView = navigator.userAgent.toLowerCase().includes('kakao');
 
   if (isKakaoWebView) {
     return (
@@ -483,7 +483,7 @@ const PublicCard = () => {
     const hex = (color || '#ffffff').replace('#', '');
     switch(platform) {
       case 'instagram': return <img src={`https://cdn.simpleicons.org/instagram/${hex}`} width="20" height="20" alt="insta" />;
-      case 'kakaotalk': return <img src={`https://cdn.simpleicons.org/kakaotalk/${hex}`} width="20" height="20" alt="kakao" />;
+      case 'kakao': return <img src={`https://cdn.simpleicons.org/kakao/${hex}`} width="20" height="20" alt="kakao" />;
       case 'facebook': return <img src={`https://cdn.simpleicons.org/facebook/${hex}`} width="20" height="20" alt="fb" />;
       case 'tiktok': return <img src={`https://cdn.simpleicons.org/tiktok/${hex}`} width="20" height="20" alt="tiktok" />;
       case 'x': return <img src={`https://cdn.simpleicons.org/x/${hex}`} width="20" height="20" alt="x" />;
@@ -508,7 +508,7 @@ const PublicCard = () => {
       icon: getSnsIcon(platform, iconColor),
       label: platform.charAt(0).toUpperCase() + platform.slice(1),
       value,
-      href: value?.startsWith('http') ? value : (platform === 'kakaotalk' ? `https://pf.kakao.com/${value}` : `https://${platform}.com/${value}`)
+      href: value?.startsWith('http') ? value : (platform === 'kakao' ? `https://pf.kakao.com/${value}` : `https://${platform}.com/${value}`)
     }))
   ].filter(a => a.value);
 
