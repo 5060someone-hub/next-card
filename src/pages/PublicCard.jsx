@@ -200,53 +200,6 @@ const PublicCard = () => {
     }
   };
 
-  // KakaoTalk detection for global block modal
-  const isKakaoWebView = navigator.userAgent.toLowerCase().includes('kakao');
-
-  if (isKakaoWebView) {
-    const handleEscapeKakao = () => {
-      const currentUrl = window.location.href;
-      const ua = navigator.userAgent.toLowerCase();
-      if (/iphone|ipad|ipod/.test(ua)) {
-        window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl);
-      } else {
-        // Omitting package lets Android use default browser (Chrome, Samsung Internet, etc.)
-        window.location.href = 'intent://' + currentUrl.replace(/https?:\/\//i, '') + '#Intent;scheme=https;end';
-      }
-    };
-
-    return (
-      <div style={{
-        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-        background: '#fee500', zIndex: 999999, display: 'flex', flexDirection: 'column', 
-        alignItems: 'center', justifyContent: 'center', padding: '2rem', color: '#000', textAlign: 'center'
-      }}>
-        <div style={{ background: '#fff', padding: '2.5rem 1.5rem', borderRadius: '20px', width: '100%', maxWidth: '340px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ margin: '0 0 1rem', fontSize: '1.4rem', fontWeight: 800, color: '#3a2929' }}>⚠️ 브라우저 안내</h2>
-          <p style={{ margin: '0 0 1.5rem', lineHeight: '1.6', fontSize: '1.05rem', color: '#333' }}>
-            카카오톡 내부에서는<br/>명함 저장 및 공유 기능이<br/>원활하지 않습니다.
-          </p>
-          <div 
-            role="button"
-            onClick={handleEscapeKakao}
-            style={{ 
-              background: '#3b82f6', color: '#fff', padding: '1rem', 
-              borderRadius: '12px', fontSize: '1.1rem', fontWeight: 'bold', 
-              cursor: 'pointer', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)',
-              marginBottom: '1rem'
-            }}
-          >
-            🚀 안전한 브라우저로 열기
-          </div>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#666', lineHeight: '1.4' }}>
-            버튼이 작동하지 않으면 우측 상단 <strong>(⋮)</strong> 버튼을 눌러<br/>
-            <strong>다른 브라우저로 열기</strong>를 선택해주세요.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   if (loading) {
     const splashIcon = localStorage.getItem('globalFavicon');
     return (
@@ -688,6 +641,33 @@ const PublicCard = () => {
             </a>
           ))}
         </div>
+
+        {/* Kakao / WebView Escape Button */}
+        {/kakao|daum|naver|instagram|fb|line|wv|webview/i.test(navigator.userAgent) && (
+          <div 
+            role="button"
+            onClick={() => {
+              const currentUrl = window.location.href;
+              const ua = navigator.userAgent.toLowerCase();
+              if (/iphone|ipad|ipod/.test(ua)) {
+                window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl);
+              } else {
+                window.location.href = 'intent://' + currentUrl.replace(/https?:\/\//i, '') + '#Intent;scheme=https;end';
+              }
+            }}
+            style={{ 
+              background: '#fee500', color: '#3a2929', padding: '1.15rem', 
+              borderRadius: '16px', fontSize: '1.05rem', fontWeight: '900', 
+              cursor: 'pointer', textAlign: 'center', marginBottom: '1.25rem',
+              boxShadow: '0 4px 10px rgba(254, 229, 0, 0.3)', border: '2px solid #eab308'
+            }}
+          >
+            🚀 안전한 브라우저(크롬/사파리)로 열기
+            <div style={{fontSize: '0.75rem', fontWeight: 'normal', marginTop: '4px', opacity: 0.8}}>
+              (현재 앱에서는 명함 저장이 제한될 수 있습니다)
+            </div>
+          </div>
+        )}
 
         {/* Share and Add to Home Screen Buttons */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
