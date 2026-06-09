@@ -35,6 +35,18 @@ const PublicCard = () => {
   const [showIosGuide, setShowIosGuide] = useState(false);
 
   useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase();
+    if (/kakaotalk/.test(ua)) {
+      const currentUrl = window.location.href;
+      if (/iphone|ipad|ipod/.test(ua)) {
+        window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl);
+      } else {
+        window.location.href = 'intent://' + currentUrl.replace(/https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
