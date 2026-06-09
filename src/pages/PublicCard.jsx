@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Phone,
@@ -33,55 +33,6 @@ const PublicCard = () => {
   const [productFeatures, setProductFeatures] = useState(null);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showIosGuide, setShowIosGuide] = useState(false);
-
-  const handlersRef = useRef({});
-
-  useEffect(() => {
-    handlersRef.current = {
-      share: () => { if (typeof handleShare === 'function') handleShare(); },
-      home: () => { if (typeof handleAddToHome === 'function') handleAddToHome(); },
-      save: () => { if (typeof handleSaveContact === 'function') handleSaveContact(); },
-      addressbook: () => { if (typeof handleSaveToAddressBook === 'function') handleSaveToAddressBook(); },
-      paper: () => { if (typeof setShowPaperCard === 'function') setShowPaperCard(true); }
-    };
-  });
-
-  useEffect(() => {
-    if (!cardData) return;
-    
-    const bindNativeEvent = (id, actionName) => {
-      const el = document.getElementById(id);
-      if (el && !el.__bound) {
-        el.__bound = true; // prevent multiple bindings
-        
-        const execute = (e) => {
-          if (e.cancelable) e.preventDefault();
-          e.stopPropagation();
-          if (handlersRef.current[actionName]) {
-            handlersRef.current[actionName]();
-          }
-        };
-        
-        // Use capture phase to intercept before React or Kakao can swallow it
-        el.addEventListener('click', execute, true);
-        el.addEventListener('touchend', (e) => {
-          if (e.cancelable) e.preventDefault();
-          execute(e);
-        }, { passive: false, capture: true });
-      }
-    };
-
-    const timer = setTimeout(() => {
-      bindNativeEvent('btn-home', 'home');
-      bindNativeEvent('btn-share', 'share');
-      bindNativeEvent('btn-save', 'save');
-      bindNativeEvent('btn-addressbook', 'addressbook');
-      bindNativeEvent('btn-paper', 'paper');
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [cardData]);
-
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
@@ -281,9 +232,9 @@ const PublicCard = () => {
           이 명함은 1주일 무료 체험 기간이 종료되어 비공개 처리되었습니다.<br />
           본인의 명함이신가요? 지금 가입하시면 만들어둔 명함을 영구적으로 사용하실 수 있습니다!
         </p>
-        <button onClick={() => window.location.href = `/signup?claimId=${cardData.id}`} className="btn-primary" style={{ padding: '1rem 2rem', borderRadius: '50px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', border: 'none', background: '#db2777', color: '#fff' }}>
+        <div role="button" onClick={() => window.location.href = `/signup?claimId=${cardData.id}`} className="btn-primary" style={{ padding: '1rem 2rem', borderRadius: '50px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', border: 'none', background: '#db2777', color: '#fff' }}>
           무료 회원가입하고 명함 살리기
-        </button>
+        </div>
       </div>
     );
   }
@@ -519,9 +470,9 @@ const PublicCard = () => {
       {cardData.isTemporary && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, background: '#ef4444', color: '#fff', padding: '0.75rem', textAlign: 'center', zIndex: 1000, fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
           ⏳ 체험용 명함 (D-{cardData.daysLeft} 삭제예정)
-          <button onClick={() => window.location.href = `/signup?claimId=${cardData.id}`} style={{ background: '#fff', color: '#ef4444', border: 'none', borderRadius: '4px', padding: '4px 12px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', marginLeft: '8px' }}>
+          <div role="button" onClick={() => window.location.href = `/signup?claimId=${cardData.id}`} style={{ background: '#fff', color: '#ef4444', border: 'none', borderRadius: '4px', padding: '4px 12px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', marginLeft: '8px' }}>
             가입하고 영구 보존하기
-          </button>
+          </div>
         </div>
       )}
       {/* Container */}
@@ -662,7 +613,7 @@ const PublicCard = () => {
         {/* Share and Add to Home Screen Buttons */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
           {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
-            <button id="btn-home"
+            <div role="button" 
               onClick={handleAddToHome}
               className="action-btn"
               style={{ 
@@ -683,9 +634,9 @@ const PublicCard = () => {
               }}
             >
               <Home size={18} /> 홈화면에 추가
-            </button>
+            </div>
           )}
-          <button id="btn-share"
+          <div role="button" 
             onClick={handleShare}
             className="action-btn"
             style={{ 
@@ -706,13 +657,13 @@ const PublicCard = () => {
             }}
           >
             <Share2 size={18} /> 공유하기
-          </button>
+          </div>
         </div>
 
         {/* Save Contact Button */}
         {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
           <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
-            <button id="btn-save"
+            <div role="button" 
               onClick={handleSaveContact}
               style={{ 
                 width: '100%', 
@@ -732,7 +683,7 @@ const PublicCard = () => {
               }}
             >
               <Download size={20} /> 연락처 폰에 저장하기
-            </button>
+            </div>
           </div>
         )}
 
@@ -741,7 +692,7 @@ const PublicCard = () => {
         {/* Save to Address Book Button */}
         {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-            <button id="btn-addressbook"
+            <div role="button" 
               onClick={handleSaveToAddressBook}
               style={{ 
                 width: '100%', 
@@ -761,14 +712,14 @@ const PublicCard = () => {
               }}
             >
               <Bookmark size={20} color="#fff" /> 내 명함첩에 담기 (NextCard)
-            </button>
+            </div>
           </div>
         )}
 
         {/* Paper Card Trigger */}
         {cardData.paperCardUrl && (
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <button id="btn-paper"
+            <div role="button" 
               onClick={() => setShowPaperCard(true)}
               style={{ 
                 width: '100%', 
@@ -784,7 +735,7 @@ const PublicCard = () => {
               }}
             >
               종이명함 보기
-            </button>
+            </div>
           </div>
         )}
 
@@ -829,7 +780,7 @@ const PublicCard = () => {
             <p style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', color: '#94a3b8', lineHeight: '1.4' }}>
               종이명함의 한계를 넘어, 사진/영상/SNS가 모두 담긴<br/>스마트한 모바일 명함을 무료로 제작할 수 있습니다.
             </p>
-            <button 
+            <div role="button" 
               onClick={() => window.location.href = '/'}
               style={{
                 background: 'linear-gradient(90deg, #db2777, #f43f5e)',
@@ -844,7 +795,7 @@ const PublicCard = () => {
               }}
             >
               무료로 명함 만들기
-            </button>
+            </div>
           </div>
         )}
 
@@ -889,23 +840,23 @@ const PublicCard = () => {
               background: '#fff', color: '#000', padding: '2rem 1.5rem',
               borderRadius: '20px', textAlign: 'center', maxWidth: '320px', position: 'relative'
             }} onClick={e => e.stopPropagation()}>
-              <button 
+              <div role="button" 
                 onClick={() => setShowIosGuide(false)}
                 style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}
               >
                 <X size={20} />
-              </button>
+              </div>
               <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.2rem', fontWeight: 800 }}>홈 화면에 추가</h3>
               <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.95rem', lineHeight: '1.5', color: '#444' }}>
                 Safari 하단의 <strong>공유(<Share2 size={14} style={{display:'inline', verticalAlign:'middle'}}/>)</strong> 버튼을 누르고<br/>
                 <strong>'홈 화면에 추가'</strong>를 선택해 주세요.
               </p>
-              <button 
+              <div role="button" 
                 onClick={() => setShowIosGuide(false)}
                 style={{ background: '#000', color: '#fff', padding: '12px 24px', borderRadius: '10px', border: 'none', fontWeight: 700, cursor: 'pointer', width: '100%' }}
               >
                 확인
-              </button>
+              </div>
             </div>
           </div>
         )}
