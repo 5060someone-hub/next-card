@@ -153,6 +153,11 @@ const PublicCard = () => {
   }, [id]);
 
   const handleShare = async () => {
+    const isKakao = navigator.userAgent.toLowerCase().includes('kakaotalk');
+    if (isKakao && typeof handleKakaoShare === 'function') {
+      handleKakaoShare();
+      return;
+    }
     const url = window.location.href;
     if (navigator.share) {
       try {
@@ -261,18 +266,33 @@ const PublicCard = () => {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
     const now = new Date().toISOString();
 
+    let locationResolved = false;
     if (navigator.geolocation) {
+      const fallbackTimer = setTimeout(() => {
+        if (!locationResolved) {
+          locationResolved = true;
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+          window.location.href = `${apiUrl}/api/card/vcf/${id}?date=${now}`;
+        }
+      }, 2000);
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          if (locationResolved) return;
+          locationResolved = true;
+          clearTimeout(fallbackTimer);
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           window.location.href = `${apiUrl}/api/card/vcf/${id}?lat=${lat}&lng=${lng}&date=${now}`;
         },
         (error) => {
+          if (locationResolved) return;
+          locationResolved = true;
+          clearTimeout(fallbackTimer);
           console.log("Geolocation error:", error);
           window.location.href = `${apiUrl}/api/card/vcf/${id}?date=${now}`;
         },
-        { timeout: 5000 }
+        { timeout: 2000 }
       );
     } else {
       window.location.href = `${apiUrl}/api/card/vcf/${id}?date=${now}`;
