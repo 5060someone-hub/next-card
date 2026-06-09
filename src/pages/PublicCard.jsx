@@ -642,32 +642,37 @@ const PublicCard = () => {
           ))}
         </div>
 
-        {/* Kakao / WebView Escape Button */}
-        {/kakao|daum|naver|instagram|fb|line|wv|webview/i.test(navigator.userAgent) && (
-          <div 
-            role="button"
-            onClick={() => {
-              const currentUrl = window.location.href;
-              const ua = navigator.userAgent.toLowerCase();
-              if (/iphone|ipad|ipod/.test(ua)) {
-                window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl);
-              } else {
-                window.location.href = 'intent://' + currentUrl.replace(/https?:\/\//i, '') + '#Intent;scheme=https;end';
-              }
-            }}
-            style={{ 
-              background: '#fee500', color: '#3a2929', padding: '1.15rem', 
-              borderRadius: '16px', fontSize: '1.05rem', fontWeight: '900', 
-              cursor: 'pointer', textAlign: 'center', marginBottom: '1.25rem',
-              boxShadow: '0 4px 10px rgba(254, 229, 0, 0.3)', border: '2px solid #eab308'
-            }}
-          >
-            🚀 안전한 브라우저(크롬/사파리)로 열기
-            <div style={{fontSize: '0.75rem', fontWeight: 'normal', marginTop: '4px', opacity: 0.8}}>
-              (현재 앱에서는 명함 저장이 제한될 수 있습니다)
-            </div>
+        {/* Kakao / WebView Escape Button (Always Visible) */}
+        <div 
+          role="button"
+          onClick={() => {
+            const currentUrl = window.location.href;
+            const ua = navigator.userAgent.toLowerCase();
+            const isMobile = /android|iphone|ipad|ipod/i.test(ua);
+            
+            if (!isMobile) {
+              alert('PC 환경에서는 이미 정상적으로 기능이 작동합니다.');
+              return;
+            }
+
+            if (/iphone|ipad|ipod/.test(ua)) {
+              window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl);
+            } else {
+              window.location.href = 'intent://' + currentUrl.replace(/https?:\/\//i, '') + '#Intent;scheme=https;end';
+            }
+          }}
+          style={{ 
+            background: '#fee500', color: '#3a2929', padding: '1.15rem', 
+            borderRadius: '16px', fontSize: '1.05rem', fontWeight: '900', 
+            cursor: 'pointer', textAlign: 'center', marginBottom: '1.25rem',
+            boxShadow: '0 4px 10px rgba(254, 229, 0, 0.3)', border: '2px solid #eab308'
+          }}
+        >
+          🚀 안전한 브라우저(크롬/사파리)로 열기
+          <div style={{fontSize: '0.75rem', fontWeight: 'normal', marginTop: '4px', opacity: 0.8}}>
+            (카카오톡 등에서는 명함 저장이 제한될 수 있습니다)
           </div>
-        )}
+        </div>
 
         {/* Share and Add to Home Screen Buttons */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
