@@ -188,6 +188,31 @@ const PublicCard = () => {
     }
   };
 
+  // KakaoTalk detection for global block modal
+  const isKakaoWebView = navigator.userAgent.toLowerCase().includes('kakaotalk');
+
+  if (isKakaoWebView) {
+    return (
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+        background: '#fee500', zIndex: 999999, display: 'flex', flexDirection: 'column', 
+        alignItems: 'center', justifyContent: 'center', padding: '2rem', color: '#000', textAlign: 'center'
+      }}>
+        <div style={{ background: '#fff', padding: '2rem', borderRadius: '20px', width: '100%', maxWidth: '320px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+          <h2 style={{ margin: '0 0 1rem', fontSize: '1.4rem', fontWeight: 800, color: '#3a2929' }}>⚠️ 브라우저 안내</h2>
+          <p style={{ margin: '0 0 1.5rem', lineHeight: '1.6', fontSize: '1.05rem', color: '#333' }}>
+            카카오톡 내부에서는<br/>명함 저장 및 주요 기능이<br/>제한됩니다.
+          </p>
+          <div style={{ background: '#f8f9fa', padding: '1.25rem 1rem', borderRadius: '15px', fontSize: '0.95rem', fontWeight: 'bold', color: '#555' }}>
+            우측 상단의 <strong style={{color: '#000', fontSize: '1.1rem'}}>더보기(⋮)</strong> 버튼을 눌러<br/>
+            <span style={{display: 'inline-block', marginTop: '12px', background: '#3b82f6', color: '#fff', padding: '8px 16px', borderRadius: '8px'}}>다른 브라우저로 열기</span><br/>
+            <div style={{marginTop: '8px', fontSize: '0.8rem', fontWeight: 'normal'}}>를 선택해주시면 정상 작동합니다!</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     const splashIcon = localStorage.getItem('globalFavicon');
     return (
