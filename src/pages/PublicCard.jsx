@@ -642,37 +642,76 @@ const PublicCard = () => {
           ))}
         </div>
 
-        {/* Kakao / WebView Escape Button (Always Visible) */}
-        <div 
-          role="button"
-          onClick={() => {
-            const currentUrl = window.location.href;
-            const ua = navigator.userAgent.toLowerCase();
-            const isMobile = /android|iphone|ipad|ipod/i.test(ua);
-            
-            if (!isMobile) {
-              alert('PC 환경에서는 이미 정상적으로 기능이 작동합니다.');
-              return;
-            }
+        {/* Kakao / WebView Escape Buttons (Always Visible) */}
+        {(() => {
+          const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
+          const isAndroid = /android/i.test(ua);
+          const isIOS = /iphone|ipad|ipod/i.test(ua);
+          const isMobile = isAndroid || isIOS;
+          const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+          const urlWithoutScheme = currentUrl.replace(/https?:\/\//i, '');
 
-            if (/iphone|ipad|ipod/.test(ua)) {
-              window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl);
-            } else {
-              window.location.href = 'intent://' + currentUrl.replace(/https?:\/\//i, '') + '#Intent;scheme=https;end';
-            }
-          }}
-          style={{ 
-            background: '#fee500', color: '#3a2929', padding: '1.15rem', 
-            borderRadius: '16px', fontSize: '1.05rem', fontWeight: '900', 
-            cursor: 'pointer', textAlign: 'center', marginBottom: '1.25rem',
-            boxShadow: '0 4px 10px rgba(254, 229, 0, 0.3)', border: '2px solid #eab308'
-          }}
-        >
-          🚀 안전한 브라우저(크롬/사파리)로 열기
-          <div style={{fontSize: '0.75rem', fontWeight: 'normal', marginTop: '4px', opacity: 0.8}}>
-            (카카오톡 등에서는 명함 저장이 제한될 수 있습니다)
-          </div>
-        </div>
+          if (!isMobile) {
+            return (
+              <div 
+                role="button"
+                onClick={() => alert('PC 환경에서는 이미 정상적으로 기능이 작동합니다.')}
+                style={{ 
+                  background: '#f3f4f6', color: '#6b7280', padding: '1rem', 
+                  borderRadius: '16px', fontSize: '1rem', fontWeight: 'bold', 
+                  cursor: 'pointer', textAlign: 'center', marginBottom: '1.25rem',
+                  border: '1px solid #d1d5db'
+                }}
+              >
+                💻 PC 브라우저 환경입니다
+              </div>
+            );
+          }
+
+          if (isIOS) {
+            return (
+              <a href={'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl)} style={{textDecoration: 'none'}}>
+                <div style={{ 
+                  background: '#0ea5e9', color: '#fff', padding: '1.15rem', 
+                  borderRadius: '16px', fontSize: '1.05rem', fontWeight: '900', 
+                  cursor: 'pointer', textAlign: 'center', marginBottom: '1.25rem',
+                  boxShadow: '0 4px 10px rgba(14, 165, 233, 0.3)'
+                }}>
+                  🧭 사파리(Safari)로 열기
+                  <div style={{fontSize: '0.75rem', fontWeight: 'normal', marginTop: '4px', opacity: 0.9}}>
+                    (카카오톡에서는 명함 저장이 제한됩니다)
+                  </div>
+                </div>
+              </a>
+            );
+          }
+
+          // Android
+          return (
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
+              <a href={'intent://' + urlWithoutScheme + '#Intent;scheme=https;package=com.sec.android.app.sbrowser;end'} style={{textDecoration: 'none', flex: 1}}>
+                <div style={{ 
+                  background: '#5c6bc0', color: '#fff', padding: '1rem 0.25rem', 
+                  borderRadius: '16px', fontSize: '0.9rem', fontWeight: '900', 
+                  cursor: 'pointer', textAlign: 'center', height: '100%',
+                  boxShadow: '0 4px 10px rgba(92, 107, 192, 0.3)'
+                }}>
+                  📱 삼성 인터넷<br/><span style={{fontSize:'0.75rem', fontWeight:'normal'}}>안전하게 열기</span>
+                </div>
+              </a>
+              <a href={'intent://' + urlWithoutScheme + '#Intent;scheme=https;package=com.android.chrome;end'} style={{textDecoration: 'none', flex: 1}}>
+                <div style={{ 
+                  background: '#ef4444', color: '#fff', padding: '1rem 0.25rem', 
+                  borderRadius: '16px', fontSize: '0.9rem', fontWeight: '900', 
+                  cursor: 'pointer', textAlign: 'center', height: '100%',
+                  boxShadow: '0 4px 10px rgba(239, 68, 68, 0.3)'
+                }}>
+                  🌐 크롬(Chrome)<br/><span style={{fontSize:'0.75rem', fontWeight:'normal'}}>안전하게 열기</span>
+                </div>
+              </a>
+            </div>
+          );
+        })()}
 
         {/* Share and Add to Home Screen Buttons */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
