@@ -57,6 +57,14 @@ const PublicCard = () => {
   }, []);
 
   useEffect(() => {
+    // Auto-open modal if redirected from KakaoTalk
+    if (typeof window !== 'undefined' && window.location.search.includes('openModal=true')) {
+      setShowPaperCard(true);
+      const url = new URL(window.location);
+      url.searchParams.delete('openModal');
+      window.history.replaceState({}, '', url);
+    }
+
     const fetchData = async () => {
       try {
         // 1. 먼저 백엔드 API에서 명함 조회를 시도합니다. (기존 정식 명함 및 샘플들)
@@ -645,9 +653,22 @@ const PublicCard = () => {
         {/* Paper Card Trigger (Fullscreen Modal Trigger) */}
         {cardData.paperCardUrl && (
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-            <div 
-              role="button"
-              onClick={() => setShowPaperCard(true)}
+            <button 
+              type="button"
+              onClick={() => {
+                const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
+                const isKakao = ua.indexOf('kakaotalk') > -1;
+                
+                if (isKakao) {
+                  // Bounce to external browser to bypass Kakao rendering limits
+                  const currentUrl = new URL(window.location.href);
+                  currentUrl.searchParams.set('openModal', 'true');
+                  const targetUrl = 'https://' + currentUrl.toString().replace(/https?:\/\//i, '');
+                  window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(targetUrl);
+                } else {
+                  setShowPaperCard(true);
+                }
+              }}
               style={{ 
                 width: '100%', 
                 padding: '1.15rem', 
@@ -659,13 +680,11 @@ const PublicCard = () => {
                 fontWeight: 800,
                 cursor: 'pointer',
                 boxShadow: '0 4px 12px rgba(2, 124, 126, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+                display: 'block'
               }}
             >
               종이명함 보기
-            </div>
+            </button>
           </div>
         )}
 
