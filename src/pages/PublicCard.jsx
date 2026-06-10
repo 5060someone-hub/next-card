@@ -646,7 +646,11 @@ const PublicCard = () => {
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
             <button 
               type="button"
-              onClick={() => setShowPaperCard(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                const modal = document.getElementById('paper-card-modal-dom');
+                if (modal) modal.style.display = 'flex';
+              }}
               style={{ 
                 width: '100%', 
                 padding: '1.15rem', 
@@ -900,15 +904,36 @@ const PublicCard = () => {
           </div>
         )}
 
-        {/* Paper Card Modal (Restored 15-days-ago logic) */}
-        {showPaperCard && cardData.paperCardUrl && (
+        {/* Paper Card Modal (Vanilla JS DOM Toggle to prevent Kakao base64 render crashes) */}
+        {cardData.paperCardUrl && (
           <div 
-            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-            onClick={() => setShowPaperCard(false)}
+            id="paper-card-modal-dom"
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', zIndex: 999999, display: 'none', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+            onClick={() => {
+              const modal = document.getElementById('paper-card-modal-dom');
+              if (modal) modal.style.display = 'none';
+            }}
           >
             <div style={{ width: '100%', maxWidth: '600px', borderRadius: '12px', overflow: 'hidden' }}>
-              <img src={cardData.paperCardUrl} style={{ width: '100%', display: 'block' }} alt="Paper Card" />
+              <img src={cardData.paperCardUrl} style={{ width: '100%', display: 'block', maxHeight: '90vh', objectFit: 'contain' }} alt="Paper Card" />
             </div>
+            
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                const modal = document.getElementById('paper-card-modal-dom');
+                if (modal) modal.style.display = 'none';
+              }}
+              style={{
+                position: 'absolute', top: '20px', right: '20px',
+                background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff',
+                fontSize: '2rem', width: '40px', height: '40px', borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', zIndex: 1000000, paddingBottom: '4px'
+              }}
+            >
+              &times;
+            </button>
           </div>
         )}
 
