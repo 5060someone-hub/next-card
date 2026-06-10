@@ -648,6 +648,7 @@ const PublicCard = () => {
             <button 
               onClick={(e) => {
                 e.preventDefault();
+                alert("디버그: 버튼 클릭 인식됨. 모달을 엽니다.\nURL: " + cardData.paperCardUrl);
                 setShowPaperCard(true);
               }}
               style={{ 
@@ -911,6 +912,7 @@ const PublicCard = () => {
             onClick={() => setShowPaperCard(false)}
             style={{
               position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              width: '100vw', height: '100vh',
               backgroundColor: 'rgba(0, 0, 0, 0.95)', zIndex: 999999,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               touchAction: 'none' // Prevent background scrolling
