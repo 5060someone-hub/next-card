@@ -641,31 +641,34 @@ const PublicCard = () => {
           ))}
         </div>
 
-        {/* Paper Card Trigger (Placed Right Below SNS Buttons) */}
+        {/* Paper Card Trigger (Foolproof Inline Expansion) */}
         {cardData.paperCardUrl && (
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
             <button 
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                const modal = document.getElementById('paper-card-modal-dom');
-                if (modal) modal.style.display = 'flex';
-              }}
+              onClick={() => setShowPaperCard(!showPaperCard)}
               style={{ 
                 width: '100%', 
                 padding: '1.15rem', 
-                background: '#027C7E', 
+                background: showPaperCard ? '#333' : '#027C7E', 
                 color: '#fff', 
                 borderRadius: '15px', 
                 border: 'none',
                 fontSize: '1.05rem',
                 fontWeight: 800,
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(2, 124, 126, 0.4)'
+                boxShadow: showPaperCard ? 'none' : '0 4px 12px rgba(2, 124, 126, 0.4)',
+                transition: 'all 0.2s'
               }}
             >
-              종이명함 보기
+              {showPaperCard ? '종이명함 닫기' : '종이명함 보기'}
             </button>
+            
+            {showPaperCard && (
+              <div style={{ marginTop: '1rem', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: '#000', padding: '10px' }}>
+                <img src={cardData.paperCardUrl} style={{ width: '100%', display: 'block', borderRadius: '8px' }} alt="Paper Card" />
+              </div>
+            )}
           </div>
         )}
 
@@ -901,39 +904,6 @@ const PublicCard = () => {
             >
               무료로 명함 만들기
             </div>
-          </div>
-        )}
-
-        {/* Paper Card Modal (Vanilla JS DOM Toggle to prevent Kakao base64 render crashes) */}
-        {cardData.paperCardUrl && (
-          <div 
-            id="paper-card-modal-dom"
-            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', zIndex: 999999, display: 'none', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-            onClick={() => {
-              const modal = document.getElementById('paper-card-modal-dom');
-              if (modal) modal.style.display = 'none';
-            }}
-          >
-            <div style={{ width: '100%', maxWidth: '600px', borderRadius: '12px', overflow: 'hidden' }}>
-              <img src={cardData.paperCardUrl} style={{ width: '100%', display: 'block', maxHeight: '90vh', objectFit: 'contain' }} alt="Paper Card" />
-            </div>
-            
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                const modal = document.getElementById('paper-card-modal-dom');
-                if (modal) modal.style.display = 'none';
-              }}
-              style={{
-                position: 'absolute', top: '20px', right: '20px',
-                background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff',
-                fontSize: '2rem', width: '40px', height: '40px', borderRadius: '50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', zIndex: 1000000, paddingBottom: '4px'
-              }}
-            >
-              &times;
-            </button>
           </div>
         )}
 
