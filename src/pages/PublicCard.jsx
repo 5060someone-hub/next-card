@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { useParams } from 'react-router-dom';
 import {
   Phone,
@@ -901,17 +900,41 @@ const PublicCard = () => {
           </div>
         )}
 
-        {/* Paper Card Modal */}
-        {showPaperCard && typeof document !== 'undefined' && createPortal(
+        {/* Paper Business Card Modal (Restored to legacy logic) */}
+        {showPaperCard && cardData.paperCardUrl && (
           <div 
-            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
             onClick={() => setShowPaperCard(false)}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.85)', zIndex: 999999,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+            }}
           >
-            <div style={{ width: '100%', maxWidth: '600px', borderRadius: '12px', overflow: 'hidden' }}>
-              <img src={cardData.paperCardUrl} style={{ width: '100%', display: 'block' }} alt="Paper Card" />
+            <div 
+              onClick={e => e.stopPropagation()}
+              style={{
+                backgroundColor: '#fff', padding: '20px', borderRadius: '12px',
+                width: '100%', maxWidth: '400px', position: 'relative', textAlign: 'center',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
+              }}
+            >
+              <button 
+                onClick={() => setShowPaperCard(false)}
+                style={{
+                  position: 'absolute', top: '10px', right: '15px', background: 'none',
+                  border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#666'
+                }}
+              >
+                &times;
+              </button>
+              <label style={{ display: 'block', marginBottom: '15px', fontWeight: 'bold', color: '#333', fontSize: '0.9rem', letterSpacing: '1px' }}>
+                종이명함 보기
+              </label>
+              <div style={{ width: '100%' }}>
+                <img src={cardData.paperCardUrl} alt="Paper Card" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px', border: '1px solid #eaeaea' }} />
+              </div>
             </div>
-          </div>,
-          document.body
+          </div>
         )}
 
         {/* Ad Section */}
