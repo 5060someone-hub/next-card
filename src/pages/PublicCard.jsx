@@ -660,12 +660,10 @@ const PublicCard = () => {
                 const isKakao = ua.indexOf('kakaotalk') > -1;
                 
                 if (isKakao) {
-                  // Bounce to external browser to bypass Kakao rendering limits
-                  const currentUrl = new URL(window.location.href);
-                  currentUrl.searchParams.set('openModal', 'true');
-                  const targetUrl = 'https://' + currentUrl.toString().replace(/https?:\/\//i, '');
-                  window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(targetUrl);
+                  // In KakaoTalk, open paper card image directly in new window
+                  window.open(cardData.paperCardUrl, '_blank');
                 } else {
+                  // In regular browser, show modal
                   setShowPaperCard(true);
                 }
               }}
