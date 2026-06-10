@@ -649,7 +649,6 @@ const PublicCard = () => {
             <button 
               onClick={(e) => {
                 e.preventDefault();
-                alert("디버그: 버튼 클릭 인식됨. 모달을 엽니다.\nURL: " + cardData.paperCardUrl);
                 setShowPaperCard(true);
               }}
               style={{ 
@@ -1001,10 +1000,6 @@ const PublicCard = () => {
               maxWidth: '100%', maxHeight: '100%', 
               objectFit: 'contain', display: 'block' 
             }} 
-            onError={(e) => {
-              alert("이미지를 불러오지 못했습니다. 카카오톡 환경 문제일 수 있습니다.");
-              e.target.style.display = 'none';
-            }}
           />
         </div>
       </div>
