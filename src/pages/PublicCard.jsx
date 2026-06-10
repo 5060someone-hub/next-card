@@ -56,6 +56,20 @@ const PublicCard = () => {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
+  // Set Apple Touch Icon dynamically for iOS Add to Home Screen
+  useEffect(() => {
+    if (cardData && (cardData.profileImage || cardData.logo)) {
+      const iconUrl = cardData.profileImage || cardData.logo;
+      let link = document.querySelector("link[rel~='apple-touch-icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'apple-touch-icon';
+        document.head.appendChild(link);
+      }
+      link.href = iconUrl;
+    }
+  }, [cardData]);
+
   useEffect(() => {
     // Auto-open modal if redirected from KakaoTalk
     if (typeof window !== 'undefined' && window.location.search.includes('openModal=true')) {
