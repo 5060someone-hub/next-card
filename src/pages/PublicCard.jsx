@@ -491,7 +491,6 @@ const PublicCard = () => {
   const finalBlockBg = cardData.blockBgColor || glassBg;
 
   return (
-    <>
     <div className="public-card-v3-root" style={{ 
       background: '#000', 
       minHeight: '100vh', 
@@ -517,8 +516,7 @@ const PublicCard = () => {
         padding: '3rem 1.5rem',
         minHeight: '100vh',
         position: 'relative',
-        boxSizing: 'border-box',
-        overflowX: 'hidden'
+        boxSizing: 'border-box'
       }}>
         {/* Top Logo Section */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem', width: '100%' }}>
@@ -647,10 +645,8 @@ const PublicCard = () => {
         {cardData.paperCardUrl && (
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
             <button 
-              onClick={(e) => {
-                e.preventDefault();
-                setShowPaperCard(true);
-              }}
+              type="button"
+              onClick={() => setShowPaperCard(true)}
               style={{ 
                 width: '100%', 
                 padding: '1.15rem', 
@@ -661,9 +657,7 @@ const PublicCard = () => {
                 fontSize: '1.05rem',
                 fontWeight: 800,
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(2, 124, 126, 0.4)',
-                fontFamily: 'inherit',
-                display: 'block'
+                boxShadow: '0 4px 12px rgba(2, 124, 126, 0.4)'
               }}
             >
               종이명함 보기
@@ -906,6 +900,18 @@ const PublicCard = () => {
           </div>
         )}
 
+        {/* Paper Card Modal (Restored 15-days-ago logic) */}
+        {showPaperCard && cardData.paperCardUrl && (
+          <div 
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+            onClick={() => setShowPaperCard(false)}
+          >
+            <div style={{ width: '100%', maxWidth: '600px', borderRadius: '12px', overflow: 'hidden' }}>
+              <img src={cardData.paperCardUrl} style={{ width: '100%', display: 'block' }} alt="Paper Card" />
+            </div>
+          </div>
+        )}
+
         {/* Ad Section */}
         {((cardData.showAds !== false && productFeatures?.showAds) || (cardData.showAds === true)) && adConfig && (
           <div style={{ marginTop: '2rem' }}>
@@ -957,54 +963,6 @@ const PublicCard = () => {
         )}
       </div>
     </div>
-
-    {/* Paper Business Card Modal (Fullscreen Lightbox - MOVED TO ROOT TO PREVENT CLIPPING) */}
-    {showPaperCard && cardData.paperCardUrl && (
-      <div 
-        onClick={() => setShowPaperCard(false)}
-        style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          width: '100vw', height: '100vh',
-          backgroundColor: 'rgba(0, 0, 0, 0.95)', zIndex: 9999999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          touchAction: 'none' // Prevent background scrolling
-        }}
-      >
-        {/* Close Button */}
-        <button 
-          onClick={() => setShowPaperCard(false)}
-          style={{
-            position: 'absolute', top: '15px', right: '15px',
-            background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff',
-            fontSize: '2rem', width: '40px', height: '40px', borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', zIndex: 10000000, paddingBottom: '4px'
-          }}
-        >
-          &times;
-        </button>
-        
-        {/* Image Container */}
-        <div 
-          onClick={e => e.stopPropagation()}
-          style={{
-            width: '100%', height: '100%', 
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '0'
-          }}
-        >
-          <img 
-            src={cardData.paperCardUrl} 
-            alt="Paper Card" 
-            style={{ 
-              maxWidth: '100%', maxHeight: '100%', 
-              objectFit: 'contain', display: 'block' 
-            }} 
-          />
-        </div>
-      </div>
-    )}
-    </>
   );
 };
 
