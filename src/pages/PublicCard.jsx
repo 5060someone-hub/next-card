@@ -702,7 +702,7 @@ const PublicCard = () => {
                     boxShadow: '0 4px 6px rgba(92, 107, 192, 0.2)',
                     display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
                   }}>
-                    <img src="https://cdn.simpleicons.org/samsung/ffffff" width="20" height="20" alt="samsung" style={{marginBottom: '4px'}} />
+                    <img src="/samsung_internet_custom.png" width="20" height="20" alt="samsung" style={{marginBottom: '4px', borderRadius: '4px'}} />
                     삼성인터넷
                   </div>
                 </a>
