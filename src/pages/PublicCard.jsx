@@ -491,6 +491,7 @@ const PublicCard = () => {
   const finalBlockBg = cardData.blockBgColor || glassBg;
 
   return (
+    <>
     <div className="public-card-v3-root" style={{ 
       background: '#000', 
       minHeight: '100vh', 
@@ -906,53 +907,6 @@ const PublicCard = () => {
           </div>
         )}
 
-        {/* Paper Business Card Modal (Fullscreen Lightbox) */}
-        {showPaperCard && cardData.paperCardUrl && (
-          <div 
-            onClick={() => setShowPaperCard(false)}
-            style={{
-              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-              width: '100vw', height: '100vh',
-              backgroundColor: 'rgba(0, 0, 0, 0.95)', zIndex: 999999,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              touchAction: 'none' // Prevent background scrolling
-            }}
-          >
-            {/* Close Button */}
-            <button 
-              onClick={() => setShowPaperCard(false)}
-              style={{
-                position: 'absolute', top: '15px', right: '15px',
-                background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff',
-                fontSize: '2rem', width: '40px', height: '40px', borderRadius: '50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', zIndex: 1000000, paddingBottom: '4px'
-              }}
-            >
-              &times;
-            </button>
-            
-            {/* Image Container */}
-            <div 
-              onClick={e => e.stopPropagation()}
-              style={{
-                width: '100%', height: '100%', 
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: '0'
-              }}
-            >
-              <img 
-                src={cardData.paperCardUrl} 
-                alt="Paper Card" 
-                style={{ 
-                  maxWidth: '100%', maxHeight: '100%', 
-                  objectFit: 'contain', display: 'block' 
-                }} 
-              />
-            </div>
-          </div>
-        )}
-
         {/* Ad Section */}
         {((cardData.showAds !== false && productFeatures?.showAds) || (cardData.showAds === true)) && adConfig && (
           <div style={{ marginTop: '2rem' }}>
@@ -1004,6 +958,58 @@ const PublicCard = () => {
         )}
       </div>
     </div>
+
+    {/* Paper Business Card Modal (Fullscreen Lightbox - MOVED TO ROOT TO PREVENT CLIPPING) */}
+    {showPaperCard && cardData.paperCardUrl && (
+      <div 
+        onClick={() => setShowPaperCard(false)}
+        style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          width: '100vw', height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.95)', zIndex: 9999999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          touchAction: 'none' // Prevent background scrolling
+        }}
+      >
+        {/* Close Button */}
+        <button 
+          onClick={() => setShowPaperCard(false)}
+          style={{
+            position: 'absolute', top: '15px', right: '15px',
+            background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff',
+            fontSize: '2rem', width: '40px', height: '40px', borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', zIndex: 10000000, paddingBottom: '4px'
+          }}
+        >
+          &times;
+        </button>
+        
+        {/* Image Container */}
+        <div 
+          onClick={e => e.stopPropagation()}
+          style={{
+            width: '100%', height: '100%', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '0'
+          }}
+        >
+          <img 
+            src={cardData.paperCardUrl} 
+            alt="Paper Card" 
+            style={{ 
+              maxWidth: '100%', maxHeight: '100%', 
+              objectFit: 'contain', display: 'block' 
+            }} 
+            onError={(e) => {
+              alert("이미지를 불러오지 못했습니다. 카카오톡 환경 문제일 수 있습니다.");
+              e.target.style.display = 'none';
+            }}
+          />
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 
