@@ -650,9 +650,9 @@ const PublicCard = () => {
           ))}
         </div>
 
-        {/* Paper Card Trigger (Fullscreen Modal Trigger) */}
+        {/* BIG BUTTON 1: Paper Card Trigger */}
         {cardData.paperCardUrl && (
-          <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
             <button 
               type="button"
               onClick={() => {
@@ -660,10 +660,8 @@ const PublicCard = () => {
                 const isKakao = ua.indexOf('kakaotalk') > -1;
                 
                 if (isKakao) {
-                  // In KakaoTalk, open paper card image directly in new window
                   window.open(cardData.paperCardUrl, '_blank');
                 } else {
-                  // In regular browser, show modal
                   setShowPaperCard(true);
                 }
               }}
@@ -678,7 +676,10 @@ const PublicCard = () => {
                 fontWeight: 800,
                 cursor: 'pointer',
                 boxShadow: '0 4px 12px rgba(2, 124, 126, 0.4)',
-                display: 'block'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
               }}
             >
               종이명함 보기
@@ -686,7 +687,7 @@ const PublicCard = () => {
           </div>
         )}
 
-        {/* Kakao / WebView Escape Buttons (All-in-One for Mobile) */}
+        {/* Kakao / WebView Escape Buttons */}
         {(() => {
           const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
           const isMobile = /android|iphone|ipad|ipod|macintosh/i.test(ua) && ('ontouchend' in document || /android|iphone|ipad|ipod/i.test(ua));
@@ -701,7 +702,7 @@ const PublicCard = () => {
                 style={{ 
                   background: '#f3f4f6', color: '#6b7280', padding: '1rem', 
                   borderRadius: '16px', fontSize: '1rem', fontWeight: 'bold', 
-                  cursor: 'pointer', textAlign: 'center', marginBottom: '1.25rem',
+                  cursor: 'pointer', textAlign: 'center', marginBottom: '0.75rem',
                   border: '1px solid #d1d5db'
                 }}
               >
@@ -710,11 +711,10 @@ const PublicCard = () => {
             );
           }
 
-          // Show all 3 buttons for any mobile device
           return (
-            <div style={{ marginBottom: '1.25rem' }}>
+            <div style={{ marginBottom: '1.25rem', marginTop: '1.25rem' }}>
               <div style={{ fontSize: '0.8rem', color: '#6b7280', textAlign: 'center', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                🚀 안전한 브라우저 앱으로 열기 (저장 기능 활성화)
+                아래 버튼을 이용하시려면 안전한 브라우저로 앱을 여세요!!
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
                 <a href={'intent://' + urlWithoutScheme + '#Intent;scheme=https;package=com.sec.android.app.sbrowser;end'} style={{textDecoration: 'none'}}>
@@ -723,9 +723,10 @@ const PublicCard = () => {
                     borderRadius: '12px', fontSize: '0.85rem', fontWeight: '900', 
                     cursor: 'pointer', textAlign: 'center', height: '100%',
                     boxShadow: '0 4px 6px rgba(92, 107, 192, 0.2)',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'center'
+                    display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
                   }}>
-                    📱 삼성<br/><span style={{fontSize:'0.65rem', fontWeight:'normal', marginTop:'2px'}}>인터넷</span>
+                    <img src="https://cdn.simpleicons.org/samsung/ffffff" width="20" height="20" alt="samsung" style={{marginBottom: '4px'}} />
+                    삼성인터넷
                   </div>
                 </a>
                 <a href={'intent://' + urlWithoutScheme + '#Intent;scheme=https;package=com.android.chrome;end'} style={{textDecoration: 'none'}}>
@@ -734,9 +735,10 @@ const PublicCard = () => {
                     borderRadius: '12px', fontSize: '0.85rem', fontWeight: '900', 
                     cursor: 'pointer', textAlign: 'center', height: '100%',
                     boxShadow: '0 4px 6px rgba(239, 68, 68, 0.2)',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'center'
+                    display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
                   }}>
-                    🌐 크롬<br/><span style={{fontSize:'0.65rem', fontWeight:'normal', marginTop:'2px'}}>(Chrome)</span>
+                    <img src="https://cdn.simpleicons.org/googlechrome/ffffff" width="20" height="20" alt="chrome" style={{marginBottom: '4px'}} />
+                    크롬
                   </div>
                 </a>
                 <a href={'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl)} style={{textDecoration: 'none'}}>
@@ -745,15 +747,70 @@ const PublicCard = () => {
                     borderRadius: '12px', fontSize: '0.85rem', fontWeight: '900', 
                     cursor: 'pointer', textAlign: 'center', height: '100%',
                     boxShadow: '0 4px 6px rgba(14, 165, 233, 0.2)',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'center'
+                    display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
                   }}>
-                    🧭 사파리<br/><span style={{fontSize:'0.65rem', fontWeight:'normal', marginTop:'2px'}}>(Safari)</span>
+                    <img src="https://cdn.simpleicons.org/safari/ffffff" width="20" height="20" alt="safari" style={{marginBottom: '4px'}} />
+                    사파리
                   </div>
                 </a>
               </div>
             </div>
           );
         })()}
+
+        {/* BIG BUTTON 2: Save Contact */}
+        {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
+          <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
+            <div role="button" 
+              onClick={handleSaveContact}
+              style={{ 
+                width: '100%', 
+                padding: '1.15rem', 
+                background: '#027C7E', 
+                color: '#fff', 
+                borderRadius: '15px', 
+                border: 'none',
+                fontSize: '1.05rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: `0 4px 12px rgba(2, 124, 126, 0.4)`
+              }}
+            >
+              <Download size={20} /> 연락처 폰에 저장하기
+            </div>
+          </div>
+        )}
+
+        {/* BIG BUTTON 3: Save to Address Book */}
+        {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
+          <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+            <div role="button" 
+              onClick={handleSaveToAddressBook}
+              style={{ 
+                width: '100%', 
+                padding: '1.15rem', 
+                background: '#027C7E', 
+                color: '#fff', 
+                borderRadius: '15px', 
+                border: 'none',
+                fontSize: '1.05rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: `0 4px 12px rgba(2, 124, 126, 0.4)`
+              }}
+            >
+              <Bookmark size={20} color="#fff" /> 내 명함첩에 담기 (NextCard)
+            </div>
+          </div>
+        )}
 
         {/* Share and Add to Home Screen Buttons */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
@@ -804,62 +861,6 @@ const PublicCard = () => {
             <Share2 size={18} /> 공유하기
           </div>
         </div>
-
-        {/* Save Contact Button */}
-        {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
-          <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
-            <div role="button" 
-              onClick={handleSaveContact}
-              style={{ 
-                width: '100%', 
-                padding: '1.15rem', 
-                background: themeColor, 
-                color: '#fff', 
-                borderRadius: '15px', 
-                border: 'none',
-                fontSize: '1.05rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                boxShadow: `0 4px 12px ${themeColor}66`
-              }}
-            >
-              <Download size={20} /> 연락처 폰에 저장하기
-            </div>
-          </div>
-        )}
-
-
-
-        {/* Save to Address Book Button */}
-        {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
-          <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-            <div role="button" 
-              onClick={handleSaveToAddressBook}
-              style={{ 
-                width: '100%', 
-                padding: '1.15rem', 
-                background: '#3b82f6', 
-                color: '#fff', 
-                borderRadius: '15px', 
-                border: 'none',
-                fontSize: '1.05rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                boxShadow: `0 4px 12px rgba(59, 130, 246, 0.4)`
-              }}
-            >
-              <Bookmark size={20} color="#fff" /> 내 명함첩에 담기 (NextCard)
-            </div>
-          </div>
-        )}
 
         {/* SPA Sections Rendering */}
         {cardData.isSpaEnabled && productFeatures?.allowSinglePage !== false && (
