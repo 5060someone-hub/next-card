@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Phone,
   Mail,
@@ -641,34 +642,30 @@ const PublicCard = () => {
           ))}
         </div>
 
-        {/* Paper Card Trigger (Foolproof Inline Expansion) */}
+        {/* Paper Card Trigger (Fullscreen Modal Trigger) */}
         {cardData.paperCardUrl && (
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-            <button 
-              type="button"
-              onClick={() => setShowPaperCard(!showPaperCard)}
+            <div 
+              role="button"
+              onClick={() => setShowPaperCard(true)}
               style={{ 
                 width: '100%', 
                 padding: '1.15rem', 
-                background: showPaperCard ? '#333' : '#027C7E', 
+                background: '#027C7E', 
                 color: '#fff', 
                 borderRadius: '15px', 
                 border: 'none',
                 fontSize: '1.05rem',
                 fontWeight: 800,
                 cursor: 'pointer',
-                boxShadow: showPaperCard ? 'none' : '0 4px 12px rgba(2, 124, 126, 0.4)',
-                transition: 'all 0.2s'
+                boxShadow: '0 4px 12px rgba(2, 124, 126, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
-              {showPaperCard ? '종이명함 닫기' : '종이명함 보기'}
-            </button>
-            
-            {showPaperCard && (
-              <div style={{ marginTop: '1rem', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: '#000', padding: '10px' }}>
-                <img src={cardData.paperCardUrl} style={{ width: '100%', display: 'block', borderRadius: '8px' }} alt="Paper Card" />
-              </div>
-            )}
+              종이명함 보기
+            </div>
           </div>
         )}
 
@@ -905,6 +902,52 @@ const PublicCard = () => {
               무료로 명함 만들기
             </div>
           </div>
+        )}
+
+        {/* Paper Card Modal (createPortal to escape all CSS containers) */}
+        {showPaperCard && cardData.paperCardUrl && typeof document !== 'undefined' && createPortal(
+          <div 
+            onClick={() => setShowPaperCard(false)}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              width: '100vw', height: '100vh',
+              backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 99999999,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              touchAction: 'none'
+            }}
+          >
+            <div 
+              role="button"
+              onClick={(e) => { e.stopPropagation(); setShowPaperCard(false); }}
+              style={{
+                position: 'absolute', top: '15px', right: '15px',
+                background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff',
+                fontSize: '2rem', width: '40px', height: '40px', borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', zIndex: 100000000, paddingBottom: '4px'
+              }}
+            >
+              &times;
+            </div>
+            <div 
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '100%', height: '100%', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '0'
+              }}
+            >
+              <img 
+                src={cardData.paperCardUrl} 
+                alt="Paper Card" 
+                style={{ 
+                  maxWidth: '100%', maxHeight: '100%', 
+                  objectFit: 'contain', display: 'block' 
+                }} 
+              />
+            </div>
+          </div>,
+          document.body
         )}
 
         {/* Ad Section */}
