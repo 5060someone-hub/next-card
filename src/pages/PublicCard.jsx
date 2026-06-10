@@ -650,43 +650,6 @@ const PublicCard = () => {
           ))}
         </div>
 
-        {/* BIG BUTTON 1: Paper Card Trigger */}
-        {cardData.paperCardUrl && (
-          <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
-            <button 
-              type="button"
-              onClick={() => {
-                const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
-                const isKakao = ua.indexOf('kakaotalk') > -1;
-                
-                if (isKakao) {
-                  window.open(cardData.paperCardUrl, '_blank');
-                } else {
-                  setShowPaperCard(true);
-                }
-              }}
-              style={{ 
-                width: '100%', 
-                padding: '1.15rem', 
-                background: '#027C7E', 
-                color: '#fff', 
-                borderRadius: '15px', 
-                border: 'none',
-                fontSize: '1.05rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(2, 124, 126, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              종이명함 보기
-            </button>
-          </div>
-        )}
-
         {/* Kakao / WebView Escape Buttons */}
         {(() => {
           const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
@@ -758,6 +721,93 @@ const PublicCard = () => {
           );
         })()}
 
+        {/* Share and Add to Home Screen Buttons */}
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
+          {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
+            <div role="button" 
+              onClick={handleAddToHome}
+              className="action-btn"
+              style={{ 
+                flex: 1,
+                padding: '1rem', 
+                background: isLightBg(cardData.bgColor || '#111827') ? '#f1f5f9' : '#111827', 
+                color: isLightBg(cardData.bgColor || '#111827') ? '#1e293b' : '#ffffff', 
+                borderRadius: '15px', 
+                border: isLightBg(cardData.bgColor || '#111827') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)',
+                fontSize: '0.95rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+              }}
+            >
+              <Home size={18} /> 홈화면에 추가
+            </div>
+          )}
+          <div role="button" 
+            onClick={handleShare}
+            className="action-btn"
+            style={{ 
+              flex: 1,
+              padding: '1rem', 
+              background: isLightBg(cardData.bgColor || '#111827') ? '#f1f5f9' : '#111827', 
+              color: isLightBg(cardData.bgColor || '#111827') ? '#1e293b' : '#ffffff', 
+              borderRadius: '15px', 
+              border: isLightBg(cardData.bgColor || '#111827') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)',
+              fontSize: '0.95rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            }}
+          >
+            <Share2 size={18} /> 공유하기
+          </div>
+        </div>
+
+        {/* BIG BUTTON 1: Paper Card Trigger */}
+        {cardData.paperCardUrl && (
+          <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
+            <button 
+              type="button"
+              onClick={() => {
+                const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
+                const isKakao = ua.indexOf('kakaotalk') > -1;
+                
+                if (isKakao) {
+                  window.open(cardData.paperCardUrl, '_blank');
+                } else {
+                  setShowPaperCard(true);
+                }
+              }}
+              style={{ 
+                width: '100%', 
+                padding: '1.15rem', 
+                background: '#027C7E', 
+                color: '#fff', 
+                borderRadius: '15px', 
+                border: 'none',
+                fontSize: '1.05rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(2, 124, 126, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              종이명함 보기
+            </button>
+          </div>
+        )}
+
         {/* BIG BUTTON 2: Save Contact */}
         {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
           <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
@@ -811,56 +861,6 @@ const PublicCard = () => {
             </div>
           </div>
         )}
-
-        {/* Share and Add to Home Screen Buttons */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
-          {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
-            <div role="button" 
-              onClick={handleAddToHome}
-              className="action-btn"
-              style={{ 
-                flex: 1,
-                padding: '1rem', 
-                background: isLightBg(cardData.bgColor || '#111827') ? '#f1f5f9' : '#111827', 
-                color: isLightBg(cardData.bgColor || '#111827') ? '#1e293b' : '#ffffff', 
-                borderRadius: '15px', 
-                border: isLightBg(cardData.bgColor || '#111827') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)',
-                fontSize: '0.95rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-              }}
-            >
-              <Home size={18} /> 홈화면에 추가
-            </div>
-          )}
-          <div role="button" 
-            onClick={handleShare}
-            className="action-btn"
-            style={{ 
-              flex: 1,
-              padding: '1rem', 
-              background: isLightBg(cardData.bgColor || '#111827') ? '#f1f5f9' : '#111827', 
-              color: isLightBg(cardData.bgColor || '#111827') ? '#1e293b' : '#ffffff', 
-              borderRadius: '15px', 
-              border: isLightBg(cardData.bgColor || '#111827') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)',
-              fontSize: '0.95rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-            }}
-          >
-            <Share2 size={18} /> 공유하기
-          </div>
-        </div>
 
         {/* SPA Sections Rendering */}
         {cardData.isSpaEnabled && productFeatures?.allowSinglePage !== false && (
