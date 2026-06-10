@@ -608,24 +608,28 @@ const PublicCard = () => {
               <div style={{ fontSize: `${cardData.companyFontSize || 14}px`, fontWeight: 700 }}>{cardData.company}</div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '0.85rem' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Briefcase size={18} color={themeColor} />
+          {cardData.department && String(cardData.department).trim() !== '' && (
+            <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '0.85rem' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Briefcase size={18} color={themeColor} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: themeColor, fontWeight: 700, marginBottom: '1px', opacity: 0.9 }}>Department</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 500 }}>{cardData.department}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: '0.7rem', color: themeColor, fontWeight: 700, marginBottom: '1px', opacity: 0.9 }}>Department</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 500 }}>{cardData.department}</div>
+          )}
+          {cardData.address && String(cardData.address).trim() !== '' && (
+            <div style={{ display: 'flex', gap: '0.6rem' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <MapPin size={18} color={themeColor} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: themeColor, fontWeight: 700, marginBottom: '1px', opacity: 0.9 }}>Address</div>
+                <div style={{ fontSize: '0.8rem', opacity: 0.8, lineHeight: '1.4' }}>{cardData.address}</div>
+              </div>
             </div>
-          </div>
-          <div style={{ display: 'flex', gap: '0.6rem' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <MapPin size={18} color={themeColor} />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.7rem', color: themeColor, fontWeight: 700, marginBottom: '1px', opacity: 0.9 }}>Address</div>
-              <div style={{ fontSize: '0.8rem', opacity: 0.8, lineHeight: '1.4' }}>{cardData.address}</div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* About Section */}
