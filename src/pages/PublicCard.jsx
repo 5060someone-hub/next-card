@@ -211,6 +211,8 @@ const PublicCard = () => {
 
   const handleAddToHome = () => {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isSamsungBrowser = /SamsungBrowser/i.test(navigator.userAgent);
+
     if (isIOS) {
       setShowIosGuide(true);
     } else if (deferredPrompt) {
@@ -218,6 +220,8 @@ const PublicCard = () => {
       deferredPrompt.userChoice.then((choiceResult) => {
         setDeferredPrompt(null);
       });
+    } else if (isSamsungBrowser) {
+      alert('브라우저 설정에서 "현재웹페이지추가" 버튼을 누른후 "홈화면"을 선택하여 주세요.');
     } else {
       alert('브라우저 설정 메뉴에서 "앱 설치" 또는 "홈 화면에 추가"를 선택해주세요.');
     }
