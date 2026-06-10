@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams } from 'react-router-dom';
 import {
   Phone,
@@ -901,15 +902,16 @@ const PublicCard = () => {
         )}
 
         {/* Paper Card Modal */}
-        {showPaperCard && (
+        {showPaperCard && typeof document !== 'undefined' && createPortal(
           <div 
-            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
             onClick={() => setShowPaperCard(false)}
           >
             <div style={{ width: '100%', maxWidth: '600px', borderRadius: '12px', overflow: 'hidden' }}>
               <img src={cardData.paperCardUrl} style={{ width: '100%', display: 'block' }} alt="Paper Card" />
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* Ad Section */}
