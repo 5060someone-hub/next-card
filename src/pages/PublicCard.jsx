@@ -722,7 +722,7 @@ const PublicCard = () => {
         })()}
 
         {/* Share and Add to Home Screen Buttons */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '0.75rem' }}>
           {cardData.grade !== 'paper' && cardData.productType !== 'paper' && (
             <div role="button" 
               onClick={handleAddToHome}
