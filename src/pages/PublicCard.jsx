@@ -642,6 +642,29 @@ const PublicCard = () => {
           ))}
         </div>
 
+        {/* Paper Card Trigger (Placed Right Below SNS Buttons) */}
+        {cardData.paperCardUrl && (
+          <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+            <div role="button" 
+              onClick={() => setShowPaperCard(true)}
+              style={{ 
+                width: '100%', 
+                padding: '1.15rem', 
+                background: '#027C7E', 
+                color: '#fff', 
+                borderRadius: '15px', 
+                border: 'none',
+                fontSize: '1.05rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(2, 124, 126, 0.4)'
+              }}
+            >
+              종이명함 보기
+            </div>
+          </div>
+        )}
+
         {/* Kakao / WebView Escape Buttons (All-in-One for Mobile) */}
         {(() => {
           const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
@@ -813,29 +836,6 @@ const PublicCard = () => {
               }}
             >
               <Bookmark size={20} color="#fff" /> 내 명함첩에 담기 (NextCard)
-            </div>
-          </div>
-        )}
-
-        {/* Paper Card Trigger */}
-        {cardData.paperCardUrl && (
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <div role="button" 
-              onClick={() => setShowPaperCard(true)}
-              style={{ 
-                width: '100%', 
-                padding: '1.15rem', 
-                background: '#000', 
-                color: '#fff', 
-                borderRadius: '15px', 
-                border: '1px solid rgba(255,255,255,0.2)',
-                fontSize: '1rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
-              }}
-            >
-              종이명함 보기
             </div>
           </div>
         )}
