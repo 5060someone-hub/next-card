@@ -645,8 +645,11 @@ const PublicCard = () => {
         {/* Paper Card Trigger (Placed Right Below SNS Buttons) */}
         {cardData.paperCardUrl && (
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-            <div role="button" 
-              onClick={() => setShowPaperCard(true)}
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                setShowPaperCard(true);
+              }}
               style={{ 
                 width: '100%', 
                 padding: '1.15rem', 
@@ -657,11 +660,13 @@ const PublicCard = () => {
                 fontSize: '1.05rem',
                 fontWeight: 800,
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(2, 124, 126, 0.4)'
+                boxShadow: '0 4px 12px rgba(2, 124, 126, 0.4)',
+                fontFamily: 'inherit',
+                display: 'block'
               }}
             >
               종이명함 보기
-            </div>
+            </button>
           </div>
         )}
 
@@ -900,39 +905,48 @@ const PublicCard = () => {
           </div>
         )}
 
-        {/* Paper Business Card Modal (Restored to legacy logic) */}
+        {/* Paper Business Card Modal (Fullscreen Lightbox) */}
         {showPaperCard && cardData.paperCardUrl && (
           <div 
             onClick={() => setShowPaperCard(false)}
             style={{
               position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.85)', zIndex: 999999,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+              backgroundColor: 'rgba(0, 0, 0, 0.95)', zIndex: 999999,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              touchAction: 'none' // Prevent background scrolling
             }}
           >
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowPaperCard(false)}
+              style={{
+                position: 'absolute', top: '15px', right: '15px',
+                background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff',
+                fontSize: '2rem', width: '40px', height: '40px', borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', zIndex: 1000000, paddingBottom: '4px'
+              }}
+            >
+              &times;
+            </button>
+            
+            {/* Image Container */}
             <div 
               onClick={e => e.stopPropagation()}
               style={{
-                backgroundColor: '#fff', padding: '20px', borderRadius: '12px',
-                width: '100%', maxWidth: '400px', position: 'relative', textAlign: 'center',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
+                width: '100%', height: '100%', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '0'
               }}
             >
-              <button 
-                onClick={() => setShowPaperCard(false)}
-                style={{
-                  position: 'absolute', top: '10px', right: '15px', background: 'none',
-                  border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#666'
-                }}
-              >
-                &times;
-              </button>
-              <label style={{ display: 'block', marginBottom: '15px', fontWeight: 'bold', color: '#333', fontSize: '0.9rem', letterSpacing: '1px' }}>
-                종이명함 보기
-              </label>
-              <div style={{ width: '100%' }}>
-                <img src={cardData.paperCardUrl} alt="Paper Card" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px', border: '1px solid #eaeaea' }} />
-              </div>
+              <img 
+                src={cardData.paperCardUrl} 
+                alt="Paper Card" 
+                style={{ 
+                  maxWidth: '100%', maxHeight: '100%', 
+                  objectFit: 'contain', display: 'block' 
+                }} 
+              />
             </div>
           </div>
         )}
