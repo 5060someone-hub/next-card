@@ -26,6 +26,12 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     setLoading(true);
+
+    // 안전 장치: 최대 5초 후에는 무조건 로딩 화면을 해제합니다.
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+    }, 5000);
+
     try {
       const [profileRes, cardsRes] = await Promise.all([
         fetch(`${API_BASE}/api/user/profile/${auth.id}`),
