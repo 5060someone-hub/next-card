@@ -718,7 +718,7 @@ const PublicCard = () => {
                     boxShadow: '0 4px 6px rgba(239, 68, 68, 0.2)',
                     display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
                   }}>
-                    <img src="https://cdn.simpleicons.org/googlechrome/ffffff" width="20" height="20" alt="chrome" style={{marginBottom: '4px'}} />
+                    <img src="/chrome_custom.png" width="20" height="20" alt="chrome" style={{marginBottom: '4px', borderRadius: '4px'}} />
                     크롬
                   </div>
                 </a>
