@@ -730,10 +730,10 @@ const PublicCard = () => {
               style={{ 
                 flex: 1,
                 padding: '1rem', 
-                background: isLightBg(cardData.bgColor || '#111827') ? '#f1f5f9' : '#111827', 
-                color: isLightBg(cardData.bgColor || '#111827') ? '#1e293b' : '#ffffff', 
+                background: '#02cc99', 
+                color: '#ffffff', 
                 borderRadius: '15px', 
-                border: isLightBg(cardData.bgColor || '#111827') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)',
+                border: 'none',
                 fontSize: '0.95rem',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -741,7 +741,7 @@ const PublicCard = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                boxShadow: '0 4px 12px rgba(2, 204, 153, 0.3)'
               }}
             >
               <Home size={18} /> 홈화면에 추가
@@ -753,10 +753,10 @@ const PublicCard = () => {
             style={{ 
               flex: 1,
               padding: '1rem', 
-              background: isLightBg(cardData.bgColor || '#111827') ? '#f1f5f9' : '#111827', 
-              color: isLightBg(cardData.bgColor || '#111827') ? '#1e293b' : '#ffffff', 
+              background: '#02cc99', 
+              color: '#ffffff', 
               borderRadius: '15px', 
-              border: isLightBg(cardData.bgColor || '#111827') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)',
+              border: 'none',
               fontSize: '0.95rem',
               fontWeight: 700,
               cursor: 'pointer',
@@ -764,7 +764,7 @@ const PublicCard = () => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+              boxShadow: '0 4px 12px rgba(2, 204, 153, 0.3)'
             }}
           >
             <Share2 size={18} /> 공유하기
