@@ -20,6 +20,7 @@ const NamecardLanding    = React.lazy(() => import('./pages/NamecardLanding'));
 const SamplePreview      = React.lazy(() => import('./pages/SamplePreview'));
 const BlogList           = React.lazy(() => import('./pages/BlogList'));
 const BlogPost           = React.lazy(() => import('./pages/BlogPost'));
+const Networking         = React.lazy(() => import('./pages/Networking'));
 
 // 관리자 전용 (일반 사용자에게는 불필요)
 const AdminUserManagement    = React.lazy(() => import('./pages/AdminUserManagement'));
@@ -105,6 +106,7 @@ function App() {
           <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/cards" element={<CardEditor />} />
+          <Route path="/networking" element={<Networking />} />
           <Route path="/logs" element={<NetworkLog />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/namecard" element={<NamecardLanding />} />

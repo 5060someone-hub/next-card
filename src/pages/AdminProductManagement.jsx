@@ -23,6 +23,7 @@ export default function AdminProductManagement() {
     allowCustomUrl: false,
     allowSinglePage: false,
     showAds: true,
+    allowNetworking: false,
     maxSnsCount: 1,
     scanLimit: 10,
     allowedThemes: ['modern']
@@ -129,7 +130,7 @@ export default function AdminProductManagement() {
           name: newProductName, 
           description: newProductDesc,
           sampleUrl: newSampleUrl,
-            tags: newTags.split(',').map(t => t.trim()).filter(Boolean),
+          tags: newTags.split(',').map(t => t.trim()).filter(Boolean),
           price: {
             annual: Number(newProductPriceAnnual) || 0,
             threeMonths: Number(newProductPriceThreeMonths) || 0,
@@ -139,26 +140,7 @@ export default function AdminProductManagement() {
         })
       });
       if (response.ok) {
-        setNewProductName('');
-        setNewProductDesc('');
-      setNewSampleUrl('');
-      setNewTags('');
-          setNewTags('');
-        setNewProductPriceAnnual('');
-        setNewProductPriceThreeMonths('');
-        setNewProductPriceTwoMonths('');
-        setFeatures({ 
-          allowLogo: false, 
-          allowProfile: true,
-          allowPaperCard: false, 
-          allowCustomUrl: false, 
-          allowSinglePage: false,
-          showAds: true,
-          maxSnsCount: 1,
-          scanLimit: 10,
-          allowedThemes: ['modern']
-        });
-        setEditingId(null);
+        resetForm();
         fetchProducts();
       } else {
         const data = await response.json();
@@ -170,36 +152,11 @@ export default function AdminProductManagement() {
     }
   };
 
-  const startEdit = (prod) => {
-    setNewProductName(prod.name);
-    setNewProductDesc(prod.description || '');
-    setNewSampleUrl(prod.sampleUrl || '');
-      setNewTags(prod.tags ? prod.tags.join(', ') : '');
-    setNewProductPriceAnnual(prod.price?.annual !== undefined ? prod.price.annual : (typeof prod.price === 'number' ? prod.price : ''));
-    setNewProductPriceThreeMonths(prod.price?.threeMonths !== undefined ? prod.price.threeMonths : '');
-    setNewProductPriceTwoMonths(prod.price?.twoMonths !== undefined ? prod.price.twoMonths : '');
-    setFeatures({
-      allowLogo: prod.features?.allowLogo || false,
-      allowProfile: prod.features?.allowProfile ?? true,
-      allowPaperCard: prod.features?.allowPaperCard || false,
-      allowCustomUrl: prod.features?.allowCustomUrl || false,
-      allowSinglePage: prod.features?.allowSinglePage || false,
-      showAds: prod.features?.showAds ?? true,
-      maxSnsCount: prod.features?.maxSnsCount ?? 1,
-      maxGallery: prod.features?.maxGallery ?? 1,
-      maxVideo: prod.features?.maxVideo ?? 1,
-      scanLimit: prod.features?.scanLimit !== undefined ? prod.features.scanLimit : 10,
-      allowedThemes: prod.features?.allowedThemes || ['modern']
-    });
-    setEditingId(prod.id || prod._id);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const cancelEdit = () => {
+  const resetForm = () => {
     setNewProductName('');
     setNewProductDesc('');
-      setNewSampleUrl('');
-      setNewTags('');
+    setNewSampleUrl('');
+    setNewTags('');
     setNewProductPriceAnnual('');
     setNewProductPriceThreeMonths('');
     setNewProductPriceTwoMonths('');
@@ -210,6 +167,7 @@ export default function AdminProductManagement() {
       allowCustomUrl: false, 
       allowSinglePage: false,
       showAds: true,
+      allowNetworking: false,
       maxSnsCount: 1,
       maxGallery: 1,
       maxVideo: 1,
@@ -217,6 +175,36 @@ export default function AdminProductManagement() {
       allowedThemes: ['modern']
     });
     setEditingId(null);
+  };
+
+  const startEdit = (prod) => {
+    setEditingId(prod.id || prod._id);
+    setNewProductName(prod.name);
+    setNewProductDesc(prod.description || '');
+    setNewSampleUrl(prod.sampleUrl || '');
+    setNewTags(prod.tags ? prod.tags.join(', ') : '');
+    setNewProductPriceAnnual(prod.price?.annual !== undefined ? prod.price.annual : (typeof prod.price === 'number' ? prod.price : ''));
+    setNewProductPriceThreeMonths(prod.price?.threeMonths !== undefined ? prod.price.threeMonths : '');
+    setNewProductPriceTwoMonths(prod.price?.twoMonths !== undefined ? prod.price.twoMonths : '');
+    setFeatures({
+      allowLogo: prod.features?.allowLogo || false,
+      allowProfile: prod.features?.allowProfile ?? true,
+      allowPaperCard: prod.features?.allowPaperCard || false,
+      allowCustomUrl: prod.features?.allowCustomUrl || false,
+      allowSinglePage: prod.features?.allowSinglePage || false,
+      showAds: prod.features?.showAds ?? true,
+      allowNetworking: prod.features?.allowNetworking || false,
+      maxSnsCount: prod.features?.maxSnsCount ?? 1,
+      maxGallery: prod.features?.maxGallery ?? 1,
+      maxVideo: prod.features?.maxVideo ?? 1,
+      scanLimit: prod.features?.scanLimit !== undefined ? prod.features.scanLimit : 10,
+      allowedThemes: prod.features?.allowedThemes || ['modern']
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    resetForm();
   };
 
   const handleDeleteProduct = async (id) => {
@@ -428,7 +416,15 @@ export default function AdminProductManagement() {
                       checked={features.allowSinglePage} 
                       onChange={(e) => setFeatures({...features, allowSinglePage: e.target.checked})} 
                     />
-                    SPA(싱글페이지) 기능 허용
+                    SPA(싱글) 허용
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={features.allowNetworking} 
+                      onChange={(e) => setFeatures({...features, allowNetworking: e.target.checked})} 
+                    />
+                    네트워킹/검색 허용
                   </label>
                   
                   <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem 0' }}>

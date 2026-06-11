@@ -17,9 +17,10 @@ const Sidebar = () => {
 
   const menuItems = [
     { name: '대시보드', path: '/dashboard', icon: '📊' },
-    { name: '내 명함 관리', path: '/cards', icon: '🪪' },
-    { name: '내 명함첩', path: '/address-book', icon: '📥' },
-    { name: '인맥 로그', path: '/logs', icon: '📝' },
+    { name: '내 명함 관리', path: '/cards', icon: '📇' },
+    { name: '비즈니스 매칭', path: '/networking', icon: '💼' },
+    { name: '내 명함첩', path: '/address-book', icon: '📕' },
+    { name: '인맥 로그', path: '/logs', icon: '📜' },
     { name: '통계 분석', path: '/analytics', icon: '📈' },
     { name: '설정', path: '/settings', icon: '⚙️' },
   ];

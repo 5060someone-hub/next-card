@@ -22,14 +22,16 @@ import {
   Palette,
   Eye,
   RefreshCw,
-  ArrowLeft
+  ArrowLeft,
+  Briefcase,
+  Users
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { QRCodeSVG } from 'qrcode.react';
 import './CardEditor.css';
 import CardPreview from '../components/CardPreview';
-
 import SpaBlocksEditor from '../components/SpaBlocksEditor';
+import { regionData, industryData } from '../utils/categories';
 
 const CardEditor = () => {
   const cardRef = useRef(null);
@@ -49,6 +51,7 @@ const CardEditor = () => {
     btnBgColor: '#c9d0d9', blockBgColor: '#f1f5f9', btnIconColor: '#ffffff',
     nameFontSizeKor: 24, nameFontSizeEng: 16, jobTitleFontSize: 16, companyFontSize: 14,
     paperCardUrl: '', customCardUrl: '', productType: 'general',
+    industryCategory: '', industrySubCategory: '', regionCity: '', regionDistrict: '', isNetworkingPublic: false,
     sns: { kakaotalk: '', instagram: '', facebook: '', tiktok: '', linkedin: '', x: '', threads: '' },
     isSpaEnabled: true,
     sections: []
@@ -657,6 +660,92 @@ const CardEditor = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* 네트워킹 설정 영역 */}
+              <div className="form-card" style={{ background: '#fff', padding: '1.25rem', borderRadius: '20px', marginBottom: '1.25rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}><Briefcase size={20} /> 비즈니스 파트너 네트워킹</h3>
+                  {canUseFeature('allowNetworking') && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={formData.isNetworkingPublic} 
+                        onChange={e => setFormData({ ...formData, isNetworkingPublic: e.target.checked })}
+                      />
+                      네트워킹 공개하기
+                    </label>
+                  )}
+                </div>
+                
+                {!canUseFeature('allowNetworking') ? (
+                  <div style={{ textAlign: 'center', padding: '2rem', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+                    <Lock size={32} style={{ color: '#ef4444', marginBottom: '1rem' }} />
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#1e293b' }}>프리미엄 전용 기능</h4>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>네트워킹 기능을 활성화하면 다른 회원들과 비즈니스 매칭이 가능합니다.<br/>더 높은 등급의 상품을 이용해 보세요.</p>
+                  </div>
+                ) : (
+                  <div className="editor-form-grid">
+                    <div className="input-group">
+                      <label>업종 대분류</label>
+                      <select 
+                        name="industryCategory" 
+                        value={formData.industryCategory} 
+                        onChange={(e) => {
+                          setFormData({ ...formData, industryCategory: e.target.value, industrySubCategory: '' });
+                        }}
+                      >
+                        <option value="">선택 안함</option>
+                        {Object.keys(industryData).map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label>업종 중분류</label>
+                      <select 
+                        name="industrySubCategory" 
+                        value={formData.industrySubCategory} 
+                        onChange={handleChange}
+                        disabled={!formData.industryCategory}
+                      >
+                        <option value="">선택 안함</option>
+                        {formData.industryCategory && industryData[formData.industryCategory]?.map(sub => (
+                          <option key={sub} value={sub}>{sub}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label>지역 대분류 (시/도)</label>
+                      <select 
+                        name="regionCity" 
+                        value={formData.regionCity} 
+                        onChange={(e) => {
+                          setFormData({ ...formData, regionCity: e.target.value, regionDistrict: '' });
+                        }}
+                      >
+                        <option value="">선택 안함</option>
+                        {Object.keys(regionData).map(city => (
+                          <option key={city} value={city}>{city}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label>지역 중분류 (시/군/구)</label>
+                      <select 
+                        name="regionDistrict" 
+                        value={formData.regionDistrict} 
+                        onChange={handleChange}
+                        disabled={!formData.regionCity}
+                      >
+                        <option value="">선택 안함</option>
+                        {formData.regionCity && regionData[formData.regionCity]?.map(dist => (
+                          <option key={dist} value={dist}>{dist}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* SPA 설정 영역 */}

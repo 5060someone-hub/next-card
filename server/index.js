@@ -964,6 +964,43 @@ app.get('/api/card/:userId', async (req, res) => {
   }
 });
 
+// 비즈니스 네트워킹(매칭) 목록 조회
+app.get('/api/networking/cards', async (req, res) => {
+  try {
+    const { industryCategory, industrySubCategory, regionCity, regionDistrict, search } = req.query;
+    
+    // 공개 설정된 명함만 검색
+    let query = { 'cardData.isNetworkingPublic': true };
+    
+    if (industryCategory) query['cardData.industryCategory'] = industryCategory;
+    if (industrySubCategory) query['cardData.industrySubCategory'] = industrySubCategory;
+    if (regionCity) query['cardData.regionCity'] = regionCity;
+    if (regionDistrict) query['cardData.regionDistrict'] = regionDistrict;
+    
+    // 텍스트 검색 (이름, 직함, 회사명, 태그)
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      query['$or'] = [
+        { 'cardData.name': searchRegex },
+        { 'cardData.company': searchRegex },
+        { 'cardData.jobTitle': searchRegex },
+        { 'cardData.intro': searchRegex }
+      ];
+    }
+    
+    // 보안을 위해 필요한 필드만 가져오고, 민감한 정보는 제외할 수도 있으나,
+    // 명함 서비스이므로 공개 명함은 전체 데이터를 줘도 무방함
+    const cards = await Card.find(query)
+                            .sort({ updatedAt: -1 })
+                            .limit(100);
+                            
+    const activeCards = cards.filter(isCardActive);
+    res.json(activeCards);
+  } catch (err) {
+    res.status(500).json({ message: '네트워킹 목록 조회 실패', error: err.message });
+  }
+});
+
 // 전체 명함 목록 조회 (배열 반환)
 app.get('/api/cards/:userId', async (req, res) => {
   try {
