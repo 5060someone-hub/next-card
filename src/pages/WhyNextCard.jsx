@@ -22,6 +22,24 @@ const WhyNextCard = () => {
   const [content, setContent] = useState(DEFAULT_WHY);
   const [loading, setLoading] = useState(true);
 
+  
+  const getYoutubeEmbedUrl = (url) => {
+    if (!url) return '';
+    if (url.includes('youtube.com/embed/')) return url;
+    let videoId = '';
+    try {
+      if (url.includes('youtu.be/')) {
+        videoId = url.split('youtu.be/')[1].split('?')[0];
+      } else if (url.includes('youtube.com/watch')) {
+        const urlObj = new URL(url);
+        videoId = urlObj.searchParams.get('v');
+      }
+    } catch(e) { }
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  };
+
+  const detailImages = content.detailImages || (content.detailImage ? [content.detailImage] : []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
