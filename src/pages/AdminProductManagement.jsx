@@ -556,9 +556,10 @@ export default function AdminProductManagement() {
                         </div>
                       </td>
                       <td style={{ fontWeight: 700, color: '#059669', fontSize: '0.813rem' }}>
-                        <div>연간: {prod.price?.annual !== undefined ? prod.price.annual.toLocaleString() : (typeof prod.price === 'number' ? prod.price.toLocaleString() : '0')}원</div>
-                        <div>3개월: {prod.price?.threeMonths !== undefined ? prod.price.threeMonths.toLocaleString() : '0'}원</div>
-                        <div>2개월: {prod.price?.twoMonths !== undefined ? prod.price.twoMonths.toLocaleString() : '0'}원</div>
+                        {(prod.price?.annual > 0 || typeof prod.price === 'number') && <div>연간: {prod.price?.annual !== undefined ? prod.price.annual.toLocaleString() : prod.price.toLocaleString()}원</div>}
+                        {prod.price?.threeMonths > 0 && <div>3개월: {prod.price.threeMonths.toLocaleString()}원</div>}
+                        {prod.price?.twoMonths > 0 && <div>2개월: {prod.price.twoMonths.toLocaleString()}원</div>}
+                        {!prod.price?.annual && !prod.price?.threeMonths && !prod.price?.twoMonths && typeof prod.price !== 'number' && <div style={{color:'#94a3b8'}}>무료</div>}
                       </td>
                       <td style={{ color: '#64748b', fontSize: '0.75rem' }}>{prod.description || '-'}</td>
                       <td>

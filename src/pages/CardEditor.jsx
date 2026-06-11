@@ -382,7 +382,11 @@ const CardEditor = () => {
                     <strong style={{ fontWeight: 800 }}>{currentProduct.name} 요금제 혜택:</strong> {currentProduct.description}
                     {currentProduct.price !== undefined && (
                       <span style={{ marginLeft: '1.2rem', background: '#dbeafe', padding: '0.25rem 0.75rem', borderRadius: '50px', fontWeight: 800, color: '#1e40af', display: 'inline-block', fontSize: '0.8rem' }}>
-                        요금: 연간 {currentProduct.price?.annual !== undefined ? currentProduct.price.annual.toLocaleString() : (typeof currentProduct.price === 'number' ? currentProduct.price.toLocaleString() : 0)}원 / 3개월 {currentProduct.price?.threeMonths !== undefined ? currentProduct.price.threeMonths.toLocaleString() : 0}원 / 2개월 {currentProduct.price?.twoMonths !== undefined ? currentProduct.price.twoMonths.toLocaleString() : 0}원
+                        {[
+                          (currentProduct.price?.annual > 0 || typeof currentProduct.price === 'number') ? `연간: ${(currentProduct.price?.annual !== undefined ? currentProduct.price.annual : (typeof currentProduct.price === 'number' ? currentProduct.price : 0)).toLocaleString()}원` : null,
+                          (currentProduct.price?.threeMonths > 0) ? `3개월: ${currentProduct.price.threeMonths.toLocaleString()}원` : null,
+                          (currentProduct.price?.twoMonths > 0) ? `2개월: ${currentProduct.price.twoMonths.toLocaleString()}원` : null
+                        ].filter(Boolean).join(' / ') || '무료'}
                       </span>
                     )}
                   </div>
