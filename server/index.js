@@ -283,6 +283,11 @@ const userSchema = new mongoose.Schema({
   role: { type: String, default: 'user' }, // 'user', 'admin', 'company_admin', 'employee'
   companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', default: null },
   scanCount: { type: Number, default: 0 },
+  bankAccount: {
+    bankName: { type: String, default: '' },
+    accountNumber: { type: String, default: '' },
+    accountHolder: { type: String, default: '' }
+  },
   createdAt: { type: Date, default: Date.now }
 });
 

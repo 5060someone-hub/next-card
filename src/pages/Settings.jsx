@@ -14,7 +14,8 @@ import {
   AlertCircle,
   Loader2,
   BadgeCheck,
-  Clock
+  Clock,
+  Landmark
 } from 'lucide-react';
 import './Settings.css';
 
@@ -74,6 +75,7 @@ const Settings = () => {
     phone: auth.phone || '',
     notifications: { cardView: true, marketing: false },
     privacy: { publicCard: true, showViews: true },
+    bankAccount: { bankName: '', accountNumber: '', accountHolder: '' },
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -147,7 +149,8 @@ const Settings = () => {
             ...prev,
             name: data.name || '',
             email: data.email || '',
-            phone: data.phone || ''
+            phone: data.phone || '',
+            bankAccount: data.bankAccount || { bankName: '', accountNumber: '', accountHolder: '' }
           }));
           
           // 로컬스토리지 정보 동기화
@@ -278,13 +281,14 @@ const Settings = () => {
     setSaveMsg('');
 
     try {
-      if (activeTab === 'account') {
+      if (activeTab === 'account' || activeTab === 'bankAccount') {
         const res = await fetch(`${API_BASE}/api/user/${auth.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: settings.name,
-            phone: settings.phone
+            phone: settings.phone,
+            bankAccount: settings.bankAccount
           })
         });
 
@@ -375,6 +379,9 @@ const Settings = () => {
             </button>
             <button className={`tab-btn ${activeTab === 'subscription' ? 'active' : ''}`} onClick={() => setActiveTab('subscription')}>
               <CreditCard size={18} /> 구독 및 플랜
+            </button>
+            <button className={`tab-btn ${activeTab === 'bankAccount' ? 'active' : ''}`} onClick={() => setActiveTab('bankAccount')}>
+              <Landmark size={18} /> 은행 계좌
             </button>
           </aside>
 
@@ -769,6 +776,35 @@ const Settings = () => {
               </div>
             )}
 
+              <button className={`mobile-accordion-tab ${activeTab === 'bankAccount' ? 'active' : ''}`} onClick={() => setActiveTab('bankAccount')}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><Landmark size={18} /> 은행 계좌</div>
+                <ChevronRight size={18} className="chevron" />
+              </button>
+            {/* ─── 은행 계좌 ─── */}
+            {activeTab === 'bankAccount' && (
+              <div className="settings-card animate-in">
+                <h3>은행 계좌 정보</h3>
+                <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                  서비스 이용 및 명함에서 사용할 은행 계좌 정보를 입력해 주세요.
+                </p>
+                <div className="input-group">
+                  <label>은행명</label>
+                  <input type="text" placeholder="예) 국민은행" value={settings.bankAccount.bankName} onChange={e => setSettings({...settings, bankAccount: {...settings.bankAccount, bankName: e.target.value}})} />
+                </div>
+                <div className="input-group">
+                  <label>계좌번호</label>
+                  <input type="text" placeholder="예) 123-456-7890" value={settings.bankAccount.accountNumber} onChange={e => setSettings({...settings, bankAccount: {...settings.bankAccount, accountNumber: e.target.value}})} />
+                </div>
+                <div className="input-group">
+                  <label>예금주명</label>
+                  <input type="text" placeholder="예) 홍길동" value={settings.bankAccount.accountHolder} onChange={e => setSettings({...settings, bankAccount: {...settings.bankAccount, accountHolder: e.target.value}})} />
+                </div>
+                {saveMsg && <p className="save-msg">{saveMsg}</p>}
+                <button className="btn-save" onClick={handleSave} disabled={loading}>
+                  {loading ? <Loader2 size={16} className="spin" /> : <Save size={16} />} 저장하기
+                </button>
+              </div>
+            )}
           </section>
         </div>
       </main>
