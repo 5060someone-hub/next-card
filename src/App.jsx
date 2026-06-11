@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 // ─── 즉시 로드 (가장 많이 방문하는 페이지) ─────────────────────────────────
 import LandingPage from './pages/LandingPage';
+import WhyNextCard from './pages/WhyNextCard';
 import PublicCard from './pages/PublicCard';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
