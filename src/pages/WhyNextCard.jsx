@@ -72,7 +72,7 @@ const WhyNextCard = () => {
         {content.videoUrl && content.videoUrl.trim() !== '' && (
           <div className="why-video-wrapper">
             <iframe 
-              src={content.videoUrl} 
+              src={getYoutubeEmbedUrl(content.videoUrl)} 
               title="Video player" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               allowFullScreen
@@ -80,10 +80,12 @@ const WhyNextCard = () => {
           </div>
         )}
 
-        {/* 상세페이지 이미지 추가 */}
-        {content.detailImage && (
-          <div className="why-detail-image-container" style={{ marginTop: '2rem', textAlign: 'center' }}>
-            <img src={content.detailImage} alt="상세 설명" style={{ maxWidth: '100%', borderRadius: '12px' }} />
+        {/* 상세페이지 이미지 리스트 추가 */}
+        {detailImages.length > 0 && (
+          <div className="why-detail-image-container" style={{ marginTop: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+            {detailImages.map((imgUrl, i) => (
+              <img key={i} src={imgUrl} alt={`상세 설명 ${i+1}`} style={{ maxWidth: '100%', width: '100%', display: 'block', borderRadius: '12px' }} />
+            ))}
           </div>
         )}
       </section>
