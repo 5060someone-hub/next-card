@@ -82,6 +82,7 @@ export default function AdminPlanChanges() {
     if (grade === 'prod_1779363055944') return '표준형(Standard-B)';
     if (grade === 'prod_1779351721158') return '기본형(Basic-B)';
     if (grade === 'general') return '기본형(Basic-A)';
+    if (grade === 'paper') return '종이명함(스캔)';
     return grade || '알 수 없음';
   };
 

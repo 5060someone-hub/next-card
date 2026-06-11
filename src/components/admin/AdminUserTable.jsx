@@ -90,7 +90,8 @@ const AdminUserTable = ({
                 const cardName = card.cardData?.name || card.cardData?.nameEng || '이름 없음';
                 const expiryStr = card.expiryDate ? new Date(card.expiryDate).toISOString().split('T')[0] : '평생';
                 const prod = products.find(p => p.id === card.grade);
-                const gradeName = prod?.name || card.grade || '일반';
+                let gradeName = prod?.name || card.grade || '일반';
+                if (card.grade === 'paper') gradeName = '종이명함(스캔)';
                 const publishStatus = card.cardData?.status || 'draft';
 
                 return (
