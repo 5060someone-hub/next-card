@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search, ExternalLink, User, Shield, Mail, Phone, Download, CheckCircle2, Clock, X, Settings, Edit, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, ExternalLink, User, Shield, Mail, Phone, Download, CheckCircle2, Clock, X, Settings, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const AdminUserTable = ({
   loading,
@@ -25,6 +25,16 @@ const AdminUserTable = ({
   const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
   const isSuperAdmin = auth.email === 'vikitour.boss@gmail.com';
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortedCards, searchTerm]);
+
+  const totalPages = Math.ceil(sortedCards.length / itemsPerPage);
+  const currentCards = sortedCards.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <>
       <div className="table-header-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -46,7 +56,7 @@ const AdminUserTable = ({
         </div>
       </div>
 
-      <div className="table-responsive">
+      <div className="admin-table-container animate-in" style={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
         <table className="admin-table user-table">
           <thead>
             <tr>
@@ -71,10 +81,10 @@ const AdminUserTable = ({
           <tbody>
             {loading ? (
               <tr><td colSpan="10" className="empty-row">데이터 로딩 중...</td></tr>
-            ) : sortedCards.length === 0 ? (
+            ) : currentCards.length === 0 ? (
               <tr><td colSpan="10" className="empty-row">검색 결과가 없습니다.</td></tr>
             ) : (
-              sortedCards.map(card => {
+              currentCards.map(card => {
                 const user = users.find(u => u.id === card.userId) || {};
                 const cStatus = card.paymentStatus || 'none';
                 const cardName = card.cardData?.name || card.cardData?.nameEng || '이름 없음';
@@ -219,6 +229,42 @@ const AdminUserTable = ({
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '20px' }}>
+          <button 
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+            disabled={currentPage === 1}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '4px',
+              padding: '8px 16px', border: '1px solid #cbd5e1', borderRadius: '8px', 
+              background: currentPage === 1 ? '#f1f5f9' : 'white', 
+              color: currentPage === 1 ? '#94a3b8' : '#334155',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            <ChevronLeft size={18} /> 이전
+          </button>
+          <span style={{ fontSize: '1.05rem', fontWeight: '600', color: '#475569' }}>
+            {currentPage} / {totalPages}
+          </span>
+          <button 
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
+            disabled={currentPage === totalPages}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '4px',
+              padding: '8px 16px', border: '1px solid #cbd5e1', borderRadius: '8px', 
+              background: currentPage === totalPages ? '#f1f5f9' : 'white', 
+              color: currentPage === totalPages ? '#94a3b8' : '#334155',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            다음 <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
     </>
   );
 };
