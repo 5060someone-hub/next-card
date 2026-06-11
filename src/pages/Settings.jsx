@@ -23,8 +23,8 @@ const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'h
 // 등급 한국어 변환
 const GRADE_LABELS = {
   general:   { label: '기본형 (Basic-A)',   desc: '기본 명함 기능을 사용 중입니다.',            color: 'general' },
-  premium_nfc:   { label: '프리미엄 (Premium)', desc: '로고·디자인 테마 등 고급 기능을 사용 중입니다.', color: 'premium' },
-  premium:   { label: '프리미엄 (Premium)', desc: '로고·디자인 테마 등 고급 기능을 사용 중입니다.', color: 'premium' },
+  premium_nfc:   { label: '프리미엄(Premium-A)', desc: '로고·디자인 테마 등 고급 기능을 사용 중입니다.', color: 'premium' },
+  premium:   { label: '프리미엄(Premium-A)', desc: '로고·디자인 테마 등 고급 기능을 사용 중입니다.', color: 'premium' },
   corporate: { label: '기업용 (커스텀 디자인)', desc: '모든 프리미엄 기능을 제한 없이 사용 중입니다.', color: 'corporate' },
   prod_1778899977850: { label: '체험용(2개월무료)', desc: '체험용 2개월 무료 요금제를 적용 중입니다.', color: 'event' },
   prod_1778900193128: { label: '표준형(Standard-A)', desc: '표준형 혜택을 이용 중입니다.', color: 'md' },

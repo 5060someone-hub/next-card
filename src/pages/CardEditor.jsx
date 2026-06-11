@@ -335,7 +335,7 @@ const CardEditor = () => {
                   if (p.id === 'prod_1779351721158') displayName = '기본형(Basic-B)';
                   if (p.id === 'prod_1778900193128' || p.id === 'advanced') displayName = '표준형(Standard-A)';
                   if (p.id === 'prod_1779363055944') displayName = '표준형(Standard-B)';
-                  if (p.id === 'premium_nfc' || p.id === 'premium') displayName = '프리미엄 (Premium)';
+                  if (p.id === 'premium_nfc' || p.id === 'premium') displayName = '프리미엄(Premium-A)';
                   if (p.id === 'corporate') displayName = '기업용 (커스텀 디자인)';
                   return (
                     <option key={p.id} value={p.id}>{displayName}</option>
