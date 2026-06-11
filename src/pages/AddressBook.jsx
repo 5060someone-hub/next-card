@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, Search, Trash2, Edit3, Save, Map as MapIcon, List, Loader2, Camera, X, Download } from 'lucide-react';
+import { BookOpen, Search, Trash2, Edit3, Save, Map as MapIcon, List, Loader2, Camera, X, Download, Image as ImageIcon } from 'lucide-react';
 import { Map, MapMarker } from 'react-kakao-maps-sdk';
 import Sidebar from '../components/Sidebar';
 import './AdminDashboard.css'; // 사이드바 레이아웃 공유용
@@ -18,6 +18,7 @@ const AddressBook = () => {
   const [scanModalOpen, setScanModalOpen] = useState(false);
   const [scanData, setScanData] = useState(null);
   const fileInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
 
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(null);
@@ -120,6 +121,12 @@ const AddressBook = () => {
     }
   };
 
+  const handleGalleryClick = () => {
+    if (galleryInputRef.current) {
+      galleryInputRef.current.click();
+    }
+  };
+
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -166,6 +173,7 @@ const AddressBook = () => {
       setIsScanning(false);
       // 같은 파일 다시 선택 가능하도록 초기화
       if (fileInputRef.current) fileInputRef.current.value = '';
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
     }
   };
 
@@ -289,13 +297,28 @@ END:VCARD`;
               ref={fileInputRef}
               onChange={handleFileChange}
             />
+            <input 
+              type="file" 
+              accept="image/*" 
+              style={{ display: 'none' }} 
+              ref={galleryInputRef}
+              onChange={handleFileChange}
+            />
             <button 
               onClick={handleScanClick}
               disabled={isScanning}
               style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 6px rgba(37,99,235,0.2)' }}
             >
               {isScanning ? <Loader2 size={18} className="spin-icon" /> : <Camera size={18} />}
-              {isScanning ? 'AI 명함 분석 중...' : 'AI 종이명함 스캔하기'}
+              {isScanning ? '분석 중...' : '카메라 촬영'}
+            </button>
+            <button 
+              onClick={handleGalleryClick}
+              disabled={isScanning}
+              style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #2563eb', background: '#fff', color: '#2563eb', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 6px rgba(37,99,235,0.05)' }}
+            >
+              <ImageIcon size={18} />
+              {isScanning ? '분석 중...' : '사진첩 스캔'}
             </button>
           </div>
 
