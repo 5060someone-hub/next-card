@@ -35,15 +35,16 @@ const CardPreview = ({ formData }) => {
   // Comprehensive Action Mapping (Unlimited SNS)
   const getSnsIcon = (platform, color) => {
     const hex = (color || '#ffffff').replace('#', '');
+    const imgStyle = { width: '20px', height: '20px', display: 'block', objectFit: 'contain' };
     switch(platform) {
-      case 'instagram': return <img src={`https://cdn.simpleicons.org/instagram/${hex}`} width="20" height="20" alt="insta" />;
-      case 'kakaotalk': return <img src={`https://cdn.simpleicons.org/kakaotalk/${hex}`} width="20" height="20" alt="kakao" />;
-      case 'facebook': return <img src={`https://cdn.simpleicons.org/facebook/${hex}`} width="20" height="20" alt="fb" />;
-      case 'tiktok': return <img src={`https://cdn.simpleicons.org/tiktok/${hex}`} width="20" height="20" alt="tiktok" />;
-      case 'x': return <img src={`https://cdn.simpleicons.org/x/${hex}`} width="20" height="20" alt="x" />;
-      case 'threads': return <img src={`https://cdn.simpleicons.org/threads/${hex}`} width="20" height="20" alt="threads" />;
+      case 'instagram': return <img src={`https://cdn.simpleicons.org/instagram/${hex}`} width="20" height="20" style={imgStyle} alt="insta" />;
+      case 'kakao': return <img src={`https://cdn.simpleicons.org/kakaotalk/${hex}`} width="20" height="20" style={imgStyle} alt="kakao" />;
+      case 'facebook': return <img src={`https://cdn.simpleicons.org/facebook/${hex}`} width="20" height="20" style={imgStyle} alt="fb" />;
+      case 'tiktok': return <img src={`https://cdn.simpleicons.org/tiktok/${hex}`} width="20" height="20" style={imgStyle} alt="tiktok" />;
+      case 'x': return <img src={`https://cdn.simpleicons.org/x/${hex}`} width="20" height="20" style={imgStyle} alt="x" />;
+      case 'threads': return <img src={`https://cdn.simpleicons.org/threads/${hex}`} width="20" height="20" style={imgStyle} alt="threads" />;
       case 'linkedin': return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color || '#ffffff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color || '#ffffff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={imgStyle}>
           <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/>
         </svg>
       );
