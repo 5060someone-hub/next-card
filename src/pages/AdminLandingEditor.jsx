@@ -1162,8 +1162,8 @@ const WhyEditor = ({ data, onChange }) => {
                 <img src={imgUrl} alt="상세 컷" style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '4px' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
                   <div style={{ display: 'flex', gap: '0.25rem' }}>
-                    <button className="ale-btn-icon" onClick={() => moveImage(i, -1)} disabled={i === 0}><ArrowUp size={14}/></button>
-                    <button className="ale-btn-icon" onClick={() => moveImage(i, 1)} disabled={i === detailImages.length - 1}><ArrowDown size={14}/></button>
+                    <button className="ale-btn-icon" onClick={() => moveImage(i, -1)} disabled={i === 0}><ChevronUp size={14}/></button>
+                    <button className="ale-btn-icon" onClick={() => moveImage(i, 1)} disabled={i === detailImages.length - 1}><ChevronDown size={14}/></button>
                   </div>
                   <button className="ale-btn-icon danger" onClick={() => removeImage(i)}><Trash2 size={14}/></button>
                 </div>
