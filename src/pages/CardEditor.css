@@ -856,6 +856,11 @@
     gap: 1rem !important;
   }
 
+  .editor-form-grid > div,
+  .sns-input-grid > div {
+    grid-column: 1 / -1 !important;
+  }
+
   .form-card div[style*="repeat(4, 1fr)"] {
     grid-template-columns: repeat(2, 1fr) !important; /* Theme buttons to 2x2 */
   }
