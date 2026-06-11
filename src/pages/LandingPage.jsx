@@ -417,6 +417,11 @@ const LandingPage = () => {
                 <a {...getLinkProps(c.hero.primaryBtnUrl, '/signup')} className="btn-primary">
                   {c.hero.primaryBtn} <ArrowRight size={18} />
                 </a>
+                {(!c.whySection || c.whySection.showButton !== false) && (
+                  <a onClick={() => navigate('/why')} className="btn-secondary" style={{ cursor: 'pointer', background: '#e2e8f0', color: '#0f172a', border: 'none' }}>
+                    {c.whySection?.buttonText || '왜 넥스카드인가?'}
+                  </a>
+                )}
                 {c.hero.secondaryBtn && (
                   <a {...getLinkProps(c.hero.secondaryBtnUrl, '#')} className="btn-secondary">
                     {c.hero.secondaryBtn}

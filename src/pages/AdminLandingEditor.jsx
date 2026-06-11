@@ -1124,6 +1124,7 @@ const AdminLandingEditor = () => {
     { id: 'samples',  label: '🖼️ 명함샘플'   },
     { id: 'partners', label: '🏢 주요거래처' },
     { id: 'features', label: '✨ 기능소개'   },
+    { id: 'why',      label: '💡 왜 넥스카드' },
     { id: 'pricing',  label: '💰 요금제'     },
     { id: 'faq',      label: '❓ FAQ'        },
     { id: 'reviews',  label: '💬 리뷰'       },
@@ -1246,6 +1247,7 @@ const AdminLandingEditor = () => {
                 onChangeLogos={v => update('partnersLogos', v)} 
               />
             )}
+            {activeBlock === 'why'      && <WhyEditor      data={content.whySection} onChange={v => update('whySection', v)} />}
             {activeBlock === 'features' && (
               <FeaturesEditor  
                 sectionData={content.featuresSection || { title: '스마트한 명함의 기준', desc: '종이 명함이 담지 못하는 무한한 가능성을 경험하세요.' }}

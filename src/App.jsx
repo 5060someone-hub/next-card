@@ -97,6 +97,7 @@ function App() {
         <Routes>
           {/* PC 데스크탑 풀사이즈 라우트 */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/why" element={<WhyNextCard />} />
           <Route path="/faq" element={<FaqBoard />} />
           <Route path="/blog" element={<BlogList />} />
           <Route path="/blog/:id" element={<BlogPost />} />
