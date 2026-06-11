@@ -509,8 +509,8 @@ const CardEditor = () => {
                       <div style={{ flex: 1 }}>
                         <input type="file" id="logo-upload" hidden onChange={(e) => handleImageChange(e, 'logoUrl')} accept="image/jpeg, image/png" disabled={!canUseFeature('allowLogo') || isEmployee} />
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                          <button type="button" onClick={() => canUseFeature('allowLogo') && !isEmployee && document.getElementById('logo-upload').click()} disabled={isEmployee} style={{ padding: '0.5rem 1rem', background: (canUseFeature('allowLogo') && !isEmployee) ? '#1e293b' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: (canUseFeature('allowLogo') && !isEmployee) ? 'pointer' : 'not-allowed' }}>이미지 교체</button>
-                          {formData.logoUrl && <button type="button" onClick={() => !isEmployee && handleRemoveImage('logoUrl')} disabled={isEmployee} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: isEmployee ? '#cbd5e1' : '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: isEmployee ? 'not-allowed' : 'pointer' }}>삭제</button>}
+                          <button type="button" onClick={() => canUseFeature('allowLogo') && !isEmployee && document.getElementById('logo-upload').click()} disabled={isEmployee} style={{ padding: '0.5rem 1rem', background: (canUseFeature('allowLogo') && !isEmployee) ? '#1e293b' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: (canUseFeature('allowLogo') && !isEmployee) ? 'pointer' : 'not-allowed', whiteSpace: 'nowrap' }}>이미지 교체</button>
+                          {formData.logoUrl && <button type="button" onClick={() => !isEmployee && handleRemoveImage('logoUrl')} disabled={isEmployee} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: isEmployee ? '#cbd5e1' : '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: isEmployee ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>삭제</button>}
                         </div>
                         <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.5rem', marginBottom: 0 }}>250KB 이하의 JPG, PNG 권장</p>
                       </div>
@@ -533,8 +533,8 @@ const CardEditor = () => {
                       <div style={{ flex: 1 }}>
                         <input type="file" id="profile-upload" hidden onChange={(e) => handleImageChange(e, 'profileUrl')} accept="image/jpeg, image/png" disabled={!canUseFeature('allowProfile')} />
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                          <button type="button" onClick={() => canUseFeature('allowProfile') && document.getElementById('profile-upload').click()} style={{ padding: '0.5rem 1rem', background: canUseFeature('allowProfile') ? '#1e293b' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: canUseFeature('allowProfile') ? 'pointer' : 'not-allowed' }}>이미지 교체</button>
-                          {formData.profileUrl && <button type="button" onClick={() => handleRemoveImage('profileUrl')} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>삭제</button>}
+                          <button type="button" onClick={() => canUseFeature('allowProfile') && document.getElementById('profile-upload').click()} style={{ padding: '0.5rem 1rem', background: canUseFeature('allowProfile') ? '#1e293b' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: canUseFeature('allowProfile') ? 'pointer' : 'not-allowed', whiteSpace: 'nowrap' }}>이미지 교체</button>
+                          {formData.profileUrl && <button type="button" onClick={() => handleRemoveImage('profileUrl')} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>삭제</button>}
                         </div>
                         <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.5rem', marginBottom: 0 }}>250KB 이하의 JPG, PNG 권장</p>
                       </div>

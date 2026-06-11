@@ -346,9 +346,9 @@ const AdminCardEditor = () => {
                       </div>
                       <div style={{ flex: 1 }}>
                         <input type="file" id="logo-upload" hidden onChange={(e) => handleImageChange(e, 'logoUrl')} accept="image/*" />
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <button type="button" onClick={() => document.getElementById('logo-upload').click()} style={{ padding: '0.5rem 1rem', background: '#1e293b', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>이미지 교체</button>
-                          {cardEditForm.logoUrl && <button type="button" onClick={() => handleRemoveImage('logoUrl')} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>삭제</button>}
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <button type="button" onClick={() => document.getElementById('logo-upload').click()} style={{ padding: '0.5rem 1rem', background: '#1e293b', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>이미지 교체</button>
+                          {cardEditForm.logoUrl && <button type="button" onClick={() => handleRemoveImage('logoUrl')} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>삭제</button>}
                         </div>
                       </div>
                     </div>
@@ -366,9 +366,9 @@ const AdminCardEditor = () => {
                       </div>
                       <div style={{ flex: 1 }}>
                         <input type="file" id="profile-upload" hidden onChange={(e) => handleImageChange(e, 'profileUrl')} accept="image/*" />
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <button type="button" onClick={() => document.getElementById('profile-upload').click()} style={{ padding: '0.5rem 1rem', background: '#1e293b', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>이미지 교체</button>
-                          {cardEditForm.profileUrl && <button type="button" onClick={() => handleRemoveImage('profileUrl')} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>삭제</button>}
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <button type="button" onClick={() => document.getElementById('profile-upload').click()} style={{ padding: '0.5rem 1rem', background: '#1e293b', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>이미지 교체</button>
+                          {cardEditForm.profileUrl && <button type="button" onClick={() => handleRemoveImage('profileUrl')} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>삭제</button>}
                         </div>
                       </div>
                     </div>
