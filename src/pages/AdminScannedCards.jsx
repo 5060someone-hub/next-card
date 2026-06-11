@@ -5,7 +5,6 @@ import {
   RefreshCw, 
   Clock, 
   ShieldAlert,
-  X
   X,
   Users
 } from 'lucide-react';
@@ -376,6 +375,16 @@ const AdminScannedCards = () => {
     <div className="dashboard-layout">
       <Sidebar />
       <main className="admin-content">
+        <header className="admin-header">
+          <div className="admin-page-header">
+            <h2 className="admin-page-title"><Users size={28} /> 종이 스캔 명함 관리</h2>
+            <p className="admin-page-desc">회원들이 등록한 종이명함 스캔 데이터 목록입니다.</p>
+          </div>
+          <div className="header-info">
+            {lastSync && (
+              <span className="sync-time">
+                업데이트: {lastSync.toLocaleTimeString()}
+              </span>
             )}
             <button className={`btn-refresh ${loading ? 'spinning' : ''}`} onClick={fetchData} disabled={loading}>
               <RefreshCw size={18} />
