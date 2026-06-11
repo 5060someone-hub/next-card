@@ -75,11 +75,38 @@ const Settings = () => {
     phone: auth.phone || '',
     notifications: { cardView: true, marketing: false },
     privacy: { publicCard: true, showViews: true },
-    bankAccount: { bankName: '', accountNumber: '', accountHolder: '' },
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+
+  const [globalBankInfo, setGlobalBankInfo] = useState({
+    description: '',
+    bankName: '',
+    accountNumber: '',
+    accountHolder: ''
+  });
+
+  useEffect(() => {
+    if (activeTab === 'bankAccount') {
+      fetch(`${API_BASE}/api/settings/bank-info`)
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch');
+          return res.json();
+        })
+        .then(data => {
+          if (data && data.accounts && data.accounts.length > 0) {
+            setGlobalBankInfo({
+              description: data.description || '',
+              bankName: data.accounts[0].bankName || data.accounts[0].bank || '',
+              accountNumber: data.accounts[0].accountNumber || data.accounts[0].account || '',
+              accountHolder: data.accounts[0].accountHolder || data.accounts[0].holder || ''
+            });
+          }
+        })
+        .catch(err => console.error('은행 계좌 로드 실패:', err));
+    }
+  }, [activeTab]);
 
   // 구독 & 다중 명함 정보
   const [userCards, setUserCards] = useState([]);
@@ -149,8 +176,7 @@ const Settings = () => {
             ...prev,
             name: data.name || '',
             email: data.email || '',
-            phone: data.phone || '',
-            bankAccount: data.bankAccount || { bankName: '', accountNumber: '', accountHolder: '' }
+            phone: data.phone || ''
           }));
           
           // 로컬스토리지 정보 동기화
@@ -281,14 +307,13 @@ const Settings = () => {
     setSaveMsg('');
 
     try {
-      if (activeTab === 'account' || activeTab === 'bankAccount') {
+      if (activeTab === 'account') {
         const res = await fetch(`${API_BASE}/api/user/${auth.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: settings.name,
-            phone: settings.phone,
-            bankAccount: settings.bankAccount
+            phone: settings.phone
           })
         });
 
@@ -344,6 +369,34 @@ const Settings = () => {
         // 프라이버시 탭은 데모용 시뮬레이션으로 로컬 UI 메시지만 표시
         setSaveMsg('✅ 프라이버시 설정이 성공적으로 저장되었습니다!');
       }
+    } catch (err) {
+      setSaveMsg(`❌ 실패: ${err.message}`);
+    } finally {
+      setLoading(false);
+      setTimeout(() => setSaveMsg(''), 4000);
+    }
+  };
+
+  const handleSaveBankInfo = async () => {
+    if (auth.role !== 'admin') return;
+    setLoading(true);
+    setSaveMsg('');
+    try {
+      const payload = {
+        description: globalBankInfo.description,
+        accounts: [{
+          bankName: globalBankInfo.bankName,
+          accountNumber: globalBankInfo.accountNumber,
+          accountHolder: globalBankInfo.accountHolder
+        }]
+      };
+      const res = await fetch(`${API_BASE}/api/settings/bank-info`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('저장 실패');
+      setSaveMsg('✅ 은행 계좌 정보가 시스템에 저장되었습니다!');
     } catch (err) {
       setSaveMsg(`❌ 실패: ${err.message}`);
     } finally {
@@ -783,26 +836,55 @@ const Settings = () => {
             {/* ─── 은행 계좌 ─── */}
             {activeTab === 'bankAccount' && (
               <div className="settings-card animate-in">
-                <h3>은행 계좌 정보</h3>
+                <h3>무통장 입금 계좌 안내</h3>
                 <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                  서비스 이용 및 명함에서 사용할 은행 계좌 정보를 입력해 주세요.
+                  서비스 구독 및 플랜 결제를 위한 무통장 입금 계좌입니다.
                 </p>
-                <div className="input-group">
-                  <label>은행명</label>
-                  <input type="text" placeholder="예) 국민은행" value={settings.bankAccount.bankName} onChange={e => setSettings({...settings, bankAccount: {...settings.bankAccount, bankName: e.target.value}})} />
-                </div>
-                <div className="input-group">
-                  <label>계좌번호</label>
-                  <input type="text" placeholder="예) 123-456-7890" value={settings.bankAccount.accountNumber} onChange={e => setSettings({...settings, bankAccount: {...settings.bankAccount, accountNumber: e.target.value}})} />
-                </div>
-                <div className="input-group">
-                  <label>예금주명</label>
-                  <input type="text" placeholder="예) 홍길동" value={settings.bankAccount.accountHolder} onChange={e => setSettings({...settings, bankAccount: {...settings.bankAccount, accountHolder: e.target.value}})} />
-                </div>
-                {saveMsg && <p className="save-msg">{saveMsg}</p>}
-                <button className="btn-save" onClick={handleSave} disabled={loading}>
-                  {loading ? <Loader2 size={16} className="spin" /> : <Save size={16} />} 저장하기
-                </button>
+                
+                {auth.role === 'admin' ? (
+                  <>
+                    <div className="input-group">
+                      <label>안내 문구</label>
+                      <input type="text" placeholder="예) 입금 후 1~2시간 내에 처리됩니다." value={globalBankInfo.description} onChange={e => setGlobalBankInfo({...globalBankInfo, description: e.target.value})} />
+                    </div>
+                    <div className="input-group">
+                      <label>은행명</label>
+                      <input type="text" placeholder="예) 국민은행" value={globalBankInfo.bankName} onChange={e => setGlobalBankInfo({...globalBankInfo, bankName: e.target.value})} />
+                    </div>
+                    <div className="input-group">
+                      <label>계좌번호</label>
+                      <input type="text" placeholder="예) 123-456-7890" value={globalBankInfo.accountNumber} onChange={e => setGlobalBankInfo({...globalBankInfo, accountNumber: e.target.value})} />
+                    </div>
+                    <div className="input-group">
+                      <label>예금주명</label>
+                      <input type="text" placeholder="예) 홍길동" value={globalBankInfo.accountHolder} onChange={e => setGlobalBankInfo({...globalBankInfo, accountHolder: e.target.value})} />
+                    </div>
+                    {saveMsg && <p className="save-msg">{saveMsg}</p>}
+                    <button className="btn-save" onClick={handleSaveBankInfo} disabled={loading}>
+                      {loading ? <Loader2 size={16} className="spin" /> : <Save size={16} />} 설정 저장하기 (관리자용)
+                    </button>
+                  </>
+                ) : (
+                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.5rem' }}>
+                    {globalBankInfo.description && (
+                      <p style={{ color: '#0f172a', fontWeight: '500', marginBottom: '1rem' }}>{globalBankInfo.description}</p>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', color: '#334155', fontSize: '1.05rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+                        <span>은행명</span>
+                        <span style={{ fontWeight: 'bold' }}>{globalBankInfo.bankName || '-'}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+                        <span>계좌번호</span>
+                        <span style={{ fontWeight: 'bold' }}>{globalBankInfo.accountNumber || '-'}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>예금주</span>
+                        <span style={{ fontWeight: 'bold' }}>{globalBankInfo.accountHolder || '-'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </section>
