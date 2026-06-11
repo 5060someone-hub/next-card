@@ -58,7 +58,7 @@
   margin-bottom: 0;
 }
 
-.network-help-box strong {
+.network-help-box .help-section > strong {
   display: block;
   color: #1e40af;
   margin-bottom: 0.25rem;
