@@ -23,6 +23,7 @@ const BlogPost           = React.lazy(() => import('./pages/BlogPost'));
 
 // 관리자 전용 (일반 사용자에게는 불필요)
 const AdminUserManagement    = React.lazy(() => import('./pages/AdminUserManagement'));
+const AdminScannedCards      = React.lazy(() => import('./pages/AdminScannedCards'));
 const AdminProductManagement = React.lazy(() => import('./pages/AdminProductManagement'));
 const AdminAdManagement      = React.lazy(() => import('./pages/AdminAdManagement'));
 const AdminCardEditor        = React.lazy(() => import('./pages/AdminCardEditor'));
@@ -112,6 +113,7 @@ function App() {
           <Route path="/address-book" element={<AddressBook />} />
           <Route path="/admin" element={<AdminUserManagement />} />
           <Route path="/admin/users" element={<AdminUserManagement />} />
+          <Route path="/admin/scanned-cards" element={<AdminScannedCards />} />
           <Route path="/admin/card-editor/:cardId" element={<AdminCardEditor />} />
           <Route path="/admin/products" element={<AdminProductManagement />} />
           <Route path="/admin/ads" element={<AdminAdManagement />} />

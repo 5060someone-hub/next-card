@@ -6,6 +6,8 @@ import {
   Clock, 
   ShieldAlert,
   X
+  X,
+  Users
 } from 'lucide-react';
 import './AdminDashboard.css';
 
@@ -15,7 +17,7 @@ import AdminUserTable from '../components/admin/AdminUserTable';
 import AdminUserEditModal from '../components/admin/AdminUserEditModal';
 import AdminPublishModal from '../components/admin/AdminPublishModal';
 
-export default function AdminUserManagement() {
+const AdminScannedCards = () => {
   const [users, setUsers] = useState([]);
   const [cards, setCards] = useState([]);
   const [products, setProducts] = useState([]);
@@ -84,8 +86,8 @@ export default function AdminUserManagement() {
         const prodData = await prodRes.json();
         setUsers(userData);
         const allCards = userData.flatMap(u => u.userCards || []);
-        // Exclude paper cards
-        setCards(allCards.filter(c => c.grade !== 'paper'));
+        // Only keep paper cards
+        setCards(allCards.filter(c => c.grade === 'paper'));
         setProducts(prodData);
         setLastSync(new Date());
       } else {
@@ -374,16 +376,6 @@ export default function AdminUserManagement() {
     <div className="dashboard-layout">
       <Sidebar />
       <main className="admin-content">
-        <header className="admin-header">
-          <div>
-            <h1>통합 회원 및 발행 관리</h1>
-            <p>전체 회원 현황 파악 및 고화질 QR 명함 발행</p>
-          </div>
-          <div className="header-info">
-            {lastSync && (
-              <span className="sync-time">
-                업데이트: {lastSync.toLocaleTimeString()}
-              </span>
             )}
             <button className={`btn-refresh ${loading ? 'spinning' : ''}`} onClick={fetchData} disabled={loading}>
               <RefreshCw size={18} />
@@ -554,3 +546,4 @@ export default function AdminUserManagement() {
     </div>
   );
 }
+export default AdminScannedCards;
