@@ -79,6 +79,13 @@ const WhyNextCard = () => {
             ></iframe>
           </div>
         )}
+
+        {/* 상세페이지 이미지 추가 */}
+        {content.detailImage && (
+          <div className="why-detail-image-container" style={{ marginTop: '2rem', textAlign: 'center' }}>
+            <img src={content.detailImage} alt="상세 설명" style={{ maxWidth: '100%', borderRadius: '12px' }} />
+          </div>
+        )}
       </section>
 
       {/* Feature Blocks */}
