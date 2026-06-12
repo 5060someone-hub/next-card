@@ -24,7 +24,8 @@ import {
   RefreshCw,
   ArrowLeft,
   Briefcase,
-  Users
+  Users,
+  X
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { QRCodeSVG } from 'qrcode.react';
@@ -51,7 +52,7 @@ const CardEditor = () => {
     btnBgColor: '#c9d0d9', blockBgColor: '#f1f5f9', btnIconColor: '#ffffff',
     nameFontSizeKor: 24, nameFontSizeEng: 16, jobTitleFontSize: 16, companyFontSize: 14,
     paperCardUrl: '', customCardUrl: '', productType: 'general',
-    industryCategory: '', industrySubCategory: '', regionCity: '', regionDistrict: '', isNetworkingPublic: false,
+    industryCategory: '', industrySubCategory: '', industryDetailCategory: '', regionCity: '', regionDistrict: '', isNetworkingPublic: false, networkingTags: [],
     sns: { kakaotalk: '', instagram: '', facebook: '', tiktok: '', linkedin: '', x: '', threads: '' },
     isSpaEnabled: true,
     sections: []
@@ -696,7 +697,7 @@ const CardEditor = () => {
                         name="industryCategory" 
                         value={formData.industryCategory} 
                         onChange={(e) => {
-                          setFormData({ ...formData, industryCategory: e.target.value, industrySubCategory: '' });
+                          setFormData({ ...formData, industryCategory: e.target.value, industrySubCategory: '', industryDetailCategory: '' });
                         }}
                       >
                         <option value="">선택 안함</option>
@@ -710,12 +711,28 @@ const CardEditor = () => {
                       <select 
                         name="industrySubCategory" 
                         value={formData.industrySubCategory} 
-                        onChange={handleChange}
+                        onChange={(e) => {
+                          setFormData({ ...formData, industrySubCategory: e.target.value, industryDetailCategory: '' });
+                        }}
                         disabled={!formData.industryCategory}
                       >
                         <option value="">선택 안함</option>
-                        {formData.industryCategory && industryData[formData.industryCategory]?.map(sub => (
+                        {formData.industryCategory && industryData[formData.industryCategory] && Object.keys(industryData[formData.industryCategory]).map(sub => (
                           <option key={sub} value={sub}>{sub}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label>업종 소분류</label>
+                      <select 
+                        name="industryDetailCategory" 
+                        value={formData.industryDetailCategory} 
+                        onChange={handleChange}
+                        disabled={!formData.industrySubCategory}
+                      >
+                        <option value="">선택 안함</option>
+                        {formData.industrySubCategory && industryData[formData.industryCategory]?.[formData.industrySubCategory]?.map(det => (
+                          <option key={det} value={det}>{det}</option>
                         ))}
                       </select>
                     </div>
@@ -747,6 +764,32 @@ const CardEditor = () => {
                           <option key={dist} value={dist}>{dist}</option>
                         ))}
                       </select>
+                    </div>
+                    <div className="input-group" style={{ gridColumn: 'span 2' }}>
+                      <label>비즈니스 파트너 검색 키워드 (태그, 최대 5개)</label>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                        {formData.networkingTags?.map((tag, idx) => (
+                          <span key={idx} style={{ background: '#e2e8f0', padding: '4px 8px', borderRadius: '4px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            {tag}
+                            <button type="button" onClick={() => setFormData({ ...formData, networkingTags: formData.networkingTags.filter((_, i) => i !== idx) })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444', display: 'flex' }}><X size={14}/></button>
+                          </span>
+                        ))}
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder={formData.networkingTags?.length >= 5 ? "최대 5개까지 입력 가능합니다." : "원하는 파트너의 특징을 입력하고 Enter를 누르세요. (예: IT개발, 웹디자인)"}
+                        disabled={formData.networkingTags?.length >= 5}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const val = e.target.value.trim();
+                            if (val && (!formData.networkingTags || formData.networkingTags.length < 5) && !formData.networkingTags?.includes(val)) {
+                              setFormData({ ...formData, networkingTags: [...(formData.networkingTags || []), val] });
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                      />
                     </div>
                   </div>
                 )}

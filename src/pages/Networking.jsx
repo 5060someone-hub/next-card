@@ -13,6 +13,7 @@ export default function Networking() {
   const [filters, setFilters] = useState({
     industryCategory: '',
     industrySubCategory: '',
+    industryDetailCategory: '',
     regionCity: '',
     regionDistrict: '',
     search: ''
@@ -27,7 +28,7 @@ export default function Networking() {
       return;
     }
     fetchNetworkingCards();
-  }, [filters.industryCategory, filters.industrySubCategory, filters.regionCity, filters.regionDistrict]);
+  }, [filters.industryCategory, filters.industrySubCategory, filters.industryDetailCategory, filters.regionCity, filters.regionDistrict]);
 
   async function fetchNetworkingCards() {
     setLoading(true);
@@ -36,9 +37,10 @@ export default function Networking() {
       const queryParams = new URLSearchParams();
       if (filters.industryCategory) queryParams.append('industryCategory', filters.industryCategory);
       if (filters.industrySubCategory) queryParams.append('industrySubCategory', filters.industrySubCategory);
+      if (filters.industryDetailCategory) queryParams.append('industryDetailCategory', filters.industryDetailCategory);
       if (filters.regionCity) queryParams.append('regionCity', filters.regionCity);
       if (filters.regionDistrict) queryParams.append('regionDistrict', filters.regionDistrict);
-      if (filters.search) queryParams.append('search', filters.search);
+      // Removed search from backend query to allow client-side filtering including tags
 
       const res = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/networking/cards?${queryParams.toString()}`);
       if (res.ok) {
@@ -58,6 +60,17 @@ export default function Networking() {
     e.preventDefault();
     fetchNetworkingCards();
   };
+
+  const filteredCards = cards.filter(card => {
+    if (!filters.search) return true;
+    const data = card.cardData || {};
+    const st = filters.search.toLowerCase();
+    const hasTag = data.networkingTags?.some(tag => tag.toLowerCase().includes(st));
+    const hasName = data.name?.toLowerCase().includes(st);
+    const hasCompany = data.company?.toLowerCase().includes(st);
+    const hasJobTitle = data.jobTitle?.toLowerCase().includes(st);
+    return hasTag || hasName || hasCompany || hasJobTitle;
+  });
 
   return (
     <div className="dashboard-layout">
@@ -89,12 +102,25 @@ export default function Networking() {
               <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.25rem', display: 'block' }}>업종 중분류</label>
               <select 
                 value={filters.industrySubCategory} 
-                onChange={(e) => setFilters({ ...filters, industrySubCategory: e.target.value })}
+                onChange={(e) => setFilters({ ...filters, industrySubCategory: e.target.value, industryDetailCategory: '' })}
                 disabled={!filters.industryCategory}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: !filters.industryCategory ? '#f1f5f9' : '#fff' }}
               >
                 <option value="">전체 중분류</option>
-                {filters.industryCategory && industryData[filters.industryCategory]?.map(sub => <option key={sub} value={sub}>{sub}</option>)}
+                {filters.industryCategory && industryData[filters.industryCategory] && Object.keys(industryData[filters.industryCategory]).map(sub => <option key={sub} value={sub}>{sub}</option>)}
+              </select>
+            </div>
+
+            <div className="input-group">
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.25rem', display: 'block' }}>업종 소분류</label>
+              <select 
+                value={filters.industryDetailCategory} 
+                onChange={(e) => setFilters({ ...filters, industryDetailCategory: e.target.value })}
+                disabled={!filters.industrySubCategory}
+                style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: !filters.industrySubCategory ? '#f1f5f9' : '#fff' }}
+              >
+                <option value="">전체 소분류</option>
+                {filters.industrySubCategory && industryData[filters.industryCategory]?.[filters.industrySubCategory]?.map(det => <option key={det} value={det}>{det}</option>)}
               </select>
             </div>
 
@@ -147,7 +173,7 @@ export default function Networking() {
             <AlertCircle size={20} />
             {error}
           </div>
-        ) : cards.length === 0 ? (
+        ) : filteredCards.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
             <Briefcase size={48} color="#cbd5e1" style={{ marginBottom: '1rem' }} />
             <h3 style={{ margin: '0 0 0.5rem 0', color: '#475569' }}>조건에 맞는 파트너가 없습니다.</h3>
@@ -155,7 +181,7 @@ export default function Networking() {
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-            {cards.map(card => {
+            {filteredCards.map(card => {
               const data = card.cardData || {};
               const identifier = data.customUrl || card._id;
               
@@ -163,7 +189,7 @@ export default function Networking() {
                 <div 
                   key={card._id} 
                   className="networking-card"
-                  onClick={() => window.open(`/${identifier}`, '_blank')}
+                  onClick={() => window.open(`/v/${identifier}`, '_blank')}
                   style={{ 
                     background: '#fff', 
                     borderRadius: '16px', 
@@ -202,16 +228,25 @@ export default function Networking() {
                       <Building size={16} color="#94a3b8" />
                       <span style={{ fontWeight: 600 }}>{data.company || '회사 미입력'}</span>
                     </div>
-                    {(data.industryCategory || data.industrySubCategory) && (
+                    {(data.industryCategory || data.industrySubCategory || data.industryDetailCategory) && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
                         <Briefcase size={16} color="#94a3b8" />
-                        <span>{data.industryCategory} {data.industrySubCategory ? `> ${data.industrySubCategory}` : ''}</span>
+                        <span>{data.industryCategory} {data.industrySubCategory ? `> ${data.industrySubCategory}` : ''} {data.industryDetailCategory ? `> ${data.industryDetailCategory}` : ''}</span>
                       </div>
                     )}
                     {(data.regionCity || data.regionDistrict) && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
                         <MapPin size={16} color="#94a3b8" />
                         <span>{data.regionCity} {data.regionDistrict}</span>
+                      </div>
+                    )}
+                    {data.networkingTags && data.networkingTags.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.25rem' }}>
+                        {data.networkingTags.map((tag, idx) => (
+                          <span key={idx} style={{ background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', border: '1px solid #e2e8f0' }}>
+                            #{tag}
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>
