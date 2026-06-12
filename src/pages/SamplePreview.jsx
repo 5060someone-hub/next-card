@@ -31,13 +31,7 @@ export default function SamplePreview() {
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>
-        <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="sample-preview-page" style={{ minHeight: '100vh', background: '#f8fafc', paddingBottom: '4rem' }}>
@@ -62,6 +56,7 @@ export default function SamplePreview() {
             display: flex;
             flex-wrap: wrap;
             gap: 3rem;
+            align-items: flex-start;
           }
           .desktop-only-btn { display: block; }
           .mobile-only-btn { display: none; }
@@ -131,7 +126,13 @@ export default function SamplePreview() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {products.map(prod => (
+            {loading ? (
+              <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center' }}>
+                <div className="spinner" style={{ width: '30px', height: '30px', border: '3px solid #e2e8f0', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+              </div>
+            ) : products.length === 0 ? (
+              <p style={{ color: '#64748b' }}>등록된 상품이 없습니다.</p>
+            ) : products.map(prod => (
               <div 
                 key={prod.id} 
                 onClick={() => setSelectedProduct(prod)}
