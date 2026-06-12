@@ -1657,7 +1657,7 @@ app.get('/api/admin/users', async (req, res) => {
     const userIds = users.map(u => u._id);
 
     const cards = await Card.find({ userId: { $in: userIds } })
-      .select('-cardData.logoUrl -cardData.profileUrl -cardData.bgUrl')
+      .select('-cardData.logoUrl -cardData.profileUrl -cardData.bgUrl -cardData.gallery -cardData.sections')
       .lean();
 
     const cardsByUserId = new Map();
@@ -1671,6 +1671,23 @@ app.get('/api/admin/users', async (req, res) => {
       const allUserCards = cardsByUserId.get(String(u._id)) || [];
       const userCards = allUserCards.filter(isCardActive);
       const primaryCard = userCards[0];
+
+      const cleanUserCards = userCards.map(c => ({
+        id: c._id,
+        userId: c.userId,
+        grade: c.grade,
+        paymentStatus: c.paymentStatus,
+        paymentDate: c.paymentDate,
+        expiryDate: c.expiryDate,
+        createdAt: c.createdAt,
+        cardData: {
+          name: c.cardData?.name,
+          nameEng: c.cardData?.nameEng,
+          company: c.cardData?.company,
+          status: c.cardData?.status
+        }
+      }));
+
       return {
         id: u._id,
         name: u.name,
@@ -1678,7 +1695,7 @@ app.get('/api/admin/users', async (req, res) => {
         phone: u.phone,
         role: u.role,
         createdAt: u.createdAt,
-        userCards: userCards,
+        userCards: cleanUserCards,
         grade: primaryCard ? primaryCard.grade : 'general',
         expiryDate: primaryCard ? primaryCard.expiryDate : null,
         paymentStatus: primaryCard ? primaryCard.paymentStatus : 'none',
