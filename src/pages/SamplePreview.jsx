@@ -199,20 +199,30 @@ export default function SamplePreview() {
               zIndex: 10
             }}></div>
             
-            {selectedProduct ? (
-              selectedProduct.sampleUrl ? (
-                <iframe 
-                  src={selectedProduct.sampleUrl} 
-                  style={{ width: '100%', height: '100%', border: 'none', background: '#f8fafc' }}
-                  title="Sample Preview"
-                />
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
-                  <Smartphone size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                  <p>이 등급의 샘플 명함이<br/>아직 등록되지 않았습니다.</p>
-                </div>
-              )
-            ) : (
+            {products.map(prod => prod.sampleUrl ? (
+              <iframe 
+                key={prod.id}
+                src={prod.sampleUrl} 
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  border: 'none', 
+                  background: '#f8fafc',
+                  display: selectedProduct?.id === prod.id ? 'block' : 'none'
+                }}
+                title={prod.name}
+                loading="lazy"
+              />
+            ) : null)}
+
+            {selectedProduct && !selectedProduct.sampleUrl && (
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+                <Smartphone size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                <p>이 등급의 샘플 명함이<br/>아직 등록되지 않았습니다.</p>
+              </div>
+            )}
+            
+            {!selectedProduct && (
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                 <div className="spinner" style={{ width: '30px', height: '30px', border: '3px solid #e2e8f0', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
               </div>
