@@ -412,15 +412,7 @@ const CardEditor = () => {
                         return (
                           <div
                             key={t}
-                            onClick={() => {
-                              if (!isEmployee && allowed) {
-                                if (t === 'luxury') {
-                                  setFormData({ ...formData, theme: t, themeColor: '#d4af37', bgColor: '#111827', textColor: '#ffffff' });
-                                } else {
-                                  setFormData({ ...formData, theme: t });
-                                }
-                              }
-                            }}
+                            onClick={() => !isEmployee && allowed && setFormData({ ...formData, theme: t })}
                             style={{
                               padding: '0.75rem 0.25rem',
                               borderRadius: '10px',

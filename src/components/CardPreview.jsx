@@ -12,13 +12,7 @@ import {
   Share2
 } from 'lucide-react';
 
-import LuxuryThemePreview from './themes/LuxuryThemePreview';
-
 const CardPreview = ({ formData }) => {
-  if (formData.theme === 'luxury') {
-    return <LuxuryThemePreview formData={formData} />;
-  }
-
   const finalCardUrl = `https://nextcard.kr/v/${formData.customCardUrl || 'preview'}`;
   const themeColor = formData.themeColor || '#db2777';
   const iconColor = formData.btnIconColor || '#ffffff';
