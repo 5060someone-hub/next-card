@@ -79,7 +79,7 @@ const AdminScannedCards = () => {
     try {
       const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
       const [userRes, prodRes] = await Promise.all([
-        fetch(`${API}/api/admin/users`, { signal: controller.signal }),
+        fetch(`${API}/api/admin/users?limit=10000`, { signal: controller.signal }),
         fetch(`${API}/api/products`, { signal: controller.signal })
       ]);
       clearTimeout(timeoutId);
@@ -87,8 +87,10 @@ const AdminScannedCards = () => {
       if (userRes.ok && prodRes.ok) {
         const userData = await userRes.json();
         const prodData = await prodRes.json();
-        setUsers(userData);
-        const allCards = userData.flatMap(u => u.userCards || []);
+        // Pagination 응답 구조에 맞게 userData.users 사용
+        const userList = userData.users || [];
+        setUsers(userList);
+        const allCards = userList.flatMap(u => u.userCards || []);
         // 스캔명함(paper) 카드만 표시
         setCards(allCards.filter(c => c.grade === 'paper'));
         setProducts(prodData);

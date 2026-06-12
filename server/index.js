@@ -1657,7 +1657,7 @@ app.get('/api/admin/users', async (req, res) => {
     const userIds = users.map(u => u._id);
 
     const cards = await Card.find({ userId: { $in: userIds } })
-      .select('-cardData.logoUrl -cardData.profileUrl -cardData.bgUrl -cardData.gallery -cardData.sections')
+      .select('userId grade paymentStatus paymentDate expiryDate createdAt isEdited cardData.name cardData.nameEng cardData.jobTitle cardData.company cardData.department cardData.phone cardData.phoneWork cardData.phonePersonal cardData.email cardData.website cardData.address cardData.intro cardData.sns cardData.status')
       .lean();
 
     const cardsByUserId = new Map();
