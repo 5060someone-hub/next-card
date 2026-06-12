@@ -9,7 +9,8 @@ import {
   Building2, 
   Briefcase,
   Smartphone,
-  Share2
+  Share2,
+  Link as LinkIcon
 } from 'lucide-react';
 
 const CardPreview = ({ formData }) => {
@@ -58,6 +59,8 @@ const CardPreview = ({ formData }) => {
     { icon: <Mail size={20} color={iconColor} />, label: '이메일', value: formData.email },
     { icon: <MessageSquare size={20} color={iconColor} />, label: '문자', value: formData.phonePersonal },
     { icon: <Globe size={20} color={iconColor} />, label: '웹사이트', value: formData.website },
+    { icon: <Globe size={20} color={iconColor} />, label: '서브 웹사이트', value: formData.subWebsite },
+    { icon: <LinkIcon size={20} color={iconColor} />, label: '링크연결', value: formData.customLink },
     ...Object.entries(formData.sns || {}).map(([platform, value]) => ({
       icon: getSnsIcon(platform, iconColor),
       label: platform.charAt(0).toUpperCase() + platform.slice(1),

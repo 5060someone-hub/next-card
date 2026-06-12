@@ -44,7 +44,7 @@ const CardEditor = () => {
 
   const [formData, setFormData] = useState({
     name: '', nameEng: '', jobTitle: '', company: '', department: '', 
-    phone: '', phoneWork: '', phonePersonal: '', email: '', website: '', address: '', intro: '',
+    phone: '', phoneWork: '', phonePersonal: '', email: '', website: '', subWebsite: '', customLink: '', address: '', intro: '',
     introAlign: 'center',
     logoUrl: '', profileUrl: '', logoSize: 40, profileSize: 120,
     themeColor: '#db2777', theme: 'modern',
@@ -608,6 +608,8 @@ const CardEditor = () => {
                 <div className="editor-form-grid">
                   {[
                     { id: 'website', label: '공식 웹사이트', icon: 'googlechrome' },
+                    { id: 'subWebsite', label: '서브 웹사이트', iconComponent: <Globe size={16} color="#64748b" /> },
+                    { id: 'customLink', label: '링크연결', iconComponent: <LinkIcon size={16} color="#64748b" /> },
                     { id: 'sns.kakaotalk', label: '카카오톡 ID/링크', icon: 'kakaotalk' },
                     { id: 'sns.instagram', label: '인스타그램', icon: 'instagram' },
                     { id: 'sns.facebook', label: '페이스북', icon: 'facebook' },
@@ -624,12 +626,14 @@ const CardEditor = () => {
                     return (
                       <div key={sns.id} className={`input-group ${isLocked ? 'feature-locked' : ''}`} style={{ position: 'relative' }}>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          {sns.icon === 'linkedin' ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#0077B5">
-                              <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                            </svg>
-                          ) : (
-                            <img src={`https://cdn.simpleicons.org/${sns.icon}/64748b`} width="16" height="16" alt={sns.label} />
+                          {sns.iconComponent ? sns.iconComponent : (
+                            sns.icon === 'linkedin' ? (
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#0077B5">
+                                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                              </svg>
+                            ) : (
+                              <img src={`https://cdn.simpleicons.org/${sns.icon}/64748b`} width="16" height="16" alt={sns.label} />
+                            )
                           )}
                           {sns.label}
                           {isLocked && <Lock size={12} style={{ color: '#ef4444' }} />}

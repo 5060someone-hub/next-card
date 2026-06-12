@@ -11,6 +11,7 @@ import {
   Briefcase,
   Smartphone,
   Share2,
+  Link as LinkIcon,
   UserCircle,
   Download,
   Home,
@@ -507,6 +508,8 @@ const PublicCard = () => {
     { icon: <MessageSquare size={22} color={iconColor} />, label: '문자보내기', value: cardData.phonePersonal || cardData.phone, href: `sms:${cardData.phonePersonal || cardData.phone}` },
     { icon: <MapPin size={22} color={iconColor} />, label: '지도보기', value: cardData.address, href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cardData.address || '')}` },
     { icon: <Globe size={22} color={iconColor} />, label: '웹사이트', value: cardData.website, href: cardData.website?.startsWith('http') ? cardData.website : `https://${cardData.website}` },
+    { icon: <Globe size={22} color={iconColor} />, label: '서브 웹사이트', value: cardData.subWebsite, href: cardData.subWebsite?.startsWith('http') ? cardData.subWebsite : `https://${cardData.subWebsite}` },
+    { icon: <LinkIcon size={22} color={iconColor} />, label: '링크연결', value: cardData.customLink, href: cardData.customLink?.startsWith('http') ? cardData.customLink : `https://${cardData.customLink}` },
     ...Object.entries(cardData.sns || {}).map(([platform, value]) => ({
       icon: getSnsIcon(platform, iconColor),
       label: platform.charAt(0).toUpperCase() + platform.slice(1),
