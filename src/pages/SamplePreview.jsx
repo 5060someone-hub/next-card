@@ -155,8 +155,8 @@ export default function SamplePreview() {
                 <p style={{ color: '#64748b', fontSize: '0.95rem', margin: '0 0 1rem 0' }}>{prod.description}</p>
                 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  {(prod.tags && prod.tags.length > 0) ? (
-                      prod.tags.map((tag, idx) => (
+                  {(prod.tags && prod.tags.filter(t => t !== '__allowNetworking__').length > 0) ? (
+                      prod.tags.filter(t => t !== '__allowNetworking__').map((tag, idx) => (
                         <span key={idx} style={{ fontSize: '0.75rem', background: '#f1f5f9', padding: '0.3rem 0.6rem', borderRadius: '4px', color: '#475569' }}>
                           {tag}
                         </span>

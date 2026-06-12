@@ -208,7 +208,11 @@ const CardEditor = () => {
 
   const currentProduct = products.find(p => p.id === formData.productType);
   const canUseFeature = (featureKey) => {
-    if (!currentProduct || !currentProduct.features) return true;
+    if (!currentProduct) return true;
+    if (featureKey === 'allowNetworking') {
+      return currentProduct.features?.allowNetworking || (currentProduct.tags && currentProduct.tags.includes('__allowNetworking__'));
+    }
+    if (!currentProduct.features) return true;
     return currentProduct.features[featureKey];
   };
 

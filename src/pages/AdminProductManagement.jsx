@@ -130,7 +130,11 @@ export default function AdminProductManagement() {
           name: newProductName, 
           description: newProductDesc,
           sampleUrl: newSampleUrl,
-          tags: newTags.split(',').map(t => t.trim()).filter(Boolean),
+          tags: (() => {
+            const arr = newTags.split(',').map(t => t.trim()).filter(Boolean).filter(t => t !== '__allowNetworking__');
+            if (features.allowNetworking) arr.push('__allowNetworking__');
+            return arr;
+          })(),
           price: {
             annual: Number(newProductPriceAnnual) || 0,
             threeMonths: Number(newProductPriceThreeMonths) || 0,
@@ -182,7 +186,7 @@ export default function AdminProductManagement() {
     setNewProductName(prod.name);
     setNewProductDesc(prod.description || '');
     setNewSampleUrl(prod.sampleUrl || '');
-    setNewTags(prod.tags ? prod.tags.join(', ') : '');
+    setNewTags(prod.tags ? prod.tags.filter(t => t !== '__allowNetworking__').join(', ') : '');
     setNewProductPriceAnnual(prod.price?.annual !== undefined ? prod.price.annual : (typeof prod.price === 'number' ? prod.price : ''));
     setNewProductPriceThreeMonths(prod.price?.threeMonths !== undefined ? prod.price.threeMonths : '');
     setNewProductPriceTwoMonths(prod.price?.twoMonths !== undefined ? prod.price.twoMonths : '');
@@ -193,7 +197,7 @@ export default function AdminProductManagement() {
       allowCustomUrl: prod.features?.allowCustomUrl || false,
       allowSinglePage: prod.features?.allowSinglePage || false,
       showAds: prod.features?.showAds ?? true,
-      allowNetworking: prod.features?.allowNetworking || false,
+      allowNetworking: prod.features?.allowNetworking || (prod.tags && prod.tags.includes('__allowNetworking__')) || false,
       maxSnsCount: prod.features?.maxSnsCount ?? 1,
       maxGallery: prod.features?.maxGallery ?? 1,
       maxVideo: prod.features?.maxVideo ?? 1,
