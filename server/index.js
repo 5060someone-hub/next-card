@@ -1576,7 +1576,7 @@ app.get('/api/products', async (req, res) => {
 // 전체 명함 목록 (사용자 정보 포함) - populate 제거하고 lean()으로 최적화
 app.get('/api/admin/cards', async (req, res) => {
   try {
-    const cards = await Card.find().select('-cardData.logoUrl -cardData.profileUrl -cardData.bgUrl').lean();
+    const cards = await Card.find().select('userId grade paymentStatus paymentDate expiryDate createdAt isEdited cardData.name cardData.nameEng cardData.jobTitle cardData.company cardData.department cardData.phone cardData.phoneWork cardData.phonePersonal cardData.email cardData.website cardData.address cardData.intro cardData.sns cardData.status updatedAt').lean();
     const activeCards = cards.filter(isCardActive);
     const result = activeCards.map(c => ({
       _id: c._id,
@@ -1979,7 +1979,7 @@ app.get('/api/admin/plan-changes', async (req, res) => {
       .populate('userId', 'name email phone')
       .populate({
         path: 'cardId',
-        select: '-cardData.logoUrl -cardData.profileUrl -cardData.bgUrl'
+        select: 'cardData.name cardData.nameEng cardData.company'
       })
       .sort({ changedAt: -1 })
       .limit(100)
