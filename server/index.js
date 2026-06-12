@@ -1573,16 +1573,14 @@ app.get('/api/products', async (req, res) => {
 
 // [Admin API]
 
-// 전체 명함 목록 (사용자 정보 포함)
+// 전체 명함 목록 (사용자 정보 포함) - populate 제거하고 lean()으로 최적화
 app.get('/api/admin/cards', async (req, res) => {
   try {
-    const cards = await Card.find().populate('userId', 'name email');
+    const cards = await Card.find().lean();
     const activeCards = cards.filter(isCardActive);
     const result = activeCards.map(c => ({
       _id: c._id,
-      userId: c.userId?._id,
-      userName: c.userId?.name || (c.cardData?.name || '알수없음'),
-      userEmail: c.userId?.email || (c.cardData?.email || '이메일 없음'),
+      userId: c.userId,
       cardData: c.cardData,
       updatedAt: c.updatedAt
     }));
@@ -1613,15 +1611,26 @@ app.put('/api/admin/card/:userId/publish', async (req, res) => {
   }
 });
 
-// 전체 회원 목록
+// 전체 회원 목록 (통합 최적화: 단일 쿼리로 users + cards 한번에 처리)
 app.get('/api/admin/users', async (req, res) => {
   try {
-    const users = await User.find().sort({ createdAt: -1 });
-    const userIds = users.map(u => u._id);
-    const allCards = await Card.find({ userId: { $in: userIds } });
+    // lean()으로 순수 JS 객체 반환 (Mongoose 오버헤드 제거, 속도 향상)
+    const [users, allCards] = await Promise.all([
+      User.find().sort({ createdAt: -1 }).lean(),
+      Card.find().lean()
+    ]);
+
+    // Map으로 userId -> cards 인덱스 생성 (O(n) 검색 대신 O(1) 조회)
+    const cardsByUserId = new Map();
+    for (const card of allCards) {
+      const uid = String(card.userId);
+      if (!cardsByUserId.has(uid)) cardsByUserId.set(uid, []);
+      cardsByUserId.get(uid).push(card);
+    }
 
     const safeUsers = users.map(u => {
-      const userCards = allCards.filter(c => String(c.userId) === String(u._id) && isCardActive(c));
+      const allUserCards = cardsByUserId.get(String(u._id)) || [];
+      const userCards = allUserCards.filter(isCardActive);
       const primaryCard = userCards[0];
       return {
         id: u._id,
@@ -1861,28 +1870,6 @@ app.put('/api/admin/payment/approve/:cardId', async (req, res) => {
   }
 });
 
-// 무통장 입금 반려
-app.put('/api/admin/payment/reject/:cardId', async (req, res) => {
-  try {
-    const card = await Card.findByIdAndUpdate(
-      req.params.cardId,
-      {
-        paymentStatus: 'none',
-        depositorName: '',
-        paymentAmount: 0,
-        requestedGrade: '',
-        requestedDuration: 0,
-        paymentRequestDate: null
-      },
-      { new: true }
-    );
-    if (!card) return res.status(404).json({ message: '명함을 찾을 수 없습니다.' });
-    res.json({ message: '반려 완료', card });
-  } catch (err) {
-    res.status(500).json({ message: '반려 실패', error: err.message });
-  }
-});
-
 // 어드민 알림 수 조회 (대기 명함, 신규 문의)
 app.get('/api/admin/notifications', async (req, res) => {
   try {
@@ -1942,31 +1929,6 @@ app.put('/api/admin/plan-changes/read', async (req, res) => {
     res.json({ message: '모든 알림 읽음 처리 완료' });
   } catch (err) {
     res.status(500).json({ message: '알림 상태 업데이트 실패', error: err.message });
-  }
-});
-
-// ==========================================
-// 관리자 요금 변경 내역
-// ==========================================
-app.get('/api/admin/plan-changes', async (req, res) => {
-  try {
-    const changes = await PlanChange.find({})
-      .populate('userId', 'name email phone')
-      .populate('cardId', 'cardData')
-      .sort({ changedAt: -1 })
-      .limit(100);
-    res.json(changes);
-  } catch (err) {
-    res.status(500).json({ message: '요금 변경 내역 조회 실패', error: err.message });
-  }
-});
-
-app.put('/api/admin/plan-changes/read', async (req, res) => {
-  try {
-    await PlanChange.updateMany({ isRead: false }, { $set: { isRead: true } });
-    res.json({ message: '모두 읽음 처리 완료' });
-  } catch (err) {
-    res.status(500).json({ message: '상태 업데이트 실패', error: err.message });
   }
 });
 

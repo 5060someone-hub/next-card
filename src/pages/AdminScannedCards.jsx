@@ -72,29 +72,37 @@ const AdminScannedCards = () => {
   const fetchData = async () => {
     setLoading(true);
     setError(null);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+
     try {
-      const [userRes, cardRes, prodRes] = await Promise.all([
-        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/users`),
-        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/cards`),
-        fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/products`)
+      const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+      const [userRes, prodRes] = await Promise.all([
+        fetch(`${API}/api/admin/users`, { signal: controller.signal }),
+        fetch(`${API}/api/products`, { signal: controller.signal })
       ]);
+      clearTimeout(timeoutId);
       
-      if (userRes.ok && cardRes.ok && prodRes.ok) {
+      if (userRes.ok && prodRes.ok) {
         const userData = await userRes.json();
-        const cardDataList = await cardRes.json();
         const prodData = await prodRes.json();
         setUsers(userData);
         const allCards = userData.flatMap(u => u.userCards || []);
-        // Only keep paper cards
+        // 스캔명함(paper) 카드만 표시
         setCards(allCards.filter(c => c.grade === 'paper'));
         setProducts(prodData);
         setLastSync(new Date());
       } else {
-        setError('데이터를 불러오는 데 실패했습니다. 서버 상태를 확인하세요.');
+        setError('데이터를 불러오는 데 실패했습니다. 잠시 후 새로고침해 주세요.');
       }
     } catch (error) {
-      console.error('Failed to fetch data:', error);
-      setError('서버와 통신 중 오류가 발생했습니다.');
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        setError('서버 응답이 너무 늦습니다 (25초 초과). Render 서버가 절전 상태일 수 있습니다. 30초 후 새로고침 버튼을 눌러주세요.');
+      } else {
+        setError(`서버와 통신 중 오류가 발생했습니다: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
