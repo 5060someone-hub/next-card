@@ -19,7 +19,7 @@ const AdminUserTable = ({
   handleEditCard,
   handleEditUser,
   handleApproveClick,
-  handleRejectClick,
+  handleRejectPayment,
   deleteCard
 }) => {
   const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
@@ -166,7 +166,7 @@ const AdminUserTable = ({
                                 </button>
                                 <button
                                   className="btn-quick-reject"
-                                  onClick={() => handleRejectClick(card)}
+                                  onClick={() => handleRejectPayment(card)}
                                   title="요청 반려"
                                   style={{
                                     padding: '4px 8px',
