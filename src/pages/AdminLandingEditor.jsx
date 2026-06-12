@@ -1,3 +1,4 @@
+import { DEFAULT_CONTENT } from './landingDefaultContent';
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
@@ -12,109 +13,7 @@ import './AdminLandingEditor.css';
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000') || 'http://127.0.0.1:5000';
 
 // ── 기본 콘텐츠 (API 실패 시 폴백) ──
-const DEFAULT_CONTENT = {
-  nav: { logo: 'NextCard', logoSub: '.kr', links: ['기능소개', '요금제'] },
-  hero: {
-    badge: '지속 가능한 연결의 시작',
-    title: '종이 명함 대신,\n스마트한 디지털 프로필',
-    desc: '모바일 환경에 최적화된 프로필로 나만의 브랜딩을 완성하세요.\nSNS 연동부터 포트폴리오 공유까지 한 번에 가능합니다.',
-    primaryBtn: '지금 시작하기',
-    primaryBtnUrl: '/signup',
-    secondaryBtn: '서비스 둘러보기',
-    secondaryBtnUrl: '#contact',
-    mockupImg: 'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop'
-  },
-  featuresSection: {
-    title: '스마트한 명함의 기준',
-    desc: '종이 명함이 담지 못하는 무한한 가능성을 경험하세요.'
-  },
-  features: [
-    { icon: '📱', title: '모바일 최적화', desc: '모든 스마트폰 기기에서 완벽하게 표현되는 반응형 디자인을 제공합니다.' },
-    { icon: '🔗', title: '빠른 공유', desc: 'QR 코드, 링크 하나로 장소에 상관없이 명함을 전달할 수 있습니다.' },
-    { icon: '✏️', title: '자유로운 편집', desc: '언제 어디서든 실시간으로 명함 내용을 수정하고 관리할 수 있습니다.' },
-    { icon: '📊', title: '실시간 통계', desc: '내 명함이 얼마나 조회되었는지, 어떤 링크가 클릭되었는지 확인하세요.' }
-  ],
-  pricing: [
-    { name: '일반형 (Free)', price: '0', period: '월', features: ['기본 프로필 페이지', 'QR 코드 생성', '링크 공유', '기본 테마 적용'], btn: '무료로 시작', linkUrl: '/signup', popular: false },
-    { name: '프리미엄 (Pro)', price: '9,900', period: '월', features: ['모든 기본 기능', '커스텀 URL 설정', '로고 및 배경 커스텀', '방문 통계 분석'], btn: '지금 가입', linkUrl: '/signup', popular: true },
-    { name: '기업용 (Corp)', price: '문의', period: '', features: ['전사 통합 관리', '기업 전용 템플릿', 'API 연동 지원', '전담 기술 지원'], btn: '상담 신청', linkUrl: '#contact', popular: false }
-  ],
-  cta: {
-    title: '지금 바로 나만의 디지털 명함을 만들어보세요',
-    desc: '30초면 충분합니다. 앞서가는 비즈니스 파트너가 되어보세요.',
-    btn: '무료로 시작하기',
-    btnUrl: '/signup'
-  },
-  footer: {
-    logo: 'NextCard',
-    copyright: '© 2026 NextCard. All rights reserved.',
-    companyName: '(주)안티그래피티',
-    ceoName: '홍길동',
-    businessNumber: '123-45-67890',
-    mailOrderNumber: '2026-서울강남-1234',
-    address: '서울특별시 강남구 테헤란로 123, 4층',
-    contact: 'support@nextcard.kr | 02-1234-5678',
-    footerLinks: [
-      { label: '이용약관', url: '/terms' },
-      { label: '개인정보처리방침', url: '/privacy' },
-      { label: '이메일무단수집거부', url: '/no-email' },
-      { label: '고객센터', url: '/custom-center' },
-      { label: '제휴문의', url: '/coalition' },
-      { label: '제휴마케팅', url: '/marketing' },
-      { label: '광고문의', url: '/ad-contact' }
-    ],
-    termsContent: `제 1 조 (목적)\n본 약관은 NextCard(이하 "회사")가 제공하는 디지털 명함 및 관련 서비스(이하 "서비스")의 이용조건 및 절차, 회사와 회원 간의 권리, 의무 및 책임사항 등을 규정함을 목적으로 합니다.\n\n제 2 조 (용어의 정의)\n1. "서비스"라 함은 회사가 제공하는 모바일 최적화 디지털 명함 생성, 관리 및 공유 플랫폼을 의미합니다.\n2. "회원"이라 함은 서비스에 접속하여 본 약관에 동의하고 계정을 생성하여 서비스를 이용하는 고객을 의미합니다.\n3. "프리미엄 서비스"라 함은 회원이 유료로 결제하여 이용하는 추가적인 기능(커스텀 URL, 테마, 로고 삽입 등)을 의미합니다.\n\n제 3 조 (약관의 효력 및 변경)\n1. 본 약관은 서비스 화면에 게시하거나 기타의 방법으로 회원에게 공지함으로써 효력이 발생합니다.\n2. 회사는 관계 법령을 위배하지 않는 범위에서 본 약관을 개정할 수 있습니다.\n\n제 4 조 (서비스의 제공 및 변경)\n1. 회사는 회원에게 디지털 명함 제작 및 호스팅 서비스를 제공합니다.\n2. 서비스는 연중무휴, 1일 24시간 제공함을 원칙으로 하나, 설비 점검이나 시스템 장애 시 일시 중단될 수 있습니다.`,
-    privacyContent: `NextCard(이하 "회사")는 정보통신망 이용촉진 및 정보보호 등에 관한 법률 및 개인정보보호법 등 관련 법령에 따라 회원의 개인정보를 보호하고 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 다음과 같은 처리방침을 두고 있습니다.\n\n1. 수집하는 개인정보 항목\n- 필수 항목: 이름, 이메일 주소, 비밀번호, 휴대전화 번호\n- 선택 항목: 회사명, 직책, 부서, 웹사이트 URL, 프로필 이미지, SNS 계정 정보\n- 서비스 이용 과정에서 자동으로 생성되어 수집되는 정보: IP 주소, 쿠키, 방문 일시, 서비스 이용 기록, 기기 정보\n\n2. 개인정보의 수집 및 이용 목적\n- 회원 가입 및 관리: 회원 식별, 가입 의사 확인, 본인 확인, 서비스 부정이용 방지\n- 서비스 제공 및 계약 이행: 디지털 명함 생성 및 호스팅, 유료 결제 승인 및 서비스 관리\n- 마케팅 및 광고에의 활용: 신규 서비스 개발 및 맞춤형 서비스 제공, 이벤트 및 광고성 정보 제공\n\n3. 개인정보의 보유 및 이용 기간\n- 회원의 개인정보는 원칙적으로 개인정보의 수집 및 이용 목적이 달성되면 지체 없이 파기합니다.\n- 단, 관계 법령의 규정에 의하여 보존할 필요가 있는 경우 해당 법령에서 정한 기간 동안 보관합니다.`,
-    noEmailContent: `NextCard는 본 웹사이트에 게시된 이메일 주소가 전자우편 수집 프로그램이나 그 밖의 기술적 장치를 이용하여 무단으로 수집되는 것을 거부합니다.\n\n1. 본 서비스 내에서 명함 소유자의 동의 없이 이메일 주소를 수집하는 행위는 정보통신망법에 의해 처벌받을 수 있습니다.\n2. 이를 위반할 경우 정보통신망 이용촉진 및 정보보호 등에 관한 법률 제50조의2에 의하여 1천만 원 이하의 벌금형에 처해질 수 있음을 유념하시기 바랍니다.\n\n게시일: 2026년 5월 17일`,
-    customerCenterContent: `NextCard 고객센터 안내\n\n1. 운영 시간\n- 평일: 오전 9시 ~ 오후 6시 (점심시간: 12:00 ~ 13:00)\n- 주말 및 공휴일: 휴무 (1:1 문의 접수 가능)\n\n2. 문의 방법\n- 이메일: support@nextcard.kr\n- 전화번호: 02-1234-5678\n- 카카오톡 플러스친구: @NextCard\n\n항상 고객의 입장에서 먼저 생각하는 NextCard가 되겠습니다.`,
-    partnershipContent: `NextCard 제휴 및 협력 문의\n\nNextCard와 함께 새로운 비즈니스 가치를 만들어갈 혁신적인 비즈니스 파트너를 찾습니다.\n\n1. 제휴 분야\n- 기업 임직원 단체 도입 및 전사 디지털 명함 연동\n- 스마트 NFC 카드 하드웨어 제조 및 기술 제휴\n- API 연동 및 외부 연계 프로필 서비스 협업\n- 공동 브랜드 마케팅 및 프로모션 제휴\n\n2. 문의 및 접수\n- 이메일: biz@nextcard.kr\n- 전화번호: 02-1234-5678\n\n문의사항을 접수해 주시면 담당 부서에서 검토 후 신속히 연락드리겠습니다.`,
-    affiliateMarketingContent: `NextCard 제휴 마케팅 및 인플루언서 파트너 모집\n\nNextCard의 가치를 널리 알리고 함께 성장할 제휴 마케터 및 크리에이터 분들의 많은 관심 바랍니다.\n\n1. 참여 대상\n- 블로그, 인스타그램, 유튜브 등을 운영 중인 크리에이터\n- 비즈니스/테크/생산성 관련 콘텐츠를 발행하시는 분\n- 자체 회원이나 잠재 고객층을 보유한 비즈니스 커뮤니티\n\n2. 활동 혜택\n- 추천 링크를 통한 신규 가입 및 유료 전환 시 고율의 리워드 제공\n- 신제품/NFC 카드 우선 체험권 및 브랜드 굿즈 증정\n- 우수 파트너 대상 특별 프로모션 지원\n\n3. 지원 방법\n- 이메일: affiliate@nextcard.kr`,
-    adInquiryContent: `NextCard 광고 및 배너 게재 문의\n\nNextCard의 트렌디하고 전문성 있는 사용자층을 타겟으로 하는 다양한 광고 매체 솔루션을 제공합니다.\n\n1. 광고 매체 구성\n- NextCard 무료형 명함 하단 배너 광고\n- 서비스 내 스폰서십 영역 및 이벤트 페이지 연계\n- 타겟팅 푸시 알림 및 이메일 마케팅 지원\n\n2. 타겟 오디언스\n- 비즈니스 네트워킹에 관심이 많은 직장인, 프리랜서, 1인 창업가, 전문직 종사자\n\n3. 광고 신청 및 제안서 요청\n- 이메일: ad@nextcard.kr\n- 제안서 요청 시 회사명, 담당자명, 연락처, 희망 광고 기간 및 예산을 기재해 주시기 바랍니다.`
-  },
-  faq: {
-    badge: 'FAQ',
-    title: '자주 묻는 질문',
-    desc: '디지털명함을 만들기 전에 알아야 할 모든 것.',
-    items: []
-  },
-  reviews: {
-    title: '고객들이 전하는 진짜 이야기',
-    items: []
-  },
-  samplesSection: {
-    title: '다양한 명함 샘플',
-    desc: '나만의 개성을 담은 다양한 스타일의 명함을 확인해 보세요.'
-  },
-  samples: [
-    { title: '비즈니스 스타일', imgUrl: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop' },
-    { title: '프리랜서 스타일', imgUrl: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop' },
-    { title: '퍼스널 브랜딩', imgUrl: 'https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?q=80&w=2070&auto=format&fit=crop' }
-  ],
-  partnersSection: {
-    title: '주요 기업 거래처'
-  },
-  partnersLogos: [
-    { name: 'Careis', imgUrl: 'https://placehold.co/200x60/transparent/9d4edd?text=Careis' },
-    { name: '우리척병원', imgUrl: 'https://placehold.co/200x60/transparent/38bdf8?text=WOORI+SPINE' },
-    { name: 'novita', imgUrl: 'https://placehold.co/200x60/transparent/c1121f?text=novita' },
-    { name: 'EUGENE', imgUrl: 'https://placehold.co/200x60/transparent/1d3557?text=EUGENE' },
-    { name: 'BAUSCH + LOMB', imgUrl: 'https://placehold.co/200x60/transparent/00b4d8?text=BAUSCH+%2B+LOMB' },
-    { name: 'KSPO', imgUrl: 'https://placehold.co/200x60/transparent/f77f00?text=KSPO' }
-  ],
-  colors: {
-    pageBg: '#0f172a',
-    partnersBg: '#0f172a',
-    primary: '#db2777',
-    secondary: '#7c3aed',
-    heroTitle: '#f8fafc',
-    heroDesc: '#94a3b8',
-    cardBg: '#1e293b',
-    navBg: '#0f172a',
-    footerBg: '#0f172a',
-    ctaBg1: '#db2777',
-    ctaBg2: '#7c3aed'
-  }
-};
+
 
 // ── 헬퍼: 깊은 복사 ──
 const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
