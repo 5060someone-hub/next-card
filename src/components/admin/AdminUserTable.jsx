@@ -20,20 +20,14 @@ const AdminUserTable = ({
   handleEditUser,
   handleApproveClick,
   handleRejectPayment,
-  deleteCard
+  deleteCard,
+  currentPage,
+  totalPages,
+  onPageChange,
+  handleSearch
 }) => {
   const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
   const isSuperAdmin = auth.email === 'vikitour.boss@gmail.com';
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [sortedCards, searchTerm]);
-
-  const totalPages = Math.ceil(sortedCards.length / itemsPerPage);
-  const currentCards = sortedCards.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <>
@@ -43,13 +37,14 @@ const AdminUserTable = ({
             <Search size={24} className="search-icon" style={{ marginLeft: '10px' }} />
             <input
               type="text"
-              placeholder="회원 이름, 이메일, 명함명 검색"
+              placeholder="회원 이름, 이메일, 연락처 검색"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               style={{ width: '100%', height: '100%', padding: '0 50px', fontSize: '1.2rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
             />
           </div>
-          <button style={{ height: '100%', padding: '0 32px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>검색</button>
+          <button onClick={handleSearch} style={{ height: '100%', padding: '0 32px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>검색</button>
           <button className="btn-export" onClick={handleExportExcel} style={{ height: '100%', padding: '0 24px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', borderRadius: '8px' }}>
             <ExternalLink size={20} /> 엑셀 저장
           </button>
@@ -81,10 +76,10 @@ const AdminUserTable = ({
           <tbody>
             {loading ? (
               <tr><td colSpan="10" className="empty-row">데이터 로딩 중...</td></tr>
-            ) : currentCards.length === 0 ? (
+            ) : sortedCards.length === 0 ? (
               <tr><td colSpan="10" className="empty-row">검색 결과가 없습니다.</td></tr>
             ) : (
-              currentCards.map(card => {
+              sortedCards.map(card => {
                 const user = users.find(u => u.id === card.userId) || {};
                 const cStatus = card.paymentStatus || 'none';
                 const cardName = card.cardData?.name || card.cardData?.nameEng || '이름 없음';
@@ -234,7 +229,7 @@ const AdminUserTable = ({
       {totalPages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '20px' }}>
           <button 
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+            onClick={() => onPageChange(currentPage - 1)} 
             disabled={currentPage === 1}
             style={{ 
               display: 'flex', alignItems: 'center', gap: '4px',
@@ -251,7 +246,7 @@ const AdminUserTable = ({
             {currentPage} / {totalPages}
           </span>
           <button 
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
+            onClick={() => onPageChange(currentPage + 1)} 
             disabled={currentPage === totalPages}
             style={{ 
               display: 'flex', alignItems: 'center', gap: '4px',

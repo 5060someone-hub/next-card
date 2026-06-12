@@ -1611,18 +1611,57 @@ app.put('/api/admin/card/:userId/publish', async (req, res) => {
   }
 });
 
-// 전체 회원 목록 (통합 최적화: 단일 쿼리로 users + cards 한번에 처리)
+// 관리자 페이지 통계 조회 (전체 회원, 카드 상태 등)
+app.get('/api/admin/stats', async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const pending = await Card.countDocuments({ status: 'pending', grade: { $ne: 'paper' } });
+    const published = await Card.countDocuments({ status: 'published', grade: { $ne: 'paper' } });
+    const usersWithCards = await Card.distinct('userId', { grade: { $ne: 'paper' } });
+    const uncreated = totalUsers - usersWithCards.length;
+
+    res.json({
+      all: totalUsers,
+      pending,
+      published,
+      uncreated
+    });
+  } catch (err) {
+    res.status(500).json({ message: '통계 조회 실패', error: err.message });
+  }
+});
+
+// 전체 회원 목록 (페이지네이션 및 서버사이드 검색 적용)
 app.get('/api/admin/users', async (req, res) => {
   try {
-    // lean()으로 순수 JS 객체 반환, select()로 대용량 base64 이미지 필드 제외 (메모리 초과 및 속도 저하 방지)
-    const [users, allCards] = await Promise.all([
-      User.find().sort({ createdAt: -1 }).lean(),
-      Card.find().select('-cardData.logoUrl -cardData.profileUrl -cardData.bgUrl').lean()
-    ]);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const search = req.query.search || '';
 
-    // Map으로 userId -> cards 인덱스 생성 (O(n) 검색 대신 O(1) 조회)
+    const query = {};
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const totalUsers = await User.countDocuments(query);
+    const users = await User.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    const userIds = users.map(u => u._id);
+
+    const cards = await Card.find({ userId: { $in: userIds } })
+      .select('-cardData.logoUrl -cardData.profileUrl -cardData.bgUrl')
+      .lean();
+
     const cardsByUserId = new Map();
-    for (const card of allCards) {
+    for (const card of cards) {
       const uid = String(card.userId);
       if (!cardsByUserId.has(uid)) cardsByUserId.set(uid, []);
       cardsByUserId.get(uid).push(card);
@@ -1646,7 +1685,13 @@ app.get('/api/admin/users', async (req, res) => {
         paymentDate: primaryCard ? primaryCard.paymentDate : null
       };
     });
-    res.json(safeUsers);
+
+    res.json({
+      users: safeUsers,
+      totalUsers,
+      totalPages: Math.ceil(totalUsers / limit),
+      currentPage: page
+    });
   } catch (err) {
     res.status(500).json({ message: '조회 실패', error: err.message });
   }

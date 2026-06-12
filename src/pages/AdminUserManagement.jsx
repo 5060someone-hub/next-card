@@ -24,6 +24,12 @@ export default function AdminUserManagement() {
   const [lastSync, setLastSync] = useState(null);
   const [error, setError] = useState(null);
   
+  // 서버사이드 페이지네이션 상태 관리
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [stats, setStats] = useState({ all: 0, pending: 0, published: 0, uncreated: 0 });
+  
   // 상태 관리용
   const [selectedIds, setSelectedIds] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
@@ -68,7 +74,7 @@ export default function AdminUserManagement() {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (pageToFetch = currentPage, search = searchTerm) => {
     setLoading(true);
     setError(null);
 
@@ -78,21 +84,29 @@ export default function AdminUserManagement() {
 
     try {
       const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
-      const [userRes, prodRes] = await Promise.all([
-        fetch(`${API}/api/admin/users`, { signal: controller.signal }),
-        fetch(`${API}/api/products`, { signal: controller.signal })
+      const [userRes, prodRes, statsRes] = await Promise.all([
+        fetch(`${API}/api/admin/users?page=${pageToFetch}&limit=50&search=${encodeURIComponent(search)}`, { signal: controller.signal }),
+        fetch(`${API}/api/products`, { signal: controller.signal }),
+        fetch(`${API}/api/admin/stats`, { signal: controller.signal })
       ]);
       clearTimeout(timeoutId);
       
-      if (userRes.ok && prodRes.ok) {
+      if (userRes.ok && prodRes.ok && statsRes.ok) {
         const userData = await userRes.json();
         const prodData = await prodRes.json();
-        setUsers(userData);
+        const statsData = await statsRes.json();
+        
+        setUsers(userData.users || []);
+        setCurrentPage(userData.currentPage || 1);
+        setTotalPages(userData.totalPages || 1);
+        setTotalUsers(userData.totalUsers || 0);
+
         // userCards는 /api/admin/users 응답에서 이미 포함되어 옴
-        const allCards = userData.flatMap(u => u.userCards || []);
+        const allCards = (userData.users || []).flatMap(u => u.userCards || []);
         // paper 카드 제외
         setCards(allCards.filter(c => c.grade !== 'paper'));
         setProducts(prodData);
+        setStats(statsData);
         setLastSync(new Date());
       } else {
         const errText = !userRes.ok ? `회원 API 오류 (${userRes.status})` : `상품 API 오류 (${prodRes.status})`;
@@ -374,12 +388,7 @@ export default function AdminUserManagement() {
     return 0;
   });
 
-  const counts = {
-    all: cards?.length || 0,
-    pending: cards?.filter(c => c.cardData?.status === 'pending' || !c.cardData?.status).length || 0,
-    published: cards?.filter(c => c.cardData?.status === 'published').length || 0,
-    uncreated: users?.length === 0 ? 0 : 0
-  };
+
 
   return (
     <div className="dashboard-layout">
@@ -410,7 +419,7 @@ export default function AdminUserManagement() {
           </div>
         )}
 
-        <AdminStats counts={counts} />
+        <AdminStats counts={stats} />
 
         <AdminUserTable 
           loading={loading}
@@ -418,6 +427,7 @@ export default function AdminUserManagement() {
           users={users}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
+          handleSearch={() => fetchData(1, searchTerm)}
           handleExportExcel={handleExportExcel}
           toggleSelectAll={toggleSelectAll}
           selectedIds={selectedIds}
@@ -432,6 +442,9 @@ export default function AdminUserManagement() {
           deleteCard={deleteCard}
           handleApproveClick={handleApproveClick}
           handleRejectPayment={handleRejectPayment}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page) => fetchData(page, searchTerm)}
         />
 
         <AdminUserEditModal
