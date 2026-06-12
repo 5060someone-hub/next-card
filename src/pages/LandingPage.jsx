@@ -532,7 +532,7 @@ const LandingPage = () => {
               <p>{c.featuresSection?.desc || '종이 명함이 담지 못하는 무한한 가능성을 경험하세요.'}</p>
             </div>
             <div className="feature-grid">
-              {c.features.map((feat, i) => (
+              {(c.features || []).map((feat, i) => (
                 <div key={i} className="feature-card">
                   <h3>{feat.title}</h3>
                   <p>{feat.desc}</p>
@@ -550,7 +550,7 @@ const LandingPage = () => {
               <p>당신의 비즈니스 성장에 맞는 플랜을 선택하세요.</p>
             </div>
             <div className="pricing-grid">
-              {c.pricing.map((plan, i) => (
+              {(c.pricing || []).map((plan, i) => (
                 <div key={i} className={`pricing-card ${plan.popular ? 'popular' : ''}`}>
                   {plan.popular && <span className="popular-badge">가장 추천</span>}
                   <h3>{plan.name}</h3>
@@ -560,7 +560,7 @@ const LandingPage = () => {
                     {plan.period && <span className="period">/{plan.period}</span>}
                   </div>
                   <ul className="price-features">
-                    {plan.features.map((f, j) => (
+                    {(plan.features || []).map((f, j) => (
                       <li key={j}><Check size={16} color="#db2777" /> {f}</li>
                     ))}
                   </ul>
