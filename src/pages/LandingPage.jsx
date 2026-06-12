@@ -585,11 +585,17 @@ const LandingPage = () => {
               {(c.faq?.items || []).slice(0, 7).map((item, i) => (
                 <div key={i} className={`faq-item ${activeFaq === i ? 'active' : ''}`} onClick={() => setActiveFaq(activeFaq === i ? null : i)}>
                   <div className="faq-question">
-                    <span>{item.q}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                      <span className="q-badge">Q</span>
+                      <span className="q-text">{item.q}</span>
+                    </div>
                     <ChevronRight size={20} className="faq-icon" />
                   </div>
                   <div className="faq-answer">
-                    <div className="answer-content">{item.a}</div>
+                    <div className="answer-wrapper">
+                      <span className="a-badge">A</span>
+                      <div className="answer-content">{item.a}</div>
+                    </div>
                   </div>
                 </div>
               ))}

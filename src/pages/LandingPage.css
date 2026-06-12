@@ -1443,3 +1443,50 @@
     padding: 0 10px;
   }
 }
+
+/* FAQ Badges from FaqBoard */
+.faq-question .q-badge {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  background: rgba(219, 39, 119, 0.08);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.faq-question .q-text {
+  flex: 1;
+}
+
+.answer-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding-top: 12px;
+}
+
+.answer-wrapper .a-badge {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--secondary-color);
+  background: rgba(124, 58, 237, 0.08);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.answer-wrapper .answer-content {
+  flex: 1;
+  padding: 0 0 24px 0;
+  color: #64748b;
+  line-height: 1.7;
+}
