@@ -1234,13 +1234,27 @@ const WhyEditor = ({ data, onChange }) => {
         <p className="field-help" style={{marginBottom:'1.5rem'}}>* 일반 유튜브 시청 주소(예: https://www.youtube.com/watch?v=...)를 그대로 입력하셔도 자동으로 연결됩니다.</p>
         
         <h3 style={{ marginTop: '2rem', marginBottom: '1rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>상세페이지 그림 (여러 장 업로드 가능)</h3>
-        <p className="field-help" style={{marginBottom:'1rem'}}>PC에서 여러 장의 이미지를 한 번에 선택하여 올릴 수 있습니다. (최대 15장 권장)</p>
+        <p className="field-help" style={{marginBottom:'1rem'}}>PC에서 여러 장의 이미지를 한 번에 선택하거나, 이미지 URL을 직접 입력할 수 있습니다. (최대 15장 권장)</p>
         
-        <div style={{ marginBottom: '1.5rem' }}>
-          <input type="file" multiple accept="image/*" onChange={handleMultiFileUpload} id="detail-images-upload" style={{ display: 'none' }} />
-          <label htmlFor="detail-images-upload" className="ale-btn primary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Plus size={16} /> PC에서 이미지 선택 (여러 장 가능)
+        <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <input type="file" multiple accept="image/*" onChange={(e) => {
+            try {
+              handleMultiFileUpload(e);
+            } catch(err) {
+              alert('이미지 처리 중 오류가 발생했습니다: ' + err.message);
+            }
+          }} id="detail-images-upload" style={{ display: 'none' }} />
+          <label htmlFor="detail-images-upload" className="ale-btn primary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+            <Plus size={16} /> PC에서 이미지 선택
           </label>
+          <button type="button" className="ale-btn secondary" onClick={() => {
+            const url = window.prompt('이미지 URL을 입력하세요 (예: https://...):');
+            if (url && url.trim() !== '') {
+              update('detailImages', [...detailImages, url.trim()]);
+            }
+          }} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            URL로 입력
+          </button>
         </div>
 
         {detailImages.length > 0 && (

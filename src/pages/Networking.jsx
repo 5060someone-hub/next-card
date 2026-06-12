@@ -60,7 +60,7 @@ export default function Networking() {
   };
 
   return (
-    <div className="admin-dashboard-container">
+    <div className="dashboard-layout">
       <Sidebar />
       <div className="admin-content" style={{ padding: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
