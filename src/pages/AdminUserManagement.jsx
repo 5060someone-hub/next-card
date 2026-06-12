@@ -85,7 +85,7 @@ export default function AdminUserManagement() {
     try {
       const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
       const [userRes, prodRes, statsRes] = await Promise.all([
-        fetch(`${API}/api/admin/users?page=${pageToFetch}&limit=50&search=${encodeURIComponent(search)}`, { signal: controller.signal }),
+        fetch(`${API}/api/admin/users?page=${pageToFetch}&limit=25&search=${encodeURIComponent(search)}`, { signal: controller.signal }),
         fetch(`${API}/api/products`, { signal: controller.signal }),
         fetch(`${API}/api/admin/stats`, { signal: controller.signal })
       ]);

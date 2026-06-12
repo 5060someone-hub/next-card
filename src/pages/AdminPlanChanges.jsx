@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import { Clock, CheckCircle, Search, RefreshCw, Trash2 } from 'lucide-react';
+import { Clock, CheckCircle, Search, RefreshCw, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import './AdminDashboard.css';
 
 export default function AdminPlanChanges() {
@@ -9,6 +9,7 @@ export default function AdminPlanChanges() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const navigate = useNavigate();
   const auth = JSON.parse(localStorage.getItem('nextcard_auth')) || {};
@@ -86,6 +87,10 @@ export default function AdminPlanChanges() {
     return grade || '알 수 없음';
   };
 
+  const itemsPerPage = 25;
+  const totalPages = Math.max(1, Math.ceil(changes.length / itemsPerPage));
+  const currentChanges = changes.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="dashboard-layout">
       <Sidebar />
@@ -119,7 +124,7 @@ export default function AdminPlanChanges() {
               ) : changes.length === 0 ? (
                 <tr><td colSpan="5" className="empty-row">요금 변경 내역이 없습니다.</td></tr>
               ) : (
-                changes.map((log) => (
+                currentChanges.map((log) => (
                   <tr key={log._id}>
                     <td style={{ fontSize: '0.85rem', color: '#475569' }}>
                       <Clock size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
@@ -158,6 +163,43 @@ export default function AdminPlanChanges() {
             </tbody>
           </table>
         </div>
+
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '20px' }}>
+            <button 
+              onClick={() => setCurrentPage(currentPage - 1)} 
+              disabled={currentPage === 1}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '4px',
+                padding: '8px 16px', border: '1px solid #cbd5e1', borderRadius: '8px', 
+                background: currentPage === 1 ? '#f1f5f9' : 'white', 
+                color: currentPage === 1 ? '#94a3b8' : '#334155',
+                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              <ChevronLeft size={18} /> 이전
+            </button>
+            <span style={{ fontSize: '1.05rem', fontWeight: '600', color: '#475569' }}>
+              {currentPage} / {totalPages}
+            </span>
+            <button 
+              onClick={() => setCurrentPage(currentPage + 1)} 
+              disabled={currentPage === totalPages}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '4px',
+                padding: '8px 16px', border: '1px solid #cbd5e1', borderRadius: '8px', 
+                background: currentPage === totalPages ? '#f1f5f9' : 'white', 
+                color: currentPage === totalPages ? '#94a3b8' : '#334155',
+                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              다음 <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
+
       </main>
     </div>
   );

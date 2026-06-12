@@ -24,6 +24,7 @@ const AdminScannedCards = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [lastSync, setLastSync] = useState(null);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   
   // 상태 관리용
   const [selectedIds, setSelectedIds] = useState([]);
@@ -374,6 +375,10 @@ const AdminScannedCards = () => {
     return 0;
   });
 
+  const itemsPerPage = 25;
+  const totalPages = Math.max(1, Math.ceil(sortedCards.length / itemsPerPage));
+  const paginatedCards = sortedCards.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const counts = {
     all: cards?.length || 0,
     pending: cards?.filter(c => c.cardData?.status === 'pending' || !c.cardData?.status).length || 0,
@@ -414,7 +419,10 @@ const AdminScannedCards = () => {
 
         <AdminUserTable 
           loading={loading}
-          sortedCards={sortedCards}
+          sortedCards={paginatedCards}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
           users={users}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
