@@ -1149,11 +1149,6 @@ const WhyEditor = ({ data, onChange }) => {
     const target = e.target;
     if (files.length === 0) return;
     Promise.all(files.map(file => new Promise((resolve) => {
-      if (!file.type.startsWith('image/')) {
-        alert('이미지 파일만 업로드 가능합니다.');
-        resolve(null);
-        return;
-      }
       if (file.size > 15 * 1024 * 1024) {
         alert('이미지 용량이 너무 큽니다 (최대 15MB).');
         resolve(null);
@@ -1192,7 +1187,10 @@ const WhyEditor = ({ data, onChange }) => {
             ctx.drawImage(img, 0, 0, width, height);
             resolve(canvas.toDataURL('image/jpeg', 0.6));
           };
-          img.onerror = () => resolve(null);
+          img.onerror = () => {
+            alert(`이미지를 읽을 수 없습니다. (지원되지 않는 포맷이거나 파일이 손상됨: ${file.name})`);
+            resolve(null);
+          };
           img.src = ev.target.result;
         };
         reader.onerror = () => resolve(null);
