@@ -1615,10 +1615,10 @@ app.put('/api/admin/card/:userId/publish', async (req, res) => {
 app.get('/api/admin/stats', async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
-    const pending = await Card.countDocuments({ status: 'pending', grade: { $ne: 'paper' } });
-    const published = await Card.countDocuments({ status: 'published', grade: { $ne: 'paper' } });
-    const usersWithCards = await Card.distinct('userId', { grade: { $ne: 'paper' } });
-    const uncreated = totalUsers - usersWithCards.length;
+    const pending = await Card.countDocuments({ paymentStatus: 'pending', grade: { $ne: 'paper' } });
+    const published = await Card.countDocuments({ 'cardData.status': 'published', grade: { $ne: 'paper' } });
+    const totalCards = await Card.countDocuments({ grade: { $ne: 'paper' } });
+    const uncreated = Math.max(0, totalUsers - totalCards);
 
     res.json({
       all: totalUsers,
