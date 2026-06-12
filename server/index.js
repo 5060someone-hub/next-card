@@ -1576,7 +1576,7 @@ app.get('/api/products', async (req, res) => {
 // 전체 명함 목록 (사용자 정보 포함) - populate 제거하고 lean()으로 최적화
 app.get('/api/admin/cards', async (req, res) => {
   try {
-    const cards = await Card.find().lean();
+    const cards = await Card.find().select('-cardData.logoUrl -cardData.profileUrl -cardData.bgUrl').lean();
     const activeCards = cards.filter(isCardActive);
     const result = activeCards.map(c => ({
       _id: c._id,
@@ -1614,10 +1614,10 @@ app.put('/api/admin/card/:userId/publish', async (req, res) => {
 // 전체 회원 목록 (통합 최적화: 단일 쿼리로 users + cards 한번에 처리)
 app.get('/api/admin/users', async (req, res) => {
   try {
-    // lean()으로 순수 JS 객체 반환 (Mongoose 오버헤드 제거, 속도 향상)
+    // lean()으로 순수 JS 객체 반환, select()로 대용량 base64 이미지 필드 제외 (메모리 초과 및 속도 저하 방지)
     const [users, allCards] = await Promise.all([
       User.find().sort({ createdAt: -1 }).lean(),
-      Card.find().lean()
+      Card.find().select('-cardData.logoUrl -cardData.profileUrl -cardData.bgUrl').lean()
     ]);
 
     // Map으로 userId -> cards 인덱스 생성 (O(n) 검색 대신 O(1) 조회)
@@ -1886,6 +1886,7 @@ app.get('/api/admin/notifications', async (req, res) => {
   }
 });
 
+
 // 제휴 및 도입 문의 목록 조회
 app.get('/api/admin/inquiries', async (req, res) => {
   try {
@@ -1914,9 +1915,13 @@ app.get('/api/admin/plan-changes', async (req, res) => {
   try {
     const changes = await PlanChange.find({})
       .populate('userId', 'name email phone')
-      .populate('cardId', 'cardData')
+      .populate({
+        path: 'cardId',
+        select: '-cardData.logoUrl -cardData.profileUrl -cardData.bgUrl'
+      })
       .sort({ changedAt: -1 })
-      .limit(100);
+      .limit(100)
+      .lean();
     res.json(changes);
   } catch (err) {
     res.status(500).json({ message: '요금 변경 내역 조회 실패', error: err.message });

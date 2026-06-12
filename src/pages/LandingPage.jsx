@@ -114,13 +114,20 @@ const DEFAULT_CONTENT = {
 };
 
 // ── 텍스트 줄바꿈 렌더러 ──
-const Multiline = ({ text }) => (
-  <>
-    {String(text || '').split('\n').map((line, i) => (
-      <React.Fragment key={i}>{line}{i < text.split('\n').length - 1 && <br />}</React.Fragment>
-    ))}
-  </>
-);
+const Multiline = ({ text }) => {
+  const safeText = text || '';
+  const lines = safeText.split('\n');
+  return (
+    <>
+      {lines.map((line, i) => (
+        <React.Fragment key={i}>
+          {line}
+          {i < lines.length - 1 && <br />}
+        </React.Fragment>
+      ))}
+    </>
+  );
+};
 
 const getLinkProps = (url, defaultUrl = '/signup') => {
   const targetUrl = url || defaultUrl;
@@ -322,21 +329,37 @@ const LandingPage = () => {
       .then(r => r.ok ? r.json() : null)
       .then(data => { 
         if (data) {
-          setC({ ...DEFAULT_CONTENT, ...data });
+          // 중첩 객체(Nested Objects)까지 안전하게 병합하기 위한 2단계 깊은 복사(Deep Merge) 적용
+          const mergedData = {
+            ...DEFAULT_CONTENT,
+            ...data,
+            nav: { ...DEFAULT_CONTENT.nav, ...data.nav },
+            hero: { ...DEFAULT_CONTENT.hero, ...data.hero },
+            featuresSection: { ...DEFAULT_CONTENT.featuresSection, ...data.featuresSection },
+            samplesSection: { ...DEFAULT_CONTENT.samplesSection, ...data.samplesSection },
+            partnersSection: { ...DEFAULT_CONTENT.partnersSection, ...data.partnersSection },
+            cta: { ...DEFAULT_CONTENT.cta, ...data.cta },
+            faq: { ...DEFAULT_CONTENT.faq, ...data.faq },
+            reviews: { ...DEFAULT_CONTENT.reviews, ...data.reviews },
+            colors: { ...DEFAULT_CONTENT.colors, ...data.colors },
+            footer: { ...DEFAULT_CONTENT.footer, ...data.footer }
+          };
+          setC(mergedData);
+          
           // SEO Optimization
-          document.title = `${data.nav?.logo || 'NextCard'} | 프리미엄 디지털 명함`;
+          document.title = `${mergedData.nav?.logo || 'NextCard'} | 프리미엄 디지털 명함`;
           const metaDesc = document.querySelector('meta[name="description"]');
-          if (metaDesc) metaDesc.setAttribute('content', data.hero?.desc || '나만의 디지털 명함 서비스');
+          if (metaDesc) metaDesc.setAttribute('content', mergedData.hero?.desc || '나만의 디지털 명함 서비스');
           
           // 파비콘 동적 업데이트
-          if (data.nav?.faviconUrl) {
+          if (mergedData.nav?.faviconUrl) {
             let link = document.querySelector("link[rel~='icon']");
             if (!link) {
               link = document.createElement('link');
               link.rel = 'icon';
               document.head.appendChild(link);
             }
-            link.href = data.nav.faviconUrl;
+            link.href = mergedData.nav.faviconUrl;
           }
         }
       })
