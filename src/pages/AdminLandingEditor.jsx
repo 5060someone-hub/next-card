@@ -1134,7 +1134,14 @@ const WhyEditor = ({ data, onChange }) => {
   const d = data || {};
   const update = (k, v) => onChange({ ...d, [k]: v });
   const blocks = d.blocks || [];
-  const detailImages = d.detailImages || (d.detailImage ? [d.detailImage] : []);
+  let detailImages = [];
+  if (Array.isArray(d.detailImages)) {
+    detailImages = d.detailImages;
+  } else if (typeof d.detailImages === 'string') {
+    detailImages = [d.detailImages];
+  } else if (d.detailImage) {
+    detailImages = [d.detailImage];
+  }
 
   const addBlock = () => onChange({ ...d, blocks: [...blocks, { title: '새 장점', desc: '설명', icon: '✨' }] });
   const updateBlock = (idx, k, v) => {
@@ -1237,15 +1244,15 @@ const WhyEditor = ({ data, onChange }) => {
         <p className="field-help" style={{marginBottom:'1rem'}}>PC에서 여러 장의 이미지를 한 번에 선택하거나, 이미지 URL을 직접 입력할 수 있습니다. (최대 15장 권장)</p>
         
         <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <input type="file" multiple accept="image/*" onChange={(e) => {
-            try {
-              handleMultiFileUpload(e);
-            } catch(err) {
-              alert('이미지 처리 중 오류가 발생했습니다: ' + err.message);
-            }
-          }} id="detail-images-upload" style={{ display: 'none' }} />
-          <label htmlFor="detail-images-upload" className="ale-btn primary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+          <label className="ale-btn primary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
             <Plus size={16} /> PC에서 이미지 선택
+            <input type="file" multiple accept="image/*" onChange={(e) => {
+              try {
+                handleMultiFileUpload(e);
+              } catch(err) {
+                alert('이미지 처리 중 오류가 발생했습니다: ' + err.message);
+              }
+            }} style={{ display: 'none' }} />
           </label>
           <button type="button" className="ale-btn secondary" onClick={() => {
             const url = window.prompt('이미지 URL을 입력하세요 (예: https://...):');
