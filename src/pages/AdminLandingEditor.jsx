@@ -154,7 +154,7 @@ const ImageField = ({ label, value, onChange }) => {
 
     const reader = new FileReader();
     reader.onload = (ev) => {
-      if (file.size < 800 * 1024) { // Under 800KB
+      if (file.size < 100 * 1024) { // Under 100KB
         onChange(ev.target.result);
         return;
       }
@@ -1148,11 +1148,50 @@ const WhyEditor = ({ data, onChange }) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
     Promise.all(files.map(file => new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => resolve(ev.target.result);
-      reader.readAsDataURL(file);
+      if (file.size > 15 * 1024 * 1024) {
+        alert('이미지 용량이 너무 큽니다 (최대 15MB).');
+        resolve(null);
+        return;
+      }
+      if (file.size < 100 * 1024) {
+        const reader = new FileReader();
+        reader.onload = (ev) => resolve(ev.target.result);
+        reader.readAsDataURL(file);
+      } else {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 1200;
+            const MAX_HEIGHT = 1200;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height = Math.round(height *= MAX_WIDTH / width);
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width = Math.round(width *= MAX_HEIGHT / height);
+                height = MAX_HEIGHT;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.6));
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
     }))).then(results => {
-      update('detailImages', [...detailImages, ...results]);
+      const validResults = results.filter(r => r !== null);
+      update('detailImages', [...detailImages, ...validResults]);
     });
   };
 

@@ -669,7 +669,7 @@ const LandingPage = () => {
                       name="name" 
                       value={contactForm.name} 
                       onChange={handleContactChange} 
-                      placeholder="예시: 홍길동 (안티그래피티)" 
+                      placeholder="예시: 홍길동 (넥스트카드)" 
                       required 
                     />
                   </div>

@@ -116,7 +116,7 @@ const AdminNamecardEditor = () => {
         }
       };
 
-      if (file.size < 800 * 1024) { // Under 800KB
+      if (file.size < 100 * 1024) { // Under 100KB
         applyResult(ev.target.result);
         return;
       }
