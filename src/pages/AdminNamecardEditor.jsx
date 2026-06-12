@@ -95,19 +95,61 @@ const AdminNamecardEditor = () => {
 
   const handleImageUpload = (e, field, index = null) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
+    if (!file) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      alert('이미지 용량이 너무 큽니다 (최대 15MB).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const applyResult = (result) => {
         if (field === 'mainImage') {
-          setContent({ ...content, mainImage: reader.result });
+          setContent(prev => ({ ...prev, mainImage: result }));
         } else if (field === 'thumbnails') {
-          const newThumbs = [...content.thumbnails];
-          newThumbs[index] = reader.result;
-          setContent({ ...content, thumbnails: newThumbs });
+          setContent(prev => {
+            const newThumbs = [...prev.thumbnails];
+            newThumbs[index] = result;
+            return { ...prev, thumbnails: newThumbs };
+          });
         }
       };
-      reader.readAsDataURL(file);
-    }
+
+      if (file.size < 800 * 1024) { // Under 800KB
+        applyResult(ev.target.result);
+        return;
+      }
+
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1200;
+        
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const outType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const quality = outType === 'image/jpeg' ? 0.8 : undefined;
+        applyResult(canvas.toDataURL(outType, quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
   };
 
   if (loading) {

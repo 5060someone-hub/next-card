@@ -146,8 +146,47 @@ const ImageField = ({ label, value, onChange }) => {
   const handleFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      alert('이미지 용량이 너무 큽니다 (최대 15MB).');
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = (ev) => onChange(ev.target.result);
+    reader.onload = (ev) => {
+      if (file.size < 800 * 1024) { // Under 800KB
+        onChange(ev.target.result);
+        return;
+      }
+
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1200;
+        
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const outType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const quality = outType === 'image/jpeg' ? 0.8 : undefined;
+        onChange(canvas.toDataURL(outType, quality));
+      };
+      img.src = ev.target.result;
+    };
     reader.readAsDataURL(file);
   };
 
