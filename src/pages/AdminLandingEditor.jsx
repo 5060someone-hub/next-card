@@ -1146,8 +1146,14 @@ const WhyEditor = ({ data, onChange }) => {
 
   const handleMultiFileUpload = (e) => {
     const files = Array.from(e.target.files);
+    const target = e.target;
     if (files.length === 0) return;
     Promise.all(files.map(file => new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다.');
+        resolve(null);
+        return;
+      }
       if (file.size > 15 * 1024 * 1024) {
         alert('이미지 용량이 너무 큽니다 (최대 15MB).');
         resolve(null);
@@ -1156,6 +1162,7 @@ const WhyEditor = ({ data, onChange }) => {
       if (file.size < 100 * 1024) {
         const reader = new FileReader();
         reader.onload = (ev) => resolve(ev.target.result);
+        reader.onerror = () => resolve(null);
         reader.readAsDataURL(file);
       } else {
         const reader = new FileReader();
@@ -1170,12 +1177,12 @@ const WhyEditor = ({ data, onChange }) => {
 
             if (width > height) {
               if (width > MAX_WIDTH) {
-                height = Math.round(height *= MAX_WIDTH / width);
+                height = Math.round(height * (MAX_WIDTH / width));
                 width = MAX_WIDTH;
               }
             } else {
               if (height > MAX_HEIGHT) {
-                width = Math.round(width *= MAX_HEIGHT / height);
+                width = Math.round(width * (MAX_HEIGHT / height));
                 height = MAX_HEIGHT;
               }
             }
@@ -1185,13 +1192,18 @@ const WhyEditor = ({ data, onChange }) => {
             ctx.drawImage(img, 0, 0, width, height);
             resolve(canvas.toDataURL('image/jpeg', 0.6));
           };
+          img.onerror = () => resolve(null);
           img.src = ev.target.result;
         };
+        reader.onerror = () => resolve(null);
         reader.readAsDataURL(file);
       }
     }))).then(results => {
       const validResults = results.filter(r => r !== null);
-      update('detailImages', [...detailImages, ...validResults]);
+      if (validResults.length > 0) {
+        update('detailImages', [...detailImages, ...validResults]);
+      }
+      if (target) target.value = '';
     });
   };
 
