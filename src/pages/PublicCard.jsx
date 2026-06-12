@@ -518,6 +518,19 @@ const PublicCard = () => {
   const finalBtnBg = cardData.btnBgColor || glassBg;
   const finalBlockBg = cardData.blockBgColor || glassBg;
 
+  if (cardData.theme === 'luxury') {
+    return (
+      <LuxuryThemePublic 
+        cardData={cardData} 
+        actions={actions} 
+        onShare={handleShare} 
+        onSaveContact={handleSaveContact} 
+        isNfcSaved={isNfcSaved} 
+        onSaveNfc={handleSaveNfc} 
+      />
+    );
+  }
+
   return (
     <div className="public-card-v3-root" style={{ 
       background: '#000', 
