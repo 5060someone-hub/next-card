@@ -29,7 +29,7 @@ export default function Networking() {
     fetchNetworkingCards();
   }, [filters.industryCategory, filters.industrySubCategory, filters.regionCity, filters.regionDistrict]);
 
-  const fetchNetworkingCards = async () => {
+  async function fetchNetworkingCards() {
     setLoading(true);
     setError(null);
     try {
