@@ -41,7 +41,7 @@ const getLinkProps = (url, defaultUrl = '/signup') => {
 const LandingPage = () => {
   const [c, setC] = useState(DEFAULT_CONTENT);
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
   const [policyModal, setPolicyModal] = useState({ open: false, title: '', content: '' });
 
@@ -262,12 +262,10 @@ const LandingPage = () => {
           }
         }
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (loading) return;
     // Scroll Reveal Observer
     const observerOptions = { threshold: 0.15 };
     const observer = new IntersectionObserver((entries) => {
@@ -282,7 +280,7 @@ const LandingPage = () => {
     revealElements.forEach(el => observer.observe(el));
 
     return () => observer.disconnect();
-  }, [loading]);
+  }, []);
 
   // 색상 스타일 변수 생성
   const themeStyles = {
@@ -300,14 +298,6 @@ const LandingPage = () => {
     '--primary-gradient': `linear-gradient(135deg, ${c.colors?.primary || '#db2777'} 0%, ${c.colors?.secondary || '#7c3aed'} 100%)`,
     '--cta-gradient': `linear-gradient(135deg, ${c.colors?.ctaBg1 || '#db2777'} 0%, ${c.colors?.ctaBg2 || '#7c3aed'} 100%)`
   };
-
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
-        <Loader2 size={40} className="spin-sm" color="#3b82f6" />
-      </div>
-    );
-  }
 
   return (
     <div className="landing-wrapper" style={themeStyles}>

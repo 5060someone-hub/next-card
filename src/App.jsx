@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { DEFAULT_CONTENT } from './pages/landingDefaultContent';
 
 // ─── 즉시 로드 (가장 많이 방문하는 페이지) ─────────────────────────────────
 import LandingPage from './pages/LandingPage';
@@ -103,21 +104,17 @@ function App() {
   // 전역 파비콘 설정 및 카카오 SDK 초기화
   useEffect(() => {
     // 1. 파비콘 설정
-    fetch(`${API_URL}/api/landing-content`)
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (data?.nav?.faviconUrl) {
-          let link = document.querySelector("link[rel~='icon']");
-          if (!link) {
-            link = document.createElement('link');
-            link.rel = 'icon';
-            document.head.appendChild(link);
-          }
-          link.href = data.nav.faviconUrl;
-          localStorage.setItem('globalFavicon', data.nav.faviconUrl);
-        }
-      })
-      .catch(() => {}); // 조용히 실패 (콘솔 노출 없음)
+    const favicon = DEFAULT_CONTENT?.nav?.faviconUrl;
+    if (favicon) {
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = favicon;
+      localStorage.setItem('globalFavicon', favicon);
+    }
 
     // 2. 카카오 SDK 초기화
     if (window.Kakao && !window.Kakao.isInitialized()) {
