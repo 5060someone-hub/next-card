@@ -368,7 +368,7 @@ const LandingPage = () => {
                 const CardContent = (
                   <div className="sample-card">
                     <div className="sample-img-wrapper">
-                      <img src={sample.imgUrl} alt={sample.title} />
+                      <img src={sample.imgUrl} alt={sample.title} loading="lazy" />
                     </div>
                     <h3>{sample.title}</h3>
                   </div>
@@ -412,7 +412,7 @@ const LandingPage = () => {
                 {(c.partnersLogos || []).map((logo, i) => (
                   <div key={i} className="partner-logo-item" title={logo.name}>
                     {logo.imgUrl ? (
-                      <img src={logo.imgUrl} alt={logo.name} />
+                      <img src={logo.imgUrl} alt={logo.name} loading="lazy" />
                     ) : (
                       <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600 }}>{logo.name}</span>
                     )}
