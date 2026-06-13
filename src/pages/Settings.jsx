@@ -660,13 +660,34 @@ const Settings = () => {
                                 
                                 <div className="bank-info-box" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                   {pendingMethod && pendingMethod.fields && pendingMethod.fields.length > 0 ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '12px', background: 'rgba(255,255,255,0.5)', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                      {pendingMethod.fields.map(f => (
-                                        <div key={f.id} className="bank-row">
-                                          <span>{f.label}</span>
-                                          <strong>{f.value}</strong>
-                                        </div>
-                                      ))}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px', background: 'rgba(255,255,255,0.5)', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                      {pendingMethod.fields.map(f => {
+                                        const isLink = f.value && f.value.startsWith('http');
+                                        const isToss = isLink && f.value.includes('toss');
+                                        const isKakao = isLink && (f.value.includes('kakao') || f.value.includes('qr'));
+                                        
+                                        if (isLink) {
+                                          return (
+                                            <div key={f.id} style={{ marginTop: '4px' }}>
+                                              <a href={f.value} target="_blank" rel="noreferrer" style={{
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                background: isToss ? '#3182f6' : isKakao ? '#FEE500' : '#475569',
+                                                color: isKakao ? '#000' : '#fff',
+                                                textDecoration: 'none', padding: '10px 16px', borderRadius: '8px',
+                                                fontWeight: 'bold', fontSize: '0.95rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                              }}>
+                                                {isToss ? '토스로 송금하기' : isKakao ? '카카오페이 송금하기' : '링크 열기'}
+                                              </a>
+                                            </div>
+                                          );
+                                        }
+                                        return (
+                                          <div key={f.id} className="bank-row">
+                                            <span>{f.label}</span>
+                                            <strong>{f.value}</strong>
+                                          </div>
+                                        );
+                                      })}
                                     </div>
                                   ) : (
                                     <div>등록된 결제 정보가 없습니다.</div>
