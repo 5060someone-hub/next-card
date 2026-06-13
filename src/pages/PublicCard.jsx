@@ -89,16 +89,18 @@ const PublicCard = () => {
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const docData = docSnap.data();
-            return {
-              id: docSnap.id,
-              userId: docData.userId,
-              productType: docData.productType || docData.grade || 'general',
-              status: docData.status || 'active',
-              createdAt: docData.createdAt,
-              ...docData.cardData
-            };
+            if (docData.cardData) {
+              return {
+                id: docSnap.id,
+                userId: docData.userId,
+                productType: docData.productType || docData.grade || 'general',
+                status: docData.status || 'active',
+                createdAt: docData.createdAt,
+                ...docData.cardData
+              };
+            }
           }
-          throw new Error('Not found in Firebase');
+          throw new Error('Not found or invalid in Firebase');
         };
 
         const fetchBackend = async () => {
@@ -110,9 +112,32 @@ const PublicCard = () => {
         };
 
         try {
-          // 백엔드(Render) 콜드스타트 지연을 피하기 위해 파이어베이스와 백엔드를 동시에 찌릅니다.
-          // 파이어베이스는 항상 0.1초 만에 응답하므로 엄청나게 빨라집니다.
-          data = await Promise.any([fetchFirebase(), fetchBackend()]);
+          // Promise.any 호환성 문제(일부 구형 모바일 브라우저/카카오 인앱)를 피하기 위해 수동으로 Race 구현
+          data = await new Promise((resolve, reject) => {
+            let errors = 0;
+            let isResolved = false;
+            
+            const handleError = (err) => {
+              errors++;
+              if (errors === 2 && !isResolved) {
+                reject(new Error('Not found in both DBs'));
+              }
+            };
+
+            fetchFirebase().then(res => {
+              if (!isResolved) {
+                isResolved = true;
+                resolve(res);
+              }
+            }).catch(handleError);
+
+            fetchBackend().then(res => {
+              if (!isResolved) {
+                isResolved = true;
+                resolve(res);
+              }
+            }).catch(handleError);
+          });
         } catch (error) {
           console.error("Card not found in both DBs", error);
         }
