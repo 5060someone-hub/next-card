@@ -761,12 +761,33 @@ const Settings = () => {
                                 </div>
 
                                 {selectedMethodInfo && selectedMethodInfo.fields && selectedMethodInfo.fields.length > 0 && (
-                                  <div className="bank-info-box mini" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-                                    {selectedMethodInfo.fields.map(f => (
-                                      <div key={f.id}>
-                                        <strong>{f.label}:</strong> {f.value}
-                                      </div>
-                                    ))}
+                                  <div className="bank-info-box mini" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px', background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    {selectedMethodInfo.fields.map(f => {
+                                      const isLink = f.value && f.value.startsWith('http');
+                                      const isToss = isLink && f.value.includes('toss');
+                                      const isKakao = isLink && (f.value.includes('kakao') || f.value.includes('qr'));
+                                      
+                                      if (isLink) {
+                                        return (
+                                          <div key={f.id} style={{ marginTop: '4px' }}>
+                                            <a href={f.value} target="_blank" rel="noreferrer" style={{
+                                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                              background: isToss ? '#3182f6' : isKakao ? '#FEE500' : '#475569',
+                                              color: isKakao ? '#000' : '#fff',
+                                              textDecoration: 'none', padding: '10px 16px', borderRadius: '8px',
+                                              fontWeight: 'bold', fontSize: '0.95rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                            }}>
+                                              {isToss ? '토스 송금하기' : isKakao ? '카카오페이 송금하기' : '링크 열기'}
+                                            </a>
+                                          </div>
+                                        );
+                                      }
+                                      return (
+                                        <div key={f.id} style={{ fontSize: '0.9rem', color: '#333' }}>
+                                          {f.label && <strong>{f.label}:</strong>} {f.value}
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 )}
 
