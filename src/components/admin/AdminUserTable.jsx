@@ -89,13 +89,14 @@ const AdminUserTable = ({
                 if (card.grade === 'paper') gradeName = '종이명함(스캔)';
                 const publishStatus = card.cardData?.status || 'draft';
 
+                const cardId = card.id || card._id;
                 return (
-                  <tr key={card._id}>
+                  <tr key={cardId}>
                     <td>
                       <input
                         type="checkbox"
-                        checked={selectedIds.includes(card._id)}
-                        onChange={() => toggleSelectCard(card._id)}
+                        checked={selectedIds.includes(cardId)}
+                        onChange={() => toggleSelectCard(cardId)}
                       />
                     </td>
                     <td>
@@ -211,10 +212,10 @@ const AdminUserTable = ({
                     </td>
                     <td>
                       <div style={{ display: 'flex', gap: '4px' }}>
-                        <button className="btn-icon" onClick={() => handleEditCard(card._id)} title="명함 내용 수정" style={{ width: '28px', height: '28px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}><Edit size={14} color="#475569" /></button>
-                        <button className="btn-icon" onClick={() => handleEditUser(user)} title="계정 설정" style={{ width: '28px', height: '28px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}><Settings size={14} color="#475569" /></button>
+                        <button className="btn-icon" onClick={() => handleEditCard(card.id || card._id)} title="명함 편집" style={{ width: '28px', height: '28px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}><Edit size={14} color="#475569" /></button>
+                        <button className="btn-icon" onClick={() => handleEditUser(user)} title="회원 관리" style={{ width: '28px', height: '28px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}><Settings size={14} color="#475569" /></button>
                         {isSuperAdmin && (
-                          <button className="btn-icon danger" onClick={() => deleteCard(card._id, `${user.name} - ${cardName}`)} title="명함 삭제" style={{ width: '28px', height: '28px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', background: '#fef2f2' }}><Trash2 size={14} color="#ef4444" /></button>
+                          <button className="btn-icon danger" onClick={() => deleteCard(card.id || card._id, `${user.name} - ${cardName}`)} title="명함 삭제" style={{ width: '28px', height: '28px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', background: '#fef2f2' }}><Trash2 size={14} color="#ef4444" /></button>
                         )}
                       </div>
                     </td>

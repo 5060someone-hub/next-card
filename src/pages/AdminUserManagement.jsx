@@ -191,7 +191,8 @@ export default function AdminUserManagement() {
   const handleSaveApproval = async () => {
     if (!approvingUser) return;
     try {
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/payment/approve/${approvingUser._id}`, {
+      const targetId = approvingUser.id || approvingUser._id;
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/payment/approve/${targetId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ duration: approvalDuration })
@@ -250,7 +251,8 @@ export default function AdminUserManagement() {
 
   const handleSavePublish = async (url) => {
     try {
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/cards/${selectedUserForPublish._id}/publish`, {
+      const targetId = selectedUserForPublish.id || selectedUserForPublish._id;
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/admin/cards/${targetId}/publish`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customCardUrl: url, status: 'published' })
@@ -298,7 +300,8 @@ export default function AdminUserManagement() {
       const rows = sortedCards.map(card => {
         const user = users.find(u => u.id === card.userId) || {};
         const status = card.cardData?.status || 'pending';
-        const fullUrl = `${window.location.origin}/v/${card?.cardData?.customCardUrl || card._id}`;
+        const targetId = card.id || card._id;
+        const fullUrl = `${window.location.origin}/v/${card?.cardData?.customCardUrl || targetId}`;
         const prodName = products.find(p => p.id === card.grade)?.name || card.grade || '일반';
         
         // 쉼표(,)가 포함되어 컬럼이 쪼개지거나 깨지는 결함을 막기 위한 더블 쿼트 이스케이프 매핑
@@ -345,7 +348,7 @@ export default function AdminUserManagement() {
     if (selectedIds.length === filteredCards.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filteredCards.map(c => c._id));
+      setSelectedIds(filteredCards.map(c => c.id || c._id));
     }
   };
 
