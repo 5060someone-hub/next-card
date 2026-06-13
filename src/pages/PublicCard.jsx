@@ -81,6 +81,18 @@ const PublicCard = () => {
     }
 
     const fetchData = async () => {
+      const cacheKey = `nextcard_data_${id}`;
+      const cachedDataStr = sessionStorage.getItem(cacheKey);
+      if (cachedDataStr) {
+        try {
+          const parsedCache = JSON.parse(cachedDataStr);
+          setCardData(parsedCache);
+          setLoading(false);
+        } catch (e) {
+          console.error("Cache parse error", e);
+        }
+      }
+
       try {
         let data = null;
 
@@ -112,7 +124,6 @@ const PublicCard = () => {
         };
 
         try {
-          // Promise.any 호환성 문제(일부 구형 모바일 브라우저/카카오 인앱)를 피하기 위해 수동으로 Race 구현
           data = await new Promise((resolve, reject) => {
             let errors = 0;
             let isResolved = false;
@@ -143,6 +154,7 @@ const PublicCard = () => {
         }
 
         if (data) {
+          sessionStorage.setItem(cacheKey, JSON.stringify(data));
           if (data.status === 'temporary' && data.createdAt) {
             const createdDate = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
             const now = new Date();
@@ -159,7 +171,6 @@ const PublicCard = () => {
             }
           }
           
-          // 과거에 생성되었거나 캐시 문제로 색상 값이 누락된 임시 명함을 위한 기본 화이트 테마 강제 적용
           if (data.status === 'temporary' && !data.bgColor) {
             data.bgColor = '#ffffff';
             data.textColor = '#1e293b';
@@ -172,7 +183,6 @@ const PublicCard = () => {
           
           setCardData(data);
           
-          // --- 통계 트래킹 (조회수 증가) ---
           const urlParams = new URLSearchParams(window.location.search);
           const source = urlParams.get('ref') || 'direct';
 
@@ -187,7 +197,6 @@ const PublicCard = () => {
             })
           }).catch(e => console.error('Tracking Error:', e));
           
-          // 상품 정보 가져오기
           try {
             const prodRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/products`);
             if (prodRes.ok) {
@@ -199,7 +208,6 @@ const PublicCard = () => {
             console.error('Products fetch error', e);
           }
           
-          // 광고 설정 가져오기
           try {
             const adRes = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/settings/ad`);
             if (adRes.ok) {
@@ -1019,6 +1027,8 @@ const PublicCard = () => {
               <img 
                 src={cardData.paperCardUrl} 
                 alt="Paper Card" 
+                loading="lazy"
+                decoding="async"
                 style={{ 
                   maxWidth: '100%', maxHeight: '100%', 
                   objectFit: 'contain', display: 'block' 

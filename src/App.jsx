@@ -2,12 +2,12 @@ import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DEFAULT_CONTENT } from './pages/landingDefaultContent';
 
-// ─── 즉시 로드 (가장 많이 방문하는 페이지) ─────────────────────────────────
-import LandingPage from './pages/LandingPage';
-import WhyNextCard from './pages/WhyNextCard';
-import PublicCard from './pages/PublicCard';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
+// 빠른 로딩을 위해 메인 페이지들을 지연 로딩(lazy)으로 변경
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
+const WhyNextCard = React.lazy(() => import('./pages/WhyNextCard'));
+const PublicCard = React.lazy(() => import('./pages/PublicCard'));
+const Login = React.lazy(() => import('./pages/Login'));
+const Signup = React.lazy(() => import('./pages/Signup'));
 
 // ─── 지연 로드 (필요할 때만 다운로드) ────────────────────────────────────────
 const Dashboard          = React.lazy(() => import('./pages/Dashboard'));
