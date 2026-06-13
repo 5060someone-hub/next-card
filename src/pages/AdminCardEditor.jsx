@@ -61,21 +61,44 @@ const AdminCardEditor = () => {
   const fetchCardData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card-detail/${cardId}`);
-      if (response.ok) {
-        const card = await response.json();
-        if (card && card.cardData) {
-          setCurrentCardId(card._id);
+      if (cardId.length !== 24) {
+        const { doc, getDoc } = await import('firebase/firestore');
+        const { db } = await import('../firebase');
+        const docRef = doc(db, 'business_cards', cardId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const docData = docSnap.data();
+          setCurrentCardId(docSnap.id);
+          setUserId(docData.userId || '');
           setCardEditForm({
             ...cardEditForm,
-            ...card.cardData,
-            intro: card.cardData.intro || card.cardData.bio || '',
-            introAlign: card.cardData.introAlign || 'center',
-            nameFontSizeKor: card.cardData.nameFontSizeKor || card.cardData.nameFontSize || 24,
-            nameFontSizeEng: card.cardData.nameFontSizeEng || 16,
-            productType: card.grade || card.cardData?.productType || 'general',
-            sns: { ...cardEditForm.sns, ...(card.cardData.sns || {}) }
+            ...docData.cardData,
+            intro: docData.cardData.intro || docData.cardData.bio || '',
+            introAlign: docData.cardData.introAlign || 'center',
+            nameFontSizeKor: docData.cardData.nameFontSizeKor || docData.cardData.nameFontSize || 24,
+            nameFontSizeEng: docData.cardData.nameFontSizeEng || 16,
+            productType: docData.productType || docData.grade || docData.cardData?.productType || 'general',
+            sns: { ...cardEditForm.sns, ...(docData.cardData.sns || {}) }
           });
+        }
+      } else {
+        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card-detail/${cardId}`);
+        if (response.ok) {
+          const card = await response.json();
+          if (card && card.cardData) {
+            setCurrentCardId(card._id);
+            setUserId(card.userId || '');
+            setCardEditForm({
+              ...cardEditForm,
+              ...card.cardData,
+              intro: card.cardData.intro || card.cardData.bio || '',
+              introAlign: card.cardData.introAlign || 'center',
+              nameFontSizeKor: card.cardData.nameFontSizeKor || card.cardData.nameFontSize || 24,
+              nameFontSizeEng: card.cardData.nameFontSizeEng || 16,
+              productType: card.grade || card.cardData?.productType || 'general',
+              sns: { ...cardEditForm.sns, ...(card.cardData.sns || {}) }
+            });
+          }
         }
       }
     } catch (err) {
@@ -117,21 +140,35 @@ const AdminCardEditor = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/save/${currentCardId || cardId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cardData: cardEditForm })
-      });
-      if (response.ok) {
+      if (cardId.length !== 24) {
+        const { doc, updateDoc } = await import('firebase/firestore');
+        const { db } = await import('../firebase');
+        const docRef = doc(db, 'business_cards', currentCardId || cardId);
+        await updateDoc(docRef, {
+          cardData: cardEditForm,
+          productType: cardEditForm.productType
+        });
         if (window.confirm('✅ 명함 데이터가 성공적으로 저장되었습니다!\n\n최종 결과물(명함 페이지)을 새 창에서 즉시 확인하시겠습니까?')) {
           const targetUrlId = cardEditForm.customCardUrl || currentCardId || cardId;
           window.open(`/v/${targetUrlId}`, '_blank');
         }
-        await fetchCardData();
       } else {
-        const errData = await response.json().catch(() => ({}));
-        alert(`저장 실패: ${errData.message || response.status}`);
+        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/save/${currentCardId || cardId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cardData: cardEditForm })
+        });
+        if (response.ok) {
+          if (window.confirm('✅ 명함 데이터가 성공적으로 저장되었습니다!\n\n최종 결과물(명함 페이지)을 새 창에서 즉시 확인하시겠습니까?')) {
+            const targetUrlId = cardEditForm.customCardUrl || currentCardId || cardId;
+            window.open(`/v/${targetUrlId}`, '_blank');
+          }
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          alert(`저장 실패: ${errData.message || response.status}`);
+        }
       }
+      await fetchCardData();
     } catch (err) {
       alert('저장 중 오류가 발생했습니다.');
     } finally {
