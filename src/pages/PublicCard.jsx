@@ -82,21 +82,14 @@ const PublicCard = () => {
 
     const fetchData = async () => {
       try {
-        // 1. 먼저 백엔드 API에서 명함 조회를 시도합니다. (기존 정식 명함 및 샘플들)
-        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/view/${id}`);
-        
         let data = null;
 
-        if (response.ok) {
-          data = await response.json();
-        } else {
-          // 2. 백엔드에 없으면 파이어베이스(체험용 임시명함)에서 조회합니다.
+        const fetchFirebase = async () => {
           const docRef = doc(db, 'business_cards', id);
           const docSnap = await getDoc(docRef);
-          
           if (docSnap.exists()) {
             const docData = docSnap.data();
-            data = {
+            return {
               id: docSnap.id,
               userId: docData.userId,
               productType: docData.productType || docData.grade || 'general',
@@ -105,6 +98,23 @@ const PublicCard = () => {
               ...docData.cardData
             };
           }
+          throw new Error('Not found in Firebase');
+        };
+
+        const fetchBackend = async () => {
+          const response = await fetch(`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000')}/api/card/view/${id}`);
+          if (response.ok) {
+            return await response.json();
+          }
+          throw new Error('Not found in Backend');
+        };
+
+        try {
+          // 백엔드(Render) 콜드스타트 지연을 피하기 위해 파이어베이스와 백엔드를 동시에 찌릅니다.
+          // 파이어베이스는 항상 0.1초 만에 응답하므로 엄청나게 빨라집니다.
+          data = await Promise.any([fetchFirebase(), fetchBackend()]);
+        } catch (error) {
+          console.error("Card not found in both DBs", error);
         }
 
         if (data) {
