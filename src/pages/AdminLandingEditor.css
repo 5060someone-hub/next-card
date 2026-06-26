@@ -293,13 +293,16 @@
 .btn-upload {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   background: #e2e8f0;
   color: #0f172a;
-  padding: 0 16px;
+  padding: 11px 16px;
+  box-sizing: border-box;
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
+  line-height: 1;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.2s;

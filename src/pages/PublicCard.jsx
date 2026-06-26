@@ -530,7 +530,8 @@ const PublicCard = () => {
     const imgStyle = { width: '20px', height: '20px', display: 'block', objectFit: 'contain' };
     switch(platform) {
       case 'instagram': return <img src={`https://cdn.simpleicons.org/instagram/${hex}`} width="20" height="20" style={imgStyle} alt="insta" />;
-      case 'kakao': return <img src={`https://cdn.simpleicons.org/kakaotalk/${hex}`} width="20" height="20" style={imgStyle} alt="kakao" />;
+      case 'kakao':
+      case 'kakaotalk': return <img src={`https://cdn.simpleicons.org/kakaotalk/${hex}`} width="20" height="20" style={imgStyle} alt="kakao" />;
       case 'facebook': return <img src={`https://cdn.simpleicons.org/facebook/${hex}`} width="20" height="20" style={imgStyle} alt="fb" />;
       case 'tiktok': return <img src={`https://cdn.simpleicons.org/tiktok/${hex}`} width="20" height="20" style={imgStyle} alt="tiktok" />;
       case 'x': return <img src={`https://cdn.simpleicons.org/x/${hex}`} width="20" height="20" style={imgStyle} alt="x" />;
@@ -557,7 +558,7 @@ const PublicCard = () => {
       icon: getSnsIcon(platform, iconColor),
       label: platform.charAt(0).toUpperCase() + platform.slice(1),
       value,
-      href: value?.startsWith('http') ? value : (platform === 'kakao' ? `https://pf.kakao.com/${value}` : `https://${platform}.com/${value}`)
+      href: value?.startsWith('http') ? value : ((platform === 'kakao' || platform === 'kakaotalk') ? `https://pf.kakao.com/${value}` : `https://${platform}.com/${value}`)
     }))
   ].filter(a => a.value);
 
